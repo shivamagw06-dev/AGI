@@ -1,0 +1,449 @@
+{
+  "accounting": {
+    "cash_conversion": 6.44,
+    "derived_not_stored": true,
+    "entity": "BHARTIARTL",
+    "found": true,
+    "leverage": 1.6557,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.0592
+  },
+  "business_quality": {
+    "entity": "BHARTIARTL",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 55.0,
+    "roic": 14.703455
+  },
+  "company_profile": {
+    "entity": "BHARTIARTL",
+    "market_cap": 81935.48,
+    "sector": "telecom"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "BHARTIARTL-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 1.0,
+  "entity": "BHARTIARTL",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 53.673324,
+    "downside_case": -0.049822,
+    "entity": "BHARTIARTL",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:24Z",
+    "historical_pe": 47.0229,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 64.8,
+      "FY18": 69.98,
+      "FY19": 75.58,
+      "FY20": 77.09,
+      "FY21": 83.26,
+      "FY22": 89.92,
+      "FY23": 97.12,
+      "FY24": 104.89,
+      "FY25": 113.28,
+      "FY26": 122.34
+    },
+    "capex": {
+      "FY17": 26250.0,
+      "FY18": 27562.5,
+      "FY19": 28940.62,
+      "FY20": 24599.53,
+      "FY21": 27059.48,
+      "FY22": 28412.46,
+      "FY23": 29833.08,
+      "FY24": 31324.74,
+      "FY25": 32890.97,
+      "FY26": 34535.52
+    },
+    "cash": {
+      "FY17": 5400.0,
+      "FY18": 5832.0,
+      "FY19": 6298.56,
+      "FY20": 6613.49,
+      "FY21": 7274.84,
+      "FY22": 7856.82,
+      "FY23": 8485.37,
+      "FY24": 9164.2,
+      "FY25": 9897.34,
+      "FY26": 10689.12
+    },
+    "ebit": {
+      "FY17": 19260.0,
+      "FY18": 20608.2,
+      "FY19": 22050.77,
+      "FY20": 19404.68,
+      "FY21": 22315.38,
+      "FY22": 23877.46,
+      "FY23": 25548.88,
+      "FY24": 27337.3,
+      "FY25": 29250.92,
+      "FY26": 31298.48
+    },
+    "ebitda": {
+      "FY17": 37450.0,
+      "FY18": 40071.5,
+      "FY19": 42876.51,
+      "FY20": 38588.85,
+      "FY21": 44377.18,
+      "FY22": 47483.59,
+      "FY23": 50807.44,
+      "FY24": 54363.96,
+      "FY25": 58169.43,
+      "FY26": 62241.29
+    },
+    "eps": {
+      "FY17": 8.56,
+      "FY18": 9.16,
+      "FY19": 9.8,
+      "FY20": 8.33,
+      "FY21": 10.0,
+      "FY22": 10.7,
+      "FY23": 11.44,
+      "FY24": 12.25,
+      "FY25": 13.1,
+      "FY26": 14.02
+    },
+    "equity": {
+      "FY17": 35640.0,
+      "FY18": 38491.2,
+      "FY19": 41570.5,
+      "FY20": 42401.91,
+      "FY21": 45794.06,
+      "FY22": 49457.58,
+      "FY23": 53414.19,
+      "FY24": 57687.32,
+      "FY25": 62302.31,
+      "FY26": 67286.5
+    },
+    "net_income": {
+      "FY17": 4815.0,
+      "FY18": 5152.05,
+      "FY19": 5512.69,
+      "FY20": 4410.15,
+      "FY21": 5512.69,
+      "FY22": 5898.58,
+      "FY23": 6311.48,
+      "FY24": 6753.29,
+      "FY25": 7226.02,
+      "FY26": 7731.84
+    },
+    "ocf": {
+      "FY17": 29960.0,
+      "FY18": 32057.2,
+      "FY19": 34301.2,
+      "FY20": 30871.08,
+      "FY21": 35501.75,
+      "FY22": 37986.87,
+      "FY23": 40645.95,
+      "FY24": 43491.17,
+      "FY25": 46535.55,
+      "FY26": 49793.04
+    },
+    "price": {
+      "FY17": 350.0,
+      "FY18": 402.5,
+      "FY19": 437.5,
+      "FY20": 297.5,
+      "FY21": 472.5,
+      "FY22": 542.5,
+      "FY23": 507.5,
+      "FY24": 665.0,
+      "FY25": 717.5,
+      "FY26": 752.5
+    },
+    "revenue": {
+      "FY17": 90950.0,
+      "FY18": 97316.5,
+      "FY19": 104128.65,
+      "FY20": 98922.22,
+      "FY21": 108814.44,
+      "FY22": 116431.46,
+      "FY23": 124581.66,
+      "FY24": 133302.37,
+      "FY25": 142633.54,
+      "FY26": 152617.89
+    },
+    "shares": {
+      "FY17": 550.0,
+      "FY18": 550.0,
+      "FY19": 550.0,
+      "FY20": 550.0,
+      "FY21": 550.0,
+      "FY22": 550.0,
+      "FY23": 550.0,
+      "FY24": 550.0,
+      "FY25": 550.0,
+      "FY26": 550.0
+    },
+    "total_debt": {
+      "FY17": 117600.0,
+      "FY18": 115248.0,
+      "FY19": 112943.04,
+      "FY20": 110684.18,
+      "FY21": 114004.7,
+      "FY22": 111724.61,
+      "FY23": 109490.12,
+      "FY24": 107300.32,
+      "FY25": 105154.31,
+      "FY26": 103051.22
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "BHARTIARTL",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": 77.050883,
+          "FY18": 87.241001,
+          "FY19": 97.24073,
+          "FY20": 142.207181,
+          "FY21": 153.142477,
+          "FY22": 162.317202,
+          "FY23": 171.320673,
+          "FY24": 180.155598,
+          "FY25": 188.825661,
+          "FY26": 197.333623
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 8.136182,
+          "FY18": 8.255019,
+          "FY19": 8.099294,
+          "FY20": 6.937125,
+          "FY21": 8.261112,
+          "FY22": 8.471196,
+          "FY23": 7.481773,
+          "FY24": 8.532971,
+          "FY25": 8.42164,
+          "FY26": 8.133461
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 5.294118,
+          "FY18": 5.294118,
+          "FY19": 5.294115,
+          "FY20": 4.4582,
+          "FY21": 5.066138,
+          "FY22": 5.066139,
+          "FY23": 5.066139,
+          "FY24": 5.066144,
+          "FY25": 5.066144,
+          "FY26": 5.066143
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 5.401235,
+          "FY18": 5.751643,
+          "FY19": 5.788568,
+          "FY20": 3.859126,
+          "FY21": 5.674994,
+          "FY22": 6.033141,
+          "FY23": 5.225494,
+          "FY24": 6.339975,
+          "FY25": 6.333863,
+          "FY26": 6.150891
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 40.88785,
+          "FY18": 43.941048,
+          "FY19": 44.642857,
+          "FY20": 35.714286,
+          "FY21": 47.25,
+          "FY22": 50.700935,
+          "FY23": 44.361888,
+          "FY24": 54.285714,
+          "FY25": 54.770992,
+          "FY26": 53.673324
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 13.510101,
+          "FY18": 13.385007,
+          "FY19": 13.261063,
+          "FY20": 10.400829,
+          "FY21": 12.038002,
+          "FY22": 11.926544,
+          "FY23": 11.816111,
+          "FY24": 11.706715,
+          "FY25": 11.598318,
+          "FY26": 11.490923
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 9.770698,
+          "FY18": 10.449897,
+          "FY19": 11.158169,
+          "FY20": 9.935995,
+          "FY21": 10.973056,
+          "FY22": 11.679799,
+          "FY23": 12.408879,
+          "FY24": 13.157825,
+          "FY25": 13.923769,
+          "FY26": 14.703455
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:24Z",
+  "macro_sensitivity": {
+    "beta": 0.855,
+    "sector": "telecom"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "BHARTIARTL",
+    "fabricated": false,
+    "found": true,
+    "insufficient": false,
+    "peers": [
+      "IDEA",
+      "TATACOMM",
+      "TTML",
+      "INDUSTOWER",
+      "HFCL",
+      "RAILTEL",
+      "ITI",
+      "TEJASNET",
+      "STERLITE"
+    ],
+    "provider": "kf_peer_producer"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 0.855,
+    "correlation": 0.9857,
+    "derived_not_stored": true,
+    "entity": "BHARTIARTL",
+    "expected_shortfall_95_pct": 5.8225,
+    "factor_exposure": {
+      "market_beta": 0.855,
+      "residual_vol_pct": 0.237
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.7935,
+    "max_drawdown_pct": 6.65,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 4.9822,
+    "volatility_ann_pct": 16.5236
+  },
+  "sector": "telecom",
+  "timeline": {
+    "entity": "BHARTIARTL",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "BHARTIARTL-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "BHARTIARTL-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "BHARTIARTL-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}

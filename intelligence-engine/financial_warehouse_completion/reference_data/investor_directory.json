@@ -1,0 +1,817 @@
+[
+  {
+    "id": "in-ajay-upadhyaya-525e2fa4",
+    "name": "Ajay Upadhyaya",
+    "category": "individual"
+  },
+  {
+    "id": "in-akash-bhanshali-20eae71",
+    "name": "Akash Bhanshali",
+    "category": "individual"
+  },
+  {
+    "id": "in-amit-gupta-b3831fb9",
+    "name": "Amit Gupta",
+    "category": "individual"
+  },
+  {
+    "id": "in-anil-kumar-goel-and-associates-9aa7eb82",
+    "name": "Anil Kumar Goel and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-anuj-anantrai-sheth-and-associates-3ba35937",
+    "name": "Anuj Anantrai Sheth and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-ashish-dhawan-fe61398c",
+    "name": "Ashish Dhawan",
+    "category": "individual"
+  },
+  {
+    "id": "in-ashish-kacholia-33f9702d",
+    "name": "Ashish Kacholia",
+    "category": "individual"
+  },
+  {
+    "id": "in-ashok-kumar-jain-9de9531d",
+    "name": "Ashok Kumar Jain",
+    "category": "individual"
+  },
+  {
+    "id": "in-atim-kabra-920a165d",
+    "name": "Atim Kabra",
+    "category": "individual"
+  },
+  {
+    "id": "in-bharat-jayantilal-patel-and-associates-8b744bae",
+    "name": "Bharat Jayantilal Patel and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-dheeraj-kumar-lohia-and-associates-375cfabb",
+    "name": "Dheeraj Kumar Lohia and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-dilipkumar-lakhi-798055da",
+    "name": "Dilipkumar Lakhi",
+    "category": "individual"
+  },
+  {
+    "id": "in-dipak-kanayalal-shah-903623c8",
+    "name": "Dipak Kanayalal Shah",
+    "category": "individual"
+  },
+  {
+    "id": "in-dolly-khanna-e9ebd83c",
+    "name": "Dolly Khanna",
+    "category": "individual"
+  },
+  {
+    "id": "in-harsha-hitesh-javeri-71b9c7e2",
+    "name": "Harsha Hitesh Javeri",
+    "category": "individual"
+  },
+  {
+    "id": "in-hiten-anantrai-sheth-e16a16a9",
+    "name": "Hiten Anantrai Sheth",
+    "category": "individual"
+  },
+  {
+    "id": "in-hitesh-ramji-javeri-and-associates-58c2d350",
+    "name": "Hitesh Ramji Javeri and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-hitesh-satishchandra-doshi-5fcc3bea",
+    "name": "Hitesh Satishchandra Doshi",
+    "category": "individual"
+  },
+  {
+    "id": "in-keswani-haresh-6b9f3914",
+    "name": "Keswani Haresh",
+    "category": "individual"
+  },
+  {
+    "id": "in-lata-bhanshali-59cce60b",
+    "name": "Lata Bhanshali",
+    "category": "individual"
+  },
+  {
+    "id": "in-lincoln-p-coelho-8328854e",
+    "name": "Lincoln P Coelho",
+    "category": "individual"
+  },
+  {
+    "id": "in-madhukar-sheth-662ee226",
+    "name": "Madhukar Sheth",
+    "category": "individual"
+  },
+  {
+    "id": "in-mahendra-girdharilal-1e17fde",
+    "name": "Mahendra Girdharilal",
+    "category": "individual"
+  },
+  {
+    "id": "in-minal-bharat-patel-918161be",
+    "name": "Minal Bharat Patel",
+    "category": "individual"
+  },
+  {
+    "id": "in-mukul-agrawal-72418872",
+    "name": "Mukul Agrawal",
+    "category": "individual"
+  },
+  {
+    "id": "in-nemish-s-shah-2a08f10e",
+    "name": "Nemish S Shah",
+    "category": "individual"
+  },
+  {
+    "id": "in-porinju-v-veliyath-40094276",
+    "name": "Porinju V Veliyath",
+    "category": "individual"
+  },
+  {
+    "id": "in-raj-kumar-lohia-8001591f",
+    "name": "Raj Kumar Lohia",
+    "category": "individual"
+  },
+  {
+    "id": "in-rakesh-jhunjhunwala-and-associates-99d5f466",
+    "name": "Rakesh Jhunjhunwala and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-rekha-jhunjhunwala-7d16ec5d",
+    "name": "Rekha Jhunjhunwala",
+    "category": "individual"
+  },
+  {
+    "id": "in-ricky-ishwardas-kirpalani-a688e98",
+    "name": "Ricky Ishwardas Kirpalani",
+    "category": "individual"
+  },
+  {
+    "id": "in-sangeetha-s-c25ba126",
+    "name": "Sangeetha S",
+    "category": "individual"
+  },
+  {
+    "id": "in-sanjay-gupta-1c17aef4",
+    "name": "Sanjay Gupta",
+    "category": "individual"
+  },
+  {
+    "id": "in-sanjay-kumar-agarwal-73952b32",
+    "name": "Sanjay Kumar Agarwal",
+    "category": "individual"
+  },
+  {
+    "id": "in-sanjeev-vinodchandra-parekh-35f485f7",
+    "name": "Sanjeev Vinodchandra Parekh",
+    "category": "individual"
+  },
+  {
+    "id": "in-sanjiv-dhireshbhai-shah-e897f973",
+    "name": "Sanjiv Dhireshbhai Shah",
+    "category": "individual"
+  },
+  {
+    "id": "in-satpal-khattar-749695d",
+    "name": "Satpal Khattar",
+    "category": "individual"
+  },
+  {
+    "id": "in-seetha-kumari-84041a4e",
+    "name": "Seetha Kumari",
+    "category": "individual"
+  },
+  {
+    "id": "in-sharad-kanayalal-shah-and-associates-ef72ac12",
+    "name": "Sharad Kanayalal Shah and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-shaunak-jagdish-shah-42c9183a",
+    "name": "Shaunak Jagdish Shah",
+    "category": "individual"
+  },
+  {
+    "id": "in-shivani-tejas-trivedi-c1dac171",
+    "name": "Shivani Tejas Trivedi",
+    "category": "individual"
+  },
+  {
+    "id": "in-sunil-kumar-16cfeef8",
+    "name": "Sunil Kumar",
+    "category": "individual"
+  },
+  {
+    "id": "in-suresh-kumar-agarwal-575228c6",
+    "name": "Suresh Kumar Agarwal",
+    "category": "individual"
+  },
+  {
+    "id": "in-vallabh-roopchand-bhanshali-fd9164cf",
+    "name": "Vallabh Roopchand Bhanshali",
+    "category": "individual"
+  },
+  {
+    "id": "in-vanaja-sundar-iyer-ee14299a",
+    "name": "Vanaja Sundar Iyer",
+    "category": "individual"
+  },
+  {
+    "id": "in-vijay-kishanlal-kedia-a30d3e8f",
+    "name": "Vijay Kishanlal Kedia",
+    "category": "individual"
+  },
+  {
+    "id": "in-vinodchandra-mansukhlal-parekh-and-associates-7bb00845",
+    "name": "Vinodchandra Mansukhlal Parekh and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-ramesh-damani-7bdfa2e3",
+    "name": "Ramesh Damani",
+    "category": "individual"
+  },
+  {
+    "id": "in-mohnish-pabrai-62712abe",
+    "name": "Mohnish Pabrai",
+    "category": "individual"
+  },
+  {
+    "id": "in-radhakishan-damani-756ef461",
+    "name": "Radhakishan Damani",
+    "category": "individual"
+  },
+  {
+    "id": "in-sunil-singhania-2bafb8b0",
+    "name": "Sunil Singhania",
+    "category": "individual"
+  },
+  {
+    "id": "in-girish-gulati-308d5771",
+    "name": "Girish Gulati",
+    "category": "individual"
+  },
+  {
+    "id": "in-madhusudan-kela-90c855f0",
+    "name": "Madhusudan Kela",
+    "category": "individual"
+  },
+  {
+    "id": "in-shankar-sharma-fdeb0cdd",
+    "name": "Shankar Sharma",
+    "category": "individual"
+  },
+  {
+    "id": "in-urjita-master-3978e6ee",
+    "name": "Urjita Master",
+    "category": "individual"
+  },
+  {
+    "id": "in-nikhil-vora-5f931d80",
+    "name": "Nikhil Vora",
+    "category": "individual"
+  },
+  {
+    "id": "in-bhavook-tripathi-66354ed0",
+    "name": "Bhavook Tripathi",
+    "category": "individual"
+  },
+  {
+    "id": "in-amal-parikh-1bd98c47",
+    "name": "Amal Parikh",
+    "category": "individual"
+  },
+  {
+    "id": "in-jayesh-patel-cb9455f9",
+    "name": "Jayesh Patel",
+    "category": "individual"
+  },
+  {
+    "id": "in-premji-and-associates-5ae5d234",
+    "name": "Premji and Associates",
+    "category": "individual"
+  },
+  {
+    "id": "in-mukesh-ambani-and-family-ced48bc9",
+    "name": "Mukesh Ambani and Family",
+    "category": "individual"
+  },
+  {
+    "id": "in-govindlal-m-parikh-8c55716b",
+    "name": "Govindlal M Parikh",
+    "category": "individual"
+  },
+  {
+    "id": "in-ashish-chugh-75927768",
+    "name": "Ashish Chugh",
+    "category": "individual"
+  },
+  {
+    "id": "in-aadi-financial-advisors-llp-806e8618",
+    "name": "Aadi Financial Advisors Llp",
+    "category": "institutional"
+  },
+  {
+    "id": "in-abg-capital-766de95b",
+    "name": "Abg Capital",
+    "category": "institutional"
+  },
+  {
+    "id": "in-abu-dhabi-investment-authority-94a069b9",
+    "name": "Abu Dhabi Investment Authority",
+    "category": "institutional"
+  },
+  {
+    "id": "in-acacia-conservation-fund-lp-f7d2e8f1",
+    "name": "Acacia Conservation Fund Lp",
+    "category": "institutional"
+  },
+  {
+    "id": "in-acacia-institutional-partners-lp-6ad5da6d",
+    "name": "Acacia Institutional Partners Lp",
+    "category": "institutional"
+  },
+  {
+    "id": "in-albula-investment-fund-ltd-ca8c9e46",
+    "name": "Albula Investment Fund Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-amansa-holdings-private-limited-683a8651",
+    "name": "Amansa Holdings Private Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-antara-india-evergreen-fund-ltd-a7a43cbf",
+    "name": "Antara India Evergreen Fund Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-apms-investment-fund-ltd-2679b01c",
+    "name": "Apms Investment Fund Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-ares-diversified-be6e1202",
+    "name": "Ares Diversified",
+    "category": "institutional"
+  },
+  {
+    "id": "in-atyant-capital-india-fund-2dc552f6",
+    "name": "Atyant Capital India Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bajaj-allianz-life-insurance-company-ltd-e3d993c1",
+    "name": "Bajaj Allianz Life Insurance Company Ltd.",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bank-muscat-india-fund-f0077e0a",
+    "name": "Bank Muscat India Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bank-of-baroda-503e5de5",
+    "name": "Bank Of Baroda",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bank-of-maharashtra-b59faf48",
+    "name": "Bank Of Maharashtra",
+    "category": "institutional"
+  },
+  {
+    "id": "in-baron-emerging-markets-fund-ae2dc06d",
+    "name": "Baron Emerging Markets Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bennett-and-coleman-and-company-limited-4b43a65d",
+    "name": "Bennett And Coleman And Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-bridge-india-fund-b872a24a",
+    "name": "Bridge India Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-central-bank-of-india-7c5a8b02",
+    "name": "Central Bank Of India",
+    "category": "institutional"
+  },
+  {
+    "id": "in-clsa-global-markets-pte-ltd-ab9120ff",
+    "name": "Clsa Global Markets Pte. Ltd.",
+    "category": "institutional"
+  },
+  {
+    "id": "in-cresta-fund-ltd-8b03eeee",
+    "name": "Cresta Fund Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-east-bridge-capital-master-fund-limited-405ebe36",
+    "name": "East Bridge Capital Master Fund Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-eastspring-investments-india-infrastructure-equity-open-limi-d045a2bf",
+    "name": "Eastspring Investments India Infrastructure Equity Open Limi",
+    "category": "institutional"
+  },
+  {
+    "id": "in-elm-park-fund-limited-c520a67a",
+    "name": "Elm Park Fund Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-emerging-india-focus-funds-522d0738",
+    "name": "Emerging India Focus Funds",
+    "category": "institutional"
+  },
+  {
+    "id": "in-enam-securities-pvt-ltd-798cf07c",
+    "name": "Enam Securities Pvt Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-eriska-investment-fund-ltd-49402a3a",
+    "name": "Eriska Investment Fund Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-europacific-growth-fund-9a260b8d",
+    "name": "Europacific Growth Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-fidelity-puritan-trust-49056f68",
+    "name": "Fidelity Puritan Trust",
+    "category": "institutional"
+  },
+  {
+    "id": "in-gagandeep-credit-capital-pvt-ltd-6cdef16e",
+    "name": "Gagandeep Credit Capital Pvt Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-general-insurance-corporation-of-india-27027e71",
+    "name": "General Insurance Corporation Of India",
+    "category": "institutional"
+  },
+  {
+    "id": "in-goldman-sachs-india-limited-3f7555f8",
+    "name": "Goldman Sachs India Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-government-of-singapore-4e4c02fd",
+    "name": "Government Of Singapore",
+    "category": "institutional"
+  },
+  {
+    "id": "in-government-pension-fund-global-337e3512",
+    "name": "Government Pension Fund Global",
+    "category": "institutional"
+  },
+  {
+    "id": "in-hypnos-fund-limited-2ca10333",
+    "name": "Hypnos Fund Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-idbi-bank-limited-6564fbcb",
+    "name": "Idbi Bank Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-india-capital-fund-limited-bb8d9729",
+    "name": "India Capital Fund Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-india-midcap-mauritius-ltd-6f48bde9",
+    "name": "India Midcap Mauritius Ltd.",
+    "category": "institutional"
+  },
+  {
+    "id": "in-indian-bank-afda97d4",
+    "name": "Indian Bank",
+    "category": "institutional"
+  },
+  {
+    "id": "in-international-finance-corporation-ab0512c7",
+    "name": "International Finance Corporation",
+    "category": "institutional"
+  },
+  {
+    "id": "in-jm-financial-services-limited-47bf914b",
+    "name": "Jm Financial Services Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-jupiter-south-asia-investment-company-limited-a039ffa1",
+    "name": "Jupiter South Asia Investment Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-jwalamukhi-investment-holdings-d0d60e8d",
+    "name": "Jwalamukhi Investment Holdings",
+    "category": "institutional"
+  },
+  {
+    "id": "in-kotak-mahindra-group-858e9a42",
+    "name": "Kotak Mahindra Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-lavender-investments-limited-91757506",
+    "name": "Lavender Investments Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-malabar-investments-209e8f3b",
+    "name": "Malabar Investments",
+    "category": "institutional"
+  },
+  {
+    "id": "in-master-capital-services-ltd-f031b3f9",
+    "name": "Master Capital Services Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-matthews-pacific-tiger-fund-e484caf1",
+    "name": "Matthews Pacific Tiger Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-mentor-capital-limited-b0c9d416",
+    "name": "Mentor Capital Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-mirae-asset-emerging-bluechip-fund-7bd5c130",
+    "name": "Mirae Asset Emerging Bluechip Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-morgan-stanley-asia-singapore-pte-867f2f39",
+    "name": "Morgan Stanley Asia (Singapore) Pte.",
+    "category": "institutional"
+  },
+  {
+    "id": "in-nalanda-india-fund-limited-fe6ed350",
+    "name": "Nalanda India Fund Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-national-insurance-company-ltd-c7a3540",
+    "name": "National Insurance Company Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-new-world-fund-inc-ddcf6b10",
+    "name": "New World Fund Inc",
+    "category": "institutional"
+  },
+  {
+    "id": "in-nomura-india-investment-fund-mother-fund-fbce3988",
+    "name": "Nomura India Investment Fund Mother Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-oppenheimer-developing-markets-fund-7399fd42",
+    "name": "Oppenheimer Developing Markets Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-pi-opportunities-fund-i-a302c3d1",
+    "name": "Pi Opportunities Fund I",
+    "category": "institutional"
+  },
+  {
+    "id": "in-president-of-india-c46c055b",
+    "name": "President Of India",
+    "category": "institutional"
+  },
+  {
+    "id": "in-priyanka-finance-private-limited-c0617305",
+    "name": "Priyanka Finance Private Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-punjab-national-bank-e5880e5",
+    "name": "Punjab National Bank",
+    "category": "institutional"
+  },
+  {
+    "id": "in-rajasthan-global-securities-private-limited-85668253",
+    "name": "Rajasthan Global Securities Private Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-shriram-credit-company-limited-f1ffb5f",
+    "name": "Shriram Credit Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-smallcap-world-fund-inc-9adbd18f",
+    "name": "Smallcap World Fund Inc",
+    "category": "institutional"
+  },
+  {
+    "id": "in-steadview-capital-mauritius-limited-1d227dec",
+    "name": "Steadview Capital Mauritius Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-stichting-depositary-apg-emerging-markets-equity-pool-3edbdf80",
+    "name": "Stichting Depositary Apg Emerging Markets Equity Pool",
+    "category": "institutional"
+  },
+  {
+    "id": "in-tata-balanced-fund-dd9a77fa",
+    "name": "Tata Balanced Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-the-new-india-assurance-company-limited-788f5511",
+    "name": "The New India Assurance Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-the-oriental-insurance-company-limited-d01c7eb1",
+    "name": "The Oriental Insurance Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-tree-line-asia-master-fund-singapore-pte-ltd-6284ee0a",
+    "name": "Tree Line Asia Master Fund (Singapore) Pte Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-union-bank-of-india-7151d9dc",
+    "name": "Union Bank Of India",
+    "category": "institutional"
+  },
+  {
+    "id": "in-united-india-insurance-company-limited-320c9a1c",
+    "name": "United India Insurance Company Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-va-realcon-private-limited-e018e651",
+    "name": "Va Realcon Private Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-valiant-mauritius-partners-offshore-limited-77e5619a",
+    "name": "Valiant Mauritius Partners Offshore Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-vanguard-fund-2a83068a",
+    "name": "Vanguard Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-vistra-itcl-india-limited-d725a38d",
+    "name": "Vistra Itcl India Limited",
+    "category": "institutional"
+  },
+  {
+    "id": "in-vls-finance-ltd-2561afe6",
+    "name": "Vls Finance Ltd",
+    "category": "institutional"
+  },
+  {
+    "id": "in-westbridge-crossover-fund-llc-52b8e935",
+    "name": "Westbridge Crossover Fund Llc",
+    "category": "institutional"
+  },
+  {
+    "id": "in-plutus-wealth-f8230345",
+    "name": "Plutus Wealth",
+    "category": "institutional"
+  },
+  {
+    "id": "in-abakkus-fund-8598033e",
+    "name": "Abakkus Fund",
+    "category": "institutional"
+  },
+  {
+    "id": "in-sbi-group-ca67e728",
+    "name": "SBI Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-hdfc-group-97ed8e61",
+    "name": "HDFC Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-icici-group-1dd743f",
+    "name": "ICICI Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-birla-group-780a545a",
+    "name": "Birla Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-axis-group-9b784c0f",
+    "name": "Axis Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-franklin-india-group-97b45006",
+    "name": "Franklin India Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-canara-group-cfb623f7",
+    "name": "CANARA-GROUP",
+    "category": "institutional"
+  },
+  {
+    "id": "in-sundaram-group-6e5460e4",
+    "name": "SUNDARAM-GROUP",
+    "category": "institutional"
+  },
+  {
+    "id": "in-reliance-group-61a261f3",
+    "name": "Reliance Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-massachusetts-institute-of-technology-84c1f895",
+    "name": "Massachusetts Institute Of Technology",
+    "category": "institutional"
+  },
+  {
+    "id": "in-sequoia-d3d7a6fa",
+    "name": "Sequoia",
+    "category": "institutional"
+  },
+  {
+    "id": "in-saif-partners-cb0c9e09",
+    "name": "Saif Partners",
+    "category": "institutional"
+  },
+  {
+    "id": "in-tata-sons-8e69c86a",
+    "name": "TATA Sons",
+    "category": "institutional"
+  },
+  {
+    "id": "in-catamaran-ventures-c7c02d67",
+    "name": "Catamaran Ventures",
+    "category": "institutional"
+  },
+  {
+    "id": "in-ant-group-aff69395",
+    "name": "Ant Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-softbank-group-76f41bac",
+    "name": "SoftBank Group",
+    "category": "institutional"
+  },
+  {
+    "id": "in-societe-generale-3c40f4c4",
+    "name": "Societe Generale",
+    "category": "institutional"
+  },
+  {
+    "id": "in-zerodha-broking-aa3f968c",
+    "name": "Zerodha Broking",
+    "category": "institutional"
+  },
+  {
+    "id": "in-monetary-authority-of-singapore-618f43ee",
+    "name": "Monetary Authority Of Singapore",
+    "category": "institutional"
+  },
+  {
+    "id": "in-morgan-stanley-15fb3ceb",
+    "name": "Morgan Stanley",
+    "category": "institutional"
+  },
+  {
+    "id": "in-gqg-partners-e2be956d",
+    "name": "GQG Partners",
+    "category": "institutional"
+  }
+]

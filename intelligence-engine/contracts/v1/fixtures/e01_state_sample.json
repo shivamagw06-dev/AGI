@@ -1,0 +1,67 @@
+{
+  "engine": "E01",
+  "version": "1.0.0",
+  "model_version": "e01-p0-axes-0.1.0",
+  "as_of": "2026-07-24",
+  "universe_id": "GLOBAL_MACRO",
+  "symbol": null,
+  "score": {
+    "raw": 58.0,
+    "normalized_0_100": 58.0,
+    "normalized_signed": 0.16,
+    "unit": "score"
+  },
+  "confidence": {
+    "value": 0.71,
+    "components": {
+      "C_coverage": 0.8,
+      "C_freshness": 0.75,
+      "C_stability": 0.65
+    },
+    "method_version": "conf-1.0"
+  },
+  "reliability": {
+    "sample_size": 120,
+    "historical_accuracy": 0.62,
+    "stability": 0.7
+  },
+  "metadata": {
+    "primary_regime": "expansion_neutral",
+    "risk_level": "normal",
+    "size_multiplier": 1.0,
+    "vol_target": 0.12
+  },
+  "evidence": {
+    "positive": [
+      {
+        "id": "e01_pos_growth",
+        "claim": "Growth axis above neutral threshold"
+      }
+    ],
+    "negative": [],
+    "contradictions": [],
+    "unknowns": [
+      {
+        "id": "e01_unk_india_cpi",
+        "claim": "Latest India CPI print lagged"
+      }
+    ],
+    "risks": [
+      {
+        "id": "e01_risk_liquidity",
+        "claim": "Liquidity axis softening"
+      }
+    ],
+    "missing_data": []
+  },
+  "explanation": {
+    "summary": "Macro state is expansion_neutral with normal risk and full size prior.",
+    "top_drivers": ["growth_axis", "liquidity_axis"],
+    "falsifiers": ["hard_derisk_from_E14", "crisis_vol_spike"]
+  },
+  "warnings": [],
+  "stale_inputs": [],
+  "input_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "timestamp_generated": "2026-07-24T18:05:00+05:30"
+}

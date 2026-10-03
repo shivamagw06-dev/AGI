@@ -1,0 +1,1 @@
+from institutional_memory.reports.build import build_report

@@ -1,0 +1,80 @@
+{
+  "entity": "ASIANPAINT",
+  "hd_version": "historical-depth-v1.0.0",
+  "kind": "valuation",
+  "n": 3,
+  "records": [
+    {
+      "available_from": "2026-07-31",
+      "confidence": 0.95,
+      "entity": "ASIANPAINT",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 2635210160000.0,
+        "ev_ebitda": 34.514,
+        "forward_pe": null,
+        "market_cap": 2635210160000.0,
+        "pb": 13.567,
+        "pe": 55.1556,
+        "pe_premium_pct": 51.4,
+        "peer_median_pe": 36.44,
+        "peg": 3.9766,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-07-31",
+      "period_end": "2026-07-31",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-04",
+      "confidence": 0.95,
+      "entity": "ASIANPAINT",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 2661780000000.0,
+        "ev_ebitda": 34.862,
+        "forward_pe": null,
+        "market_cap": 2661780000000.0,
+        "pb": 13.7038,
+        "pe": 55.7117,
+        "pe_premium_pct": 56.1,
+        "peer_median_pe": 35.7,
+        "peg": 4.0167,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-08-04",
+      "period_end": "2026-08-04",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-05",
+      "confidence": 0.95,
+      "entity": "ASIANPAINT",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 2654106400000.0,
+        "ev_ebitda": 34.7615,
+        "forward_pe": null,
+        "market_cap": 2654106400000.0,
+        "pb": 13.6643,
+        "pe": 55.5511,
+        "pe_premium_pct": 52.4,
+        "peer_median_pe": 36.45,
+        "peg": 4.0051,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-08-05",
+      "period_end": "2026-08-05",
+      "source": "valuation_intelligence_p22"
+    }
+  ]
+}

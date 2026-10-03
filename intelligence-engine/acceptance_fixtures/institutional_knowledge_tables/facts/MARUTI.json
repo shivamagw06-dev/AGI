@@ -1,0 +1,798 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.491173Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited operates as a leading automobile manufacturer renowned for its extensive range of vehicles catering to diverse customer preferences. The company focuses predominantly on the design, development, production, and marketing of a wide assortment of passenger vehicles and has established itself as a household name in the Indian automotive sector.\n\nBusiness Segments\n\nThe company segments its operations primarily into two categories including Domestic Sales and Exports, which form the backbone of its revenue generation.\n\nDomestic Sales\n\nThe domestic market represents the lion's share of business, constituting a significant percentage of total sales. For FY\u201924, domestic sales achieved a unit volume of 1,852,256 vehicles, showcasing an 8.5% increase from the previous year. Within this, the compact segment remains a cornerstone, representing 44.7% of domestic sales, despite facing a slight decline. The utility vehicle segment, on the other hand, saw an impressive growth of 75.4%, capturing a notable market share with 34.7%.\n\nExports\n\nExports also play a critical role in the company\u2019s portfolio, with the company witnessing a 9.2% growth, totaling 283,067 units for FY\u201924. This underscores the company\u2019s commitment to expanding its reach beyond domestic borders and tapping into international markets, thus diversifying its operational base.\n\nThe company is also divided into various product segments, including but not limited to mini cars, compact cars, mid-size cars, utility vehicles (UVs), vans, and light commercial vehicles (LCVs).\n\nBusiness Strategy\n\nThe company relies on a multifaceted business strategy that focuses on enhancing customer experience, sustaining market leadership, and driving innovation. The company strives to create value for its customers by offering products that are not only reliable but also incorporate advanced technologies and features. Continuous research and product development remain a priority, allowing the company to introduce new models and variants that resonate with evolving customer demands and preferences.\n\nAdditionally, the company is committed to sustainability and eco-friendliness. The company is focused on reducing the carbon footprint of its operations, utilizing environmentally friendly practices throughout its manufacturing facilities, and developing vehicles that comply with the latest emission norms. Moreover, the company emphasizes cost efficiency and productivity improvements across all functions. The company also embraces digital transformation to enhance the customer journey\u2014utilizing technology for better engagement and service delivery. Initiatives like online booking, virtual showrooms, and enhanced customer relationship management systems exemplify the company's commitment to leveraging technology for a better customer experience.\n\nProducts and Services\n\nThe company offers a diversified portfolio of vehicles tailored to meet the various needs of Indian consumers. The product line ranges from compact cars to SUVs, catering to different segments of the market. Mini cars are designed to provide affordability and fuel efficiency, making them popular among urban customers, while the compact and mid-size segments focus on comfort and performance for families and professionals alike. The company's utility vehicles (UVs) have gained significant traction in recent years, reflecting changes in consumer preferences towards more spacious and versatile options. This segment features an array of designs suited for different lifestyles, facilitating both personal and professional use.\n\nAdditionally, the company produces light commercial vehicles (LCVs), targeting the commercial sector with vehicles designed for utility and transport. Furthermore, the company not only emphasizes manufacturing excellence but also provides comprehensive after-sales services and support. This includes warranty programs, regular maintenance services, and a network of authorized service centres, ensuring customer satisfaction and reliability.\n\nGeographical Markets Served\n\nThe company serves a wide geographical range, primarily focusing on the Indian market, which contributes significantly to its revenue. However, the company also has a notable presence in international markets, exporting vehicles to over 100 countries globally.\n\nSeasonality\n\nThe company experiences seasonality in its sales and production, influenced primarily by festive seasons and climatic conditions. The Indian automobile market typically sees a surge in vehicle sales during the festive months, as consumers perceive this time as auspicious for making significant purchases. Consequently, the company prepares for heightened demand by ramping up production and inventory levels preceding these periods. Conversely, lean seasons may lead to a decrease in sales volume, impacting total revenue for certain quarters.\n\nCustomers\n\nThe company serves a diverse demographic, which ranges from first-time car buyers to seasoned automotive customers. Its customer base is extensive, with millions of satisfied customers across India. Categories of customers served include families, professionals, and commercial sectors.\n\nMarketing/ Distribution Channels\n\nThe company employs a multi-channel marketing strategy that maximizes its brand visibility and accessibility. The company utilizes traditional marketing approaches, including print media and television advertisements, alongside innovative digital marketing techniques to reach potential customers. The distribution network includes a comprehensive array of dealerships, allowing consumers across urban and rural areas to access its vehicles and services easily.\n\nHistory\n\nMaruti Suzuki India Limited was founded in 1981. The company was formerly known as Maruti Udyog Limited. The company was incorporated in 1981.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.961912Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited operates as a leading automobile manufacturer renowned for its extensive range of vehicles catering to diverse customer preferences. The company focuses predominantly on the design, development, production, and marketing of a wide assortment of passenger vehicles and has established itself as a household name in the Indian automotive sector.\n\nBusiness Segments\n\nThe company segments its operations primarily into two categories including Domestic Sales and Exports, which form the backbone of its revenue generation.\n\nDomestic Sales\n\nThe domestic market represents the lion's share of business, constituting a significant percentage of total sales. For FY\u201924, domestic sales achieved a unit volume of 1,852,256 vehicles, showcasing an 8.5% increase from the previous year. Within this, the compact segment remains a cornerstone, representing 44.7% of domestic sales, despite facing a slight decline. The utility vehicle segment, on the other hand, saw an impressive growth of 75.4%, capturing a notable market share with 34.7%.\n\nExports\n\nExports also play a critical role in the company\u2019s portfolio, with the company witnessing a 9.2% growth, totaling 283,067 units for FY\u201924. This underscores the company\u2019s commitment to expanding its reach beyond domestic borders and tapping into international markets, thus diversifying its operational base.\n\nThe company is also divided into various product segments, including but not limited to mini cars, compact cars, mid-size cars, utility vehicles (UVs), vans, and light commercial vehicles (LCVs).\n\nBusiness Strategy\n\nThe company relies on a multifaceted business strategy that focuses on enhancing customer experience, sustaining market leadership, and driving innovation. The company strives to create value for its customers by offering products that are not only reliable but also incorporate advanced technologies and features. Continuous research and product development remain a priority, allowing the company to introduce new models and variants that resonate with evolving customer demands and preferences.\n\nAdditionally, the company is committed to sustainability and eco-friendliness. The company is focused on reducing the carbon footprint of its operations, utilizing environmentally friendly practices throughout its manufacturing facilities, and developing vehicles that comply with the latest emission norms. Moreover, the company emphasizes cost efficiency and productivity improvements across all functions. The company also embraces digital transformation to enhance the customer journey\u2014utilizing technology for better engagement and service delivery. Initiatives like online booking, virtual showrooms, and enhanced customer relationship management systems exemplify the company's commitment to leveraging technology for a better customer experience.\n\nProducts and Services\n\nThe company offers a diversified portfolio of vehicles tailored to meet the various needs of Indian consumers. The product line ranges from compact cars to SUVs, catering to different segments of the market. Mini cars are designed to provide affordability and fuel efficiency, making them popular among urban customers, while the compact and mid-size segments focus on comfort and performance for families and professionals alike. The company's utility vehicles (UVs) have gained significant traction in recent years, reflecting changes in consumer preferences towards more spacious and versatile options. This segment features an array of designs suited for different lifestyles, facilitating both personal and professional use.\n\nAdditionally, the company produces light commercial vehicles (LCVs), targeting the commercial sector with vehicles designed for utility and transport. Furthermore, the company not only emphasizes manufacturing excellence but also provides comprehensive after-sales services and support. This includes warranty programs, regular maintenance services, and a network of authorized service centres, ensuring customer satisfaction and reliability.\n\nGeographical Markets Served\n\nThe company serves a wide geographical range, primarily focusing on the Indian market, which contributes significantly to its revenue. However, the company also has a notable presence in international markets, exporting vehicles to over 100 countries globally.\n\nSeasonality\n\nThe company experiences seasonality in its sales and production, influenced primarily by festive seasons and climatic conditions. The Indian automobile market typically sees a surge in vehicle sales during the festive months, as consumers perceive this time as auspicious for making significant purchases. Consequently, the company prepares for heightened demand by ramping up production and inventory levels preceding these periods. Conversely, lean seasons may lead to a decrease in sales volume, impacting total revenue for certain quarters.\n\nCustomers\n\nThe company serves a diverse demographic, which ranges from first-time car buyers to seasoned automotive customers. Its customer base is extensive, with millions of satisfied customers across India. Categories of customers served include families, professionals, and commercial sectors.\n\nMarketing/ Distribution Channels\n\nThe company employs a multi-channel marketing strategy that maximizes its brand visibility and accessibility. The company utilizes traditional marketing approaches, including print media and television advertisements, alongside innovative digital marketing techniques to reach potential customers. The distribution network includes a comprehensive array of dealerships, allowing consumers across urban and rural areas to access its vehicles and services easily.\n\nHistory\n\nMaruti Suzuki India Limited was founded in 1981. The company was formerly known as Maruti Udyog Limited. The company was incorporated in 1981.",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.476723Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited manufactures, purchases, and sells motor vehicles, components, and spare parts in India. The company offers passenger vehicles, utility vehicles, and multi-purpose vehicles. It is also involved in the facilitation of pre-owned car sales, fleet management, and car financing activities. In addition, the company offers driving school, insurance, accessories, and financing products and services. It also exports its products to South Africa, Saudi Arabia, Chile, Japan, Mexico, and internationally. The company was formerly known as Maruti Udyog Limited and changed its name to Maruti Suzuki India Limited in September 2007. Maruti Suzuki India Limited was incorporated in 1981 and is headquartered in New Delhi, India. Maruti Suzuki India Limited is a subsidiary of Suzuki Motor Corporation.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.951883Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited manufactures, purchases, and sells motor vehicles, components, and spare parts in India. The company offers passenger vehicles, utility vehicles, and multi-purpose vehicles. It is also involved in the facilitation of pre-owned car sales, fleet management, and car financing activities. In addition, the company offers driving school, insurance, accessories, and financing products and services. It also exports its products to South Africa, Saudi Arabia, Chile, Japan, Mexico, and internationally. The company was formerly known as Maruti Udyog Limited and changed its name to Maruti Suzuki India Limited in September 2007. Maruti Suzuki India Limited was incorporated in 1981 and is headquartered in New Delhi, India. Maruti Suzuki India Limited is a subsidiary of Suzuki Motor Corporation.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.446887Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EM Universal Ex Thermal Coal Index\n\nMSCI EM (Emerging Markets) Ex Fossil Fuels Index\n\nMSCI ACWI IMI Quality Index\n\nMSCI ACWI Ex CH IMI/Consumer Discr (Sector) Index\n\nMSCI IN Large/Consumer Discr (Sector) Index\n\nMSCI AC AP Ex JP Factor Mix A-Series (USD) Index\n\nMSCI ACWI Ex Japan Quality Index\n\nMSCI AC Asia Ex Japan Dividend Tilt Index\n\nMSCI ACWI Factor Mix A-Series (USD) Index\n\nMSCI EAFE + EM/Auto & Components (Industry Group) Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.922512Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI India Ex Controversial Weapons Index\n\nMSCI MPF AC Asia Pacific Ex Japan Index\n\nMSCI MPF AC Asia Ex Japan Index\n\nMSCI India Domestic Large Cap Index\n\nMSCI IN/Consumer Discr (Sector) Index\n\nMSCI India Factor Mix A-Series Capped (USD) Index\n\nMSCI EM Factor Mix A- Series (USD) Index\n\nMSCI EM/Consumer Discr (Sector) Index\n\nMSCI EM Asia Value Weighted Index\n\nMSCI EM Asia IMI Islamic Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.469379Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.947364Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.471167Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Suzuki Motor Corporation (TSE:7269) (Current Parent); State Bank of India (NSEI:SBIN) (Current Investor); Export-Import Bank of India (Current Investor); Punjab National Bank (NSEI:PNB) (Current Investor); Life Insurance Corporation of India (NSEI:LICI) (Current Investor); HDFC Asset Management Company Limited (NSEI:HDFCAMC) (Current Investor); Nippon Life India Asset Management Limited (NSEI:NAM-INDIA) (Current Investor); IFCI Venture Capital Funds Ltd. (Current Investor); SBI Funds Management Limited (NSEI:SBIFUNDS) (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.948652Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Suzuki Motor Corporation (TSE:7269) (Current Parent); State Bank of India (NSEI:SBIN) (Current Investor); Export-Import Bank of India (Current Investor); Punjab National Bank (NSEI:PNB) (Current Investor); Life Insurance Corporation of India (NSEI:LICI) (Current Investor); HDFC Asset Management Company Limited (NSEI:HDFCAMC) (Current Investor); Nippon Life India Asset Management Limited (NSEI:NAM-INDIA) (Current Investor); IFCI Venture Capital Funds Ltd. (Current Investor); SBI Funds Management Limited (NSEI:SBIFUNDS) (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.479337Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 17,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.952945Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 17,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.445183Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.921476Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Maruti Suzuki India Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.481692Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.954852Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.474473Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.950793Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.451515Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.926996Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.450513Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20121084",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.925582Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46356057",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.468512Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Automobile Manufacturers",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.945365Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Automobile Manufacturers",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.472053Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Suzuki Motor Corporation (TSE:7269)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.949730Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Suzuki Motor Corporation (TSE:7269)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.495468Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.966402Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.467152Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.943132Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.448581Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.923928Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.442747Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MARUTI",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.919619Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MARUTI",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.500250Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.marutisuzuki.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.971883Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.marutisuzuki.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.483140Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Nissan Motor Co., Ltd. (TSE:7201); Honda Cars India Ltd.; Toyota Kirloskar Motor Private Limited; Skoda Auto Volkswagen India Private Limited; JSW MG Motor India Private Limited; Tata Motors Passenger Vehicles Limited (BSE:500570); Honda Motor Co., Ltd. (TSE:7267); Toyota Motor Corporation (TSE:7203); Hyundai Motor India Limited (NSEI:HYUNDAI); Kia Motors India Private Limited; Mahindra & Mahindra Limited (NSEI:M&M); Automobiles Citroen SA; Skoda Auto India Private Limited; Volkswagen AG (XTRA:VOW3); Renault SA (ENXTPA:RNO)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.956272Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Hyundai Motor India Limited (NSEI:HYUNDAI); Kia Motors India Private Limited; Tata Motors Passenger Vehicles Limited (BSE:500570); Automobiles Citroen SA; Skoda Auto India Private Limited; Honda Motor Co., Ltd. (TSE:7267); Toyota Motor Corporation (TSE:7203); Volkswagen AG (XTRA:VOW3); Renault SA (ENXTPA:RNO); Nissan Motor Co., Ltd. (TSE:7201); Honda Cars India Ltd.; Toyota Kirloskar Motor Private Limited; Skoda Auto Volkswagen India Private Limited; JSW MG Motor India Private Limited; Mahindra & Mahindra Limited (NSEI:M&M)",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.485187Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2288.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.957365Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2288.3,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.488583Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19550.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.959539Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19550.3,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.452272Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 145.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.928121Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 145.6,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.486966Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44920.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.958459Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44920.1,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.490089Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 46726.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.960768Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 46726.3,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_announced": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.492263Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-07-31 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.963061Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-07-31 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.494024Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-07-31 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.964220Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-07-31 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.455382Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.930123Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.06,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.458489Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.82,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.932096Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.457160Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.92,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.931111Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.98,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.461791Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.938754Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.459349Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.14,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.933105Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.21,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.462574Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.939896Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44.2,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.464104Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 99.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.941068Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 99.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.460199Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.84,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.935058Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.82,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.460983Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -13.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.937159Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -13.6,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.453888Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -16.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.929129Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -16.5,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.465513Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.039,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.942109Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.468,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.499165Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Access 125; Allure; Alto; Alto 800; Alto K10; Baleno; Battery Electric Vehicles; Car Financing Facilitation Services; Cars Servicing; Celerio; CelerioX; Cetarival SUV; Ciaz; Ciaz S; Dies and Moulds; Dzire; E VITARA; Eeco; Eeco Cargo; Engines; Ertiga; Fleet Management Services; FRONX; Grand Vitara; Gypsy; Ignis; Insurance Broking Services; INVICTO; JIMNY; Maruti Suzuki Super Carry; Omni; Operation of Maruti Driving School; Ritz; Sales of Pre-Owned Cars; S-Cross; Smart Finance service; S-Presso; Stingray; Swift; Tour H1; Tour H2; Tour M; Tour S; Tour V; Vehicle Spare Parts and Components; VICTORIS; Vitara Brezza; Vitara PHANTOM BLAQ; Wagon-R; XL6",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.970159Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Access 125; Allure; Alto; Alto 800; Alto K10; Baleno; Battery Electric Vehicles; Car Financing Facilitation Services; Cars Servicing; Celerio; CelerioX; Cetarival SUV; Ciaz; Ciaz S; Dies and Moulds; Dzire; E VITARA; Eeco; Eeco Cargo; Engines; Ertiga; Fleet Management Services; FRONX; Grand Vitara; Gypsy; Ignis; Insurance Broking Services; INVICTO; JIMNY; Maruti Suzuki Super Carry; Omni; Operation of Maruti Driving School; Ritz; Sales of Pre-Owned Cars; S-Cross; Smart Finance service; S-Presso; Stingray; Swift; Tour H1; Tour H2; Tour M; Tour S; Tour V; Vehicle Spare Parts and Components; VICTORIS; Vitara Brezza; Vitara PHANTOM BLAQ; Wagon-R; XL6",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:18.497393Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Access 125:\nAccess 125 with optional combined brake system model will be available in six colours - Pearl Suzuki Deep Blue, Candy Sonoma Red, Glass Sparkle Black, Metallic Fibroin Gray, Metallic Sonic Silver and Pearl Mirage White. The Access CBS 125 has no mechanical changes and is powered by the same 124cc, single-cylinder engine developing 8.7hp and 10.2Nm of torque.\n\nAllure:\nAllure model features premium exterior and interior accessories and equipment. It will be special decal that runs across the shoulder line, a chrome bumper corner protector, chrome window frames, side skirt, chrome-finished Allure badge on the boot lid and interiors with a leather steering wheel cover, faux wood garnish on the dashboard and door panels, front center armrest, ambient lighting and beige floor carpets.\n\nAlto:\nAlto is one of the most iconic hatchbacks in the country.\n\nAlto 800:\nAlto 800 is available with a new bumper and grille, redesigned headlamps, and fresh interiors, while two new colors - Mojito Green and Cerulean Blue - have also been added. The vehicle is now 35 mm longer, although its architecture remains the same. Although the vehicle continues to be powered by an 800cc gasoline (petrol) engine, company claims that the use of a specially coated piston and ring set has reduced frictional losses, thereby boosting fuel efficiency by 9%. Company claims that the vehicle's fuel efficiency in regular mode is now 24.7 km/l, while the compressed natural gas (CNG) mode offers 33.44 km/kg, marking an improvement of 10%. The new Alto 800 is technologically advanced with latest convenience and class leading safety features above all it comes with improved mileage.\n\nAlto K10:\nAlto K10 is available in LX, LXi, VXi and VXi (O) trim levels, including CNG. The model features chrome fog lamp bezels, wheel arches and both rearview mirrors, while the rear has chrome treatment applied to the tail lamp housing and the bottom of the boot. The interior has special door mats, pedals, LED door sills and ambient lights. It is equipped with 998cc, K10B petrol engine that develops 67bhp at 6000rpm and 90Nm of torque at 3500rpm, coupled with a five-speed manual transmission and AMT transmission.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:23.968163Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Access 125:\nAccess 125 with optional combined brake system model will be available in six colours - Pearl Suzuki Deep Blue, Candy Sonoma Red, Glass Sparkle Black, Metallic Fibroin Gray, Metallic Sonic Silver and Pearl Mirage White. The Access CBS 125 has no mechanical changes and is powered by the same 124cc, single-cylinder engine developing 8.7hp and 10.2Nm of torque.\n\nAllure:\nAllure model features premium exterior and interior accessories and equipment. It will be special decal that runs across the shoulder line, a chrome bumper corner protector, chrome window frames, side skirt, chrome-finished Allure badge on the boot lid and interiors with a leather steering wheel cover, faux wood garnish on the dashboard and door panels, front center armrest, ambient lighting and beige floor carpets.\n\nAlto:\nAlto is one of the most iconic hatchbacks in the country.\n\nAlto 800:\nAlto 800 is available with a new bumper and grille, redesigned headlamps, and fresh interiors, while two new colors - Mojito Green and Cerulean Blue - have also been added. The vehicle is now 35 mm longer, although its architecture remains the same. Although the vehicle continues to be powered by an 800cc gasoline (petrol) engine, company claims that the use of a specially coated piston and ring set has reduced frictional losses, thereby boosting fuel efficiency by 9%. Company claims that the vehicle's fuel efficiency in regular mode is now 24.7 km/l, while the compressed natural gas (CNG) mode offers 33.44 km/kg, marking an improvement of 10%. The new Alto 800 is technologically advanced with latest convenience and class leading safety features above all it comes with improved mileage.\n\nAlto K10:\nAlto K10 is available in LX, LXi, VXi and VXi (O) trim levels, including CNG. The model features chrome fog lamp bezels, wheel arches and both rearview mirrors, while the rear has chrome treatment applied to the tail lamp housing and the bottom of the boot. The interior has special door mats, pedals, LED door sills and ambient lights. It is equipped with 998cc, K10B petrol engine that develops 67bhp at 6000rpm and 90Nm of torque at 3500rpm, coupled with a five-speed manual transmission and AMT transmission.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "MARUTI",
+  "updated_at": "2026-08-01T19:37:23.971889Z"
+}

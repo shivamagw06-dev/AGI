@@ -1,0 +1,1221 @@
+{
+  "analysis_id": "rci-8b68a2ba17",
+  "module": "RCI",
+  "version": "root-cause-intelligence-v1.0.0",
+  "iel_run_id": "iel-run-641abea107",
+  "iel_suite": "institutional_1000",
+  "iel_commit": "d956c440",
+  "iel_pass_pct": 88.2,
+  "iel_mean_score": 83.23,
+  "n_questions": 1000,
+  "n_hard_failures": 118,
+  "n_failures": 347,
+  "n_dimension_misses": 229,
+  "n_clusters": 145,
+  "top_10_clusters": [
+    {
+      "cluster_id": "clu-597617de22",
+      "cluster_key": "framework_mismatch|banks|CORPORATE|documents|PB_VAL_BANK",
+      "root_cause": "framework_mismatch",
+      "sector": "banks",
+      "framework_family": "CORPORATE",
+      "category": "documents",
+      "playbook_family": "PB_VAL_BANK",
+      "count": 21,
+      "failure_ids": [
+        "fail-f15a11bca111",
+        "fail-e3396068df01",
+        "fail-db2d29e71123",
+        "fail-ed7487def449",
+        "fail-7181f5fe56f6",
+        "fail-4e5988116976",
+        "fail-1e03b77ca84e",
+        "fail-c1e250cc655b",
+        "fail-30eec07e6846",
+        "fail-1bb5be1ba0b0",
+        "fail-290f2e277704",
+        "fail-5a89ce87fdc2",
+        "fail-17439197630a",
+        "fail-4660f23fd225",
+        "fail-19e606fceca8",
+        "fail-af408fa84b78",
+        "fail-b3fcd94bd7df",
+        "fail-10de65f81fee",
+        "fail-8991445f9b02",
+        "fail-35f43c1ec1bb",
+        "fail-e00c5aa1d994"
+      ],
+      "question_ids": [
+        "GEN-DOC-01-01",
+        "GEN-DOC-01-02",
+        "GEN-DOC-01-03",
+        "GEN-DOC-02-01",
+        "GEN-DOC-02-02",
+        "GEN-DOC-02-03",
+        "GEN-DOC-04-01",
+        "GEN-DOC-04-02",
+        "GEN-DOC-04-03",
+        "GEN-DOC-05-01",
+        "GEN-DOC-05-02",
+        "GEN-DOC-05-03",
+        "GEN-DOC-08-01",
+        "GEN-DOC-08-02",
+        "GEN-DOC-08-03",
+        "GEN-DOC-09-01",
+        "GEN-DOC-09-02",
+        "GEN-DOC-09-03",
+        "GEN-DOC-10-01",
+        "GEN-DOC-10-02",
+        "GEN-DOC-10-03"
+      ],
+      "severities": {
+        "high": 21
+      },
+      "expected_frameworks_sample": [
+        "FW_CORPORATE_GOVERNANCE",
+        "FW_RISK"
+      ],
+      "actual_frameworks_sample": [
+        "FW_FRAMEWORK_EXPLANATION",
+        "FW_PB"
+      ],
+      "expected_intents_sample": [
+        "Documents"
+      ],
+      "actual_intents_sample": [
+        "Explain"
+      ],
+      "owner": "sprint_3_3_framework_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "21 questions \u2193 framework_mismatch \u2193 banks \u2193 CORPORATE \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-597617de22",
+        "cluster_key": "framework_mismatch|banks|CORPORATE|documents|PB_VAL_BANK",
+        "impact": "21 questions \u2193 framework_mismatch \u2193 banks \u2193 CORPORATE \u2193 one patch",
+        "count": 21,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-framework-mismatch-banks-4cc0",
+        "title": "Optimise framework selector rules",
+        "files": [
+          "intelligence-engine/framework_selection/mappings/sectors.py",
+          "intelligence-engine/framework_selection/mappings/questions.py",
+          "intelligence-engine/framework_selection/selector/engine.py"
+        ],
+        "actions": [
+          "Add/adjust sector\u2192framework mappings for the cluster sector",
+          "Ensure expected primary frameworks are composed for matching intents",
+          "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+          "Re-run IEL institutional_1000 and confirm cluster shrinks"
+        ],
+        "next_sprint": "3.3 Framework Optimisation",
+        "pr_brief": "Fix cluster clu-597617de22: 21 failures \u2014 framework_mismatch / banks / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_FRAMEWORK_EXPLANATION', 'FW_PB'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `framework_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-f3b5c87a89",
+      "cluster_key": "framework_mismatch|it_services|CORPORATE|documents|PB_IND_IT",
+      "root_cause": "framework_mismatch",
+      "sector": "it_services",
+      "framework_family": "CORPORATE",
+      "category": "documents",
+      "playbook_family": "PB_IND_IT",
+      "count": 18,
+      "failure_ids": [
+        "fail-0b299a80c38d",
+        "fail-09be6acae407",
+        "fail-3b2c2f76c8b1",
+        "fail-ce7915819265",
+        "fail-aa04e07c8335",
+        "fail-333673ed7b8f",
+        "fail-de24796b2e9c",
+        "fail-a45714a77a03",
+        "fail-4d464ee44aaa",
+        "fail-09d334d78b4e",
+        "fail-8a232caa20db",
+        "fail-a86a9e148f43",
+        "fail-1477bde3e235",
+        "fail-9b0afcc5f1b1",
+        "fail-c1a849e770fb",
+        "fail-1cba60c77564",
+        "fail-b335bfa68be9",
+        "fail-d8cb9f529585"
+      ],
+      "question_ids": [
+        "GEN-DOC-01-04",
+        "GEN-DOC-01-05",
+        "GEN-DOC-01-06",
+        "GEN-DOC-02-04",
+        "GEN-DOC-02-05",
+        "GEN-DOC-02-06",
+        "GEN-DOC-04-04",
+        "GEN-DOC-04-05",
+        "GEN-DOC-04-06",
+        "GEN-DOC-05-04",
+        "GEN-DOC-05-05",
+        "GEN-DOC-05-06",
+        "GEN-DOC-09-04",
+        "GEN-DOC-09-05",
+        "GEN-DOC-09-06",
+        "GEN-DOC-10-04",
+        "GEN-DOC-10-05",
+        "GEN-DOC-10-06"
+      ],
+      "severities": {
+        "high": 18
+      },
+      "expected_frameworks_sample": [
+        "FW_CORPORATE_GOVERNANCE",
+        "FW_RISK"
+      ],
+      "actual_frameworks_sample": [
+        "FW_DCF",
+        "FW_EV_EBITDA"
+      ],
+      "expected_intents_sample": [
+        "Documents"
+      ],
+      "actual_intents_sample": [
+        "Explain"
+      ],
+      "owner": "sprint_3_3_framework_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "18 questions \u2193 framework_mismatch \u2193 it_services \u2193 CORPORATE \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-f3b5c87a89",
+        "cluster_key": "framework_mismatch|it_services|CORPORATE|documents|PB_IND_IT",
+        "impact": "18 questions \u2193 framework_mismatch \u2193 it_services \u2193 CORPORATE \u2193 one patch",
+        "count": 18,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-framework-mismatch-it_services-4cc0",
+        "title": "Optimise framework selector rules",
+        "files": [
+          "intelligence-engine/framework_selection/mappings/sectors.py",
+          "intelligence-engine/framework_selection/mappings/questions.py",
+          "intelligence-engine/framework_selection/selector/engine.py"
+        ],
+        "actions": [
+          "Add/adjust sector\u2192framework mappings for the cluster sector",
+          "Ensure expected primary frameworks are composed for matching intents",
+          "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+          "Re-run IEL institutional_1000 and confirm cluster shrinks"
+        ],
+        "next_sprint": "3.3 Framework Optimisation",
+        "pr_brief": "Fix cluster clu-f3b5c87a89: 18 failures \u2014 framework_mismatch / it_services / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_DCF', 'FW_EV_EBITDA'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `framework_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-d7becfe57c",
+      "cluster_key": "intent_mismatch|generic|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "root_cause": "intent_mismatch",
+      "sector": "generic",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_IC_POSITION",
+      "count": 14,
+      "failure_ids": [
+        "fail-210df8abbb03",
+        "fail-d16df74b1538",
+        "fail-88e963cd364c",
+        "fail-c9875ae84d69",
+        "fail-80302d00d1bf",
+        "fail-7d483f3db7bf",
+        "fail-aee23e177632",
+        "fail-22554ac4f9af",
+        "fail-6cbccf915458",
+        "fail-0aa41b5e5c34",
+        "fail-87d6bee9b613",
+        "fail-d6376edba186",
+        "fail-4f954815dba6",
+        "fail-86a0614b55e0"
+      ],
+      "question_ids": [
+        "GEN-PF-02-01",
+        "GEN-PF-02-02",
+        "GEN-PF-02-03",
+        "GEN-PF-02-04",
+        "GEN-PF-02-05",
+        "GEN-PF-02-06",
+        "GEN-PF-02-07",
+        "GEN-PF-08-01",
+        "GEN-PF-08-02",
+        "GEN-PF-08-03",
+        "GEN-PF-08-04",
+        "GEN-PF-08-05",
+        "GEN-PF-08-06",
+        "GEN-PF-08-07"
+      ],
+      "severities": {
+        "high": 14
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_PEER_COMPARISON",
+        "FW_HISTORICAL_VALUATION"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Compare"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "14 questions \u2193 intent_mismatch \u2193 generic \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-d7becfe57c",
+        "cluster_key": "intent_mismatch|generic|PORTFOLIO|portfolio|PB_IC_POSITION",
+        "impact": "14 questions \u2193 intent_mismatch \u2193 generic \u2193 PORTFOLIO \u2193 one patch",
+        "count": 14,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-generic-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-d7becfe57c: 14 failures \u2014 intent_mismatch / generic / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_PEER_COMPARISON', 'FW_HISTORICAL_VALUATION'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-4ff28cc892",
+      "cluster_key": "framework_mismatch|airlines|CORPORATE|documents|PB_IND_AIRLINES",
+      "root_cause": "framework_mismatch",
+      "sector": "airlines",
+      "framework_family": "CORPORATE",
+      "category": "documents",
+      "playbook_family": "PB_IND_AIRLINES",
+      "count": 10,
+      "failure_ids": [
+        "fail-f15c0b05fb2f",
+        "fail-80ae007b79e4",
+        "fail-36bc7ade4232",
+        "fail-c0f54ed8d541",
+        "fail-213e61bbfddc",
+        "fail-49af8ea71bca",
+        "fail-68dd9a318414",
+        "fail-e6dd68256c04",
+        "fail-ae244e5d3af4",
+        "fail-9e6729a1b915"
+      ],
+      "question_ids": [
+        "GEN-DOC-01-11",
+        "GEN-DOC-02-11",
+        "GEN-DOC-03-11",
+        "GEN-DOC-04-11",
+        "GEN-DOC-05-11",
+        "GEN-DOC-06-11",
+        "GEN-DOC-07-11",
+        "GEN-DOC-08-11",
+        "GEN-DOC-09-11",
+        "GEN-DOC-10-11"
+      ],
+      "severities": {
+        "high": 10
+      },
+      "expected_frameworks_sample": [
+        "FW_CORPORATE_GOVERNANCE",
+        "FW_RISK"
+      ],
+      "actual_frameworks_sample": [
+        "FW_AVIATION_OPS",
+        "FW_EV_EBITDAR"
+      ],
+      "expected_intents_sample": [
+        "Documents"
+      ],
+      "actual_intents_sample": [
+        "Explain"
+      ],
+      "owner": "sprint_3_3_framework_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "10 questions \u2193 framework_mismatch \u2193 airlines \u2193 CORPORATE \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-4ff28cc892",
+        "cluster_key": "framework_mismatch|airlines|CORPORATE|documents|PB_IND_AIRLINES",
+        "impact": "10 questions \u2193 framework_mismatch \u2193 airlines \u2193 CORPORATE \u2193 one patch",
+        "count": 10,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-framework-mismatch-airlines-4cc0",
+        "title": "Optimise framework selector rules",
+        "files": [
+          "intelligence-engine/framework_selection/mappings/sectors.py",
+          "intelligence-engine/framework_selection/mappings/questions.py",
+          "intelligence-engine/framework_selection/selector/engine.py"
+        ],
+        "actions": [
+          "Add/adjust sector\u2192framework mappings for the cluster sector",
+          "Ensure expected primary frameworks are composed for matching intents",
+          "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+          "Re-run IEL institutional_1000 and confirm cluster shrinks"
+        ],
+        "next_sprint": "3.3 Framework Optimisation",
+        "pr_brief": "Fix cluster clu-4ff28cc892: 10 failures \u2014 framework_mismatch / airlines / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_AVIATION_OPS', 'FW_EV_EBITDAR'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `framework_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-ed3c577809",
+      "cluster_key": "framework_mismatch|nbfc|RISK|risk|PB_VAL_BANK",
+      "root_cause": "framework_mismatch",
+      "sector": "nbfc",
+      "framework_family": "RISK",
+      "category": "risk",
+      "playbook_family": "PB_VAL_BANK",
+      "count": 10,
+      "failure_ids": [
+        "fail-0f6e3c69b90a",
+        "fail-3a109397a3b5",
+        "fail-1f96e41db6a0",
+        "fail-a8c38d494fc2",
+        "fail-0b0da2c9f019",
+        "fail-ae3199859ffe",
+        "fail-736617edcff5",
+        "fail-4b4a22ec8f4d",
+        "fail-2909c2a77fce",
+        "fail-b56268c1c0dc"
+      ],
+      "question_ids": [
+        "GEN-RSK-03-01",
+        "GEN-RSK-03-02",
+        "GEN-RSK-03-03",
+        "GEN-RSK-03-04",
+        "GEN-RSK-03-05",
+        "GEN-RSK-10-01",
+        "GEN-RSK-10-02",
+        "GEN-RSK-10-03",
+        "GEN-RSK-10-04",
+        "GEN-RSK-10-05"
+      ],
+      "severities": {
+        "high": 10
+      },
+      "expected_frameworks_sample": [
+        "FW_RISK",
+        "FW_SCENARIO"
+      ],
+      "actual_frameworks_sample": [
+        "FW_PB",
+        "FW_RESIDUAL_INCOME"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Analyse"
+      ],
+      "owner": "sprint_3_3_framework_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "10 questions \u2193 framework_mismatch \u2193 nbfc \u2193 RISK \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-ed3c577809",
+        "cluster_key": "framework_mismatch|nbfc|RISK|risk|PB_VAL_BANK",
+        "impact": "10 questions \u2193 framework_mismatch \u2193 nbfc \u2193 RISK \u2193 one patch",
+        "count": 10,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-framework-mismatch-nbfc-4cc0",
+        "title": "Optimise framework selector rules",
+        "files": [
+          "intelligence-engine/framework_selection/mappings/sectors.py",
+          "intelligence-engine/framework_selection/mappings/questions.py",
+          "intelligence-engine/framework_selection/selector/engine.py"
+        ],
+        "actions": [
+          "Add/adjust sector\u2192framework mappings for the cluster sector",
+          "Ensure expected primary frameworks are composed for matching intents",
+          "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+          "Re-run IEL institutional_1000 and confirm cluster shrinks"
+        ],
+        "next_sprint": "3.3 Framework Optimisation",
+        "pr_brief": "Fix cluster clu-ed3c577809: 10 failures \u2014 framework_mismatch / nbfc / RISK. Expected frameworks sample: ['FW_RISK', 'FW_SCENARIO']; actual: ['FW_PB', 'FW_RESIDUAL_INCOME'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `framework_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-001464f3a2",
+      "cluster_key": "intent_mismatch|banks|PORTFOLIO|portfolio|PB_VAL_BANK",
+      "root_cause": "intent_mismatch",
+      "sector": "banks",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_VAL_BANK",
+      "count": 7,
+      "failure_ids": [
+        "fail-9b07cb56e24a",
+        "fail-812000f031b3",
+        "fail-56d1cb602704",
+        "fail-c77fe3b2c15b",
+        "fail-88697e3a011b",
+        "fail-8c89b29c2fd1",
+        "fail-1edb90f427f0"
+      ],
+      "question_ids": [
+        "GEN-PF-01-01",
+        "GEN-PF-01-02",
+        "GEN-PF-01-03",
+        "GEN-PF-01-04",
+        "GEN-PF-01-05",
+        "GEN-PF-01-06",
+        "GEN-PF-01-07"
+      ],
+      "severities": {
+        "high": 7
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_PB",
+        "FW_PEER_COMPARISON"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Compare"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "7 questions \u2193 intent_mismatch \u2193 banks \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-001464f3a2",
+        "cluster_key": "intent_mismatch|banks|PORTFOLIO|portfolio|PB_VAL_BANK",
+        "impact": "7 questions \u2193 intent_mismatch \u2193 banks \u2193 PORTFOLIO \u2193 one patch",
+        "count": 7,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-banks-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-001464f3a2: 7 failures \u2014 intent_mismatch / banks / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_PB', 'FW_PEER_COMPARISON'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-cce505e824",
+      "cluster_key": "intent_mismatch|fmcg|PORTFOLIO|portfolio|PB_IND_CONSUMER",
+      "root_cause": "intent_mismatch",
+      "sector": "fmcg",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_IND_CONSUMER",
+      "count": 7,
+      "failure_ids": [
+        "fail-cb8a94818318",
+        "fail-742139261c25",
+        "fail-98d4a6798d13",
+        "fail-ceffe4f16249",
+        "fail-432fb0bc874a",
+        "fail-66bcfb1066bc",
+        "fail-009f31edf7f7"
+      ],
+      "question_ids": [
+        "GEN-PF-03-01",
+        "GEN-PF-03-02",
+        "GEN-PF-03-03",
+        "GEN-PF-03-04",
+        "GEN-PF-03-05",
+        "GEN-PF-03-06",
+        "GEN-PF-03-07"
+      ],
+      "severities": {
+        "high": 7
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_DCF",
+        "FW_SCENARIO"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Portfolio"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "7 questions \u2193 intent_mismatch \u2193 fmcg \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-cce505e824",
+        "cluster_key": "intent_mismatch|fmcg|PORTFOLIO|portfolio|PB_IND_CONSUMER",
+        "impact": "7 questions \u2193 intent_mismatch \u2193 fmcg \u2193 PORTFOLIO \u2193 one patch",
+        "count": 7,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-fmcg-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-cce505e824: 7 failures \u2014 intent_mismatch / fmcg / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_DCF', 'FW_SCENARIO'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-a9f8f19ee4",
+      "cluster_key": "intent_mismatch|industrials|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "root_cause": "intent_mismatch",
+      "sector": "industrials",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_IC_POSITION",
+      "count": 7,
+      "failure_ids": [
+        "fail-9e57e91b6dbe",
+        "fail-12bd96f2c9f4",
+        "fail-1963d373cdb3",
+        "fail-899545101b15",
+        "fail-8f004168b3c1",
+        "fail-0e8105245457",
+        "fail-c8876a15ac81"
+      ],
+      "question_ids": [
+        "GEN-PF-07-01",
+        "GEN-PF-07-02",
+        "GEN-PF-07-03",
+        "GEN-PF-07-04",
+        "GEN-PF-07-05",
+        "GEN-PF-07-06",
+        "GEN-PF-07-07"
+      ],
+      "severities": {
+        "high": 7
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_SCENARIO",
+        "FW_RISK"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Portfolio"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "7 questions \u2193 intent_mismatch \u2193 industrials \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-a9f8f19ee4",
+        "cluster_key": "intent_mismatch|industrials|PORTFOLIO|portfolio|PB_IC_POSITION",
+        "impact": "7 questions \u2193 intent_mismatch \u2193 industrials \u2193 PORTFOLIO \u2193 one patch",
+        "count": 7,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-industrials-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-a9f8f19ee4: 7 failures \u2014 intent_mismatch / industrials / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-8f4f152888",
+      "cluster_key": "intent_mismatch|it_services|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "root_cause": "intent_mismatch",
+      "sector": "it_services",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_IC_POSITION",
+      "count": 7,
+      "failure_ids": [
+        "fail-c507a1750253",
+        "fail-1d3fec98ffe1",
+        "fail-e7336940af6b",
+        "fail-c6c53c964085",
+        "fail-c2b6ddc1aa72",
+        "fail-e3bd9d03761f",
+        "fail-e0708e6374f0"
+      ],
+      "question_ids": [
+        "GEN-PF-05-01",
+        "GEN-PF-05-02",
+        "GEN-PF-05-03",
+        "GEN-PF-05-04",
+        "GEN-PF-05-05",
+        "GEN-PF-05-06",
+        "GEN-PF-05-07"
+      ],
+      "severities": {
+        "high": 7
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_SCENARIO",
+        "FW_RISK"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Portfolio"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "7 questions \u2193 intent_mismatch \u2193 it_services \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-8f4f152888",
+        "cluster_key": "intent_mismatch|it_services|PORTFOLIO|portfolio|PB_IC_POSITION",
+        "impact": "7 questions \u2193 intent_mismatch \u2193 it_services \u2193 PORTFOLIO \u2193 one patch",
+        "count": 7,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-it_services-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-8f4f152888: 7 failures \u2014 intent_mismatch / it_services / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    },
+    {
+      "cluster_id": "clu-319b972389",
+      "cluster_key": "intent_mismatch|metals|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "root_cause": "intent_mismatch",
+      "sector": "metals",
+      "framework_family": "PORTFOLIO",
+      "category": "portfolio",
+      "playbook_family": "PB_IC_POSITION",
+      "count": 7,
+      "failure_ids": [
+        "fail-c68d5faf480e",
+        "fail-fa0ede4efe38",
+        "fail-fb6cd0a2a3a6",
+        "fail-76cafdbb33a5",
+        "fail-3f1f5154ae94",
+        "fail-2b50eb73c723",
+        "fail-00cd008c7fd8"
+      ],
+      "question_ids": [
+        "GEN-PF-06-01",
+        "GEN-PF-06-02",
+        "GEN-PF-06-03",
+        "GEN-PF-06-04",
+        "GEN-PF-06-05",
+        "GEN-PF-06-06",
+        "GEN-PF-06-07"
+      ],
+      "severities": {
+        "high": 7
+      },
+      "expected_frameworks_sample": [
+        "FW_PORTFOLIO",
+        "FW_MACRO_TRANSMISSION"
+      ],
+      "actual_frameworks_sample": [
+        "FW_SCENARIO",
+        "FW_RISK"
+      ],
+      "expected_intents_sample": [
+        "Analyse"
+      ],
+      "actual_intents_sample": [
+        "Portfolio"
+      ],
+      "owner": "sprint_3_4_intent_optimisation",
+      "status": "open",
+      "severity": "high",
+      "impact_statement": "7 questions \u2193 intent_mismatch \u2193 metals \u2193 PORTFOLIO \u2193 one patch",
+      "suggested_fix": {
+        "cluster_id": "clu-319b972389",
+        "cluster_key": "intent_mismatch|metals|PORTFOLIO|portfolio|PB_IC_POSITION",
+        "impact": "7 questions \u2193 intent_mismatch \u2193 metals \u2193 PORTFOLIO \u2193 one patch",
+        "count": 7,
+        "severity": "high",
+        "recommended_branch": "cursor/fix-intent-mismatch-metals-4cc0",
+        "title": "Tighten intent resolution routing",
+        "files": [
+          "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+          "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+        ],
+        "actions": [
+          "Add routing gold for misrouted intents in this cluster",
+          "Disambiguate Macro/Government/Industry/CrossDomain cues",
+          "Preserve concept_mode / as_of behaviour",
+          "Re-run IEL and measure intent accuracy proxy"
+        ],
+        "next_sprint": "3.4 Intent Optimisation",
+        "pr_brief": "Fix cluster clu-319b972389: 7 failures \u2014 intent_mismatch / metals / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+        "acceptance": [
+          "Cluster count decreases on institutional_1000 soft re-run",
+          "No regression vs IEL baseline pass_pct",
+          "Root cause `intent_mismatch` rate declines"
+        ]
+      }
+    }
+  ],
+  "recommended_prs": [
+    {
+      "cluster_id": "clu-597617de22",
+      "cluster_key": "framework_mismatch|banks|CORPORATE|documents|PB_VAL_BANK",
+      "impact": "21 questions \u2193 framework_mismatch \u2193 banks \u2193 CORPORATE \u2193 one patch",
+      "count": 21,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-framework-mismatch-banks-4cc0",
+      "title": "Optimise framework selector rules",
+      "files": [
+        "intelligence-engine/framework_selection/mappings/sectors.py",
+        "intelligence-engine/framework_selection/mappings/questions.py",
+        "intelligence-engine/framework_selection/selector/engine.py"
+      ],
+      "actions": [
+        "Add/adjust sector\u2192framework mappings for the cluster sector",
+        "Ensure expected primary frameworks are composed for matching intents",
+        "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+        "Re-run IEL institutional_1000 and confirm cluster shrinks"
+      ],
+      "next_sprint": "3.3 Framework Optimisation",
+      "pr_brief": "Fix cluster clu-597617de22: 21 failures \u2014 framework_mismatch / banks / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_FRAMEWORK_EXPLANATION', 'FW_PB'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `framework_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-f3b5c87a89",
+      "cluster_key": "framework_mismatch|it_services|CORPORATE|documents|PB_IND_IT",
+      "impact": "18 questions \u2193 framework_mismatch \u2193 it_services \u2193 CORPORATE \u2193 one patch",
+      "count": 18,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-framework-mismatch-it_services-4cc0",
+      "title": "Optimise framework selector rules",
+      "files": [
+        "intelligence-engine/framework_selection/mappings/sectors.py",
+        "intelligence-engine/framework_selection/mappings/questions.py",
+        "intelligence-engine/framework_selection/selector/engine.py"
+      ],
+      "actions": [
+        "Add/adjust sector\u2192framework mappings for the cluster sector",
+        "Ensure expected primary frameworks are composed for matching intents",
+        "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+        "Re-run IEL institutional_1000 and confirm cluster shrinks"
+      ],
+      "next_sprint": "3.3 Framework Optimisation",
+      "pr_brief": "Fix cluster clu-f3b5c87a89: 18 failures \u2014 framework_mismatch / it_services / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_DCF', 'FW_EV_EBITDA'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `framework_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-d7becfe57c",
+      "cluster_key": "intent_mismatch|generic|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "impact": "14 questions \u2193 intent_mismatch \u2193 generic \u2193 PORTFOLIO \u2193 one patch",
+      "count": 14,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-generic-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-d7becfe57c: 14 failures \u2014 intent_mismatch / generic / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_PEER_COMPARISON', 'FW_HISTORICAL_VALUATION'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-4ff28cc892",
+      "cluster_key": "framework_mismatch|airlines|CORPORATE|documents|PB_IND_AIRLINES",
+      "impact": "10 questions \u2193 framework_mismatch \u2193 airlines \u2193 CORPORATE \u2193 one patch",
+      "count": 10,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-framework-mismatch-airlines-4cc0",
+      "title": "Optimise framework selector rules",
+      "files": [
+        "intelligence-engine/framework_selection/mappings/sectors.py",
+        "intelligence-engine/framework_selection/mappings/questions.py",
+        "intelligence-engine/framework_selection/selector/engine.py"
+      ],
+      "actions": [
+        "Add/adjust sector\u2192framework mappings for the cluster sector",
+        "Ensure expected primary frameworks are composed for matching intents",
+        "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+        "Re-run IEL institutional_1000 and confirm cluster shrinks"
+      ],
+      "next_sprint": "3.3 Framework Optimisation",
+      "pr_brief": "Fix cluster clu-4ff28cc892: 10 failures \u2014 framework_mismatch / airlines / CORPORATE. Expected frameworks sample: ['FW_CORPORATE_GOVERNANCE', 'FW_RISK']; actual: ['FW_AVIATION_OPS', 'FW_EV_EBITDAR'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `framework_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-ed3c577809",
+      "cluster_key": "framework_mismatch|nbfc|RISK|risk|PB_VAL_BANK",
+      "impact": "10 questions \u2193 framework_mismatch \u2193 nbfc \u2193 RISK \u2193 one patch",
+      "count": 10,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-framework-mismatch-nbfc-4cc0",
+      "title": "Optimise framework selector rules",
+      "files": [
+        "intelligence-engine/framework_selection/mappings/sectors.py",
+        "intelligence-engine/framework_selection/mappings/questions.py",
+        "intelligence-engine/framework_selection/selector/engine.py"
+      ],
+      "actions": [
+        "Add/adjust sector\u2192framework mappings for the cluster sector",
+        "Ensure expected primary frameworks are composed for matching intents",
+        "Add regression gold for this sector \u00d7 intent \u00d7 framework family",
+        "Re-run IEL institutional_1000 and confirm cluster shrinks"
+      ],
+      "next_sprint": "3.3 Framework Optimisation",
+      "pr_brief": "Fix cluster clu-ed3c577809: 10 failures \u2014 framework_mismatch / nbfc / RISK. Expected frameworks sample: ['FW_RISK', 'FW_SCENARIO']; actual: ['FW_PB', 'FW_RESIDUAL_INCOME'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `framework_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-001464f3a2",
+      "cluster_key": "intent_mismatch|banks|PORTFOLIO|portfolio|PB_VAL_BANK",
+      "impact": "7 questions \u2193 intent_mismatch \u2193 banks \u2193 PORTFOLIO \u2193 one patch",
+      "count": 7,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-banks-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-001464f3a2: 7 failures \u2014 intent_mismatch / banks / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_PB', 'FW_PEER_COMPARISON'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-cce505e824",
+      "cluster_key": "intent_mismatch|fmcg|PORTFOLIO|portfolio|PB_IND_CONSUMER",
+      "impact": "7 questions \u2193 intent_mismatch \u2193 fmcg \u2193 PORTFOLIO \u2193 one patch",
+      "count": 7,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-fmcg-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-cce505e824: 7 failures \u2014 intent_mismatch / fmcg / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_DCF', 'FW_SCENARIO'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-a9f8f19ee4",
+      "cluster_key": "intent_mismatch|industrials|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "impact": "7 questions \u2193 intent_mismatch \u2193 industrials \u2193 PORTFOLIO \u2193 one patch",
+      "count": 7,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-industrials-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-a9f8f19ee4: 7 failures \u2014 intent_mismatch / industrials / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-8f4f152888",
+      "cluster_key": "intent_mismatch|it_services|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "impact": "7 questions \u2193 intent_mismatch \u2193 it_services \u2193 PORTFOLIO \u2193 one patch",
+      "count": 7,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-it_services-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-8f4f152888: 7 failures \u2014 intent_mismatch / it_services / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    },
+    {
+      "cluster_id": "clu-319b972389",
+      "cluster_key": "intent_mismatch|metals|PORTFOLIO|portfolio|PB_IC_POSITION",
+      "impact": "7 questions \u2193 intent_mismatch \u2193 metals \u2193 PORTFOLIO \u2193 one patch",
+      "count": 7,
+      "severity": "high",
+      "recommended_branch": "cursor/fix-intent-mismatch-metals-4cc0",
+      "title": "Tighten intent resolution routing",
+      "files": [
+        "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+        "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+      ],
+      "actions": [
+        "Add routing gold for misrouted intents in this cluster",
+        "Disambiguate Macro/Government/Industry/CrossDomain cues",
+        "Preserve concept_mode / as_of behaviour",
+        "Re-run IEL and measure intent accuracy proxy"
+      ],
+      "next_sprint": "3.4 Intent Optimisation",
+      "pr_brief": "Fix cluster clu-319b972389: 7 failures \u2014 intent_mismatch / metals / PORTFOLIO. Expected frameworks sample: ['FW_PORTFOLIO', 'FW_MACRO_TRANSMISSION']; actual: ['FW_SCENARIO', 'FW_RISK'].",
+      "acceptance": [
+        "Cluster count decreases on institutional_1000 soft re-run",
+        "No regression vs IEL baseline pass_pct",
+        "Root cause `intent_mismatch` rate declines"
+      ]
+    }
+  ],
+  "kpi_proxies": {
+    "framework_accuracy_pct": 75.3,
+    "intent_accuracy_pct": 84.7,
+    "hallucinated_evidence_count": 0,
+    "replay_leakage_or_asof_fail_count": 15
+  },
+  "targets": {
+    "iel_pass_pct": 95.0,
+    "framework_accuracy_pct": 98.0,
+    "intent_accuracy_pct": 99.0,
+    "hallucinated_evidence": 0,
+    "replay_correctness_pct": 100.0
+  },
+  "gaps": {
+    "iel_pass_pct": 6.8,
+    "framework_accuracy_pct": 22.7,
+    "intent_accuracy_pct": 14.3
+  },
+  "engineering_loop": [
+    "Git Commit",
+    "1,025 Questions",
+    "Judges",
+    "RCI",
+    "Top 10 Failure Clusters",
+    "Recommended PR",
+    "Engineer",
+    "Benchmark Again"
+  ],
+  "latency_ms": 16,
+  "reasoning_changed": false,
+  "fabricated": false,
+  "report_path": "/workspace/intelligence-engine/root_cause_intelligence/reports/latest.md",
+  "iel_aggregate": {
+    "n": 1000,
+    "pass_pct": 88.2,
+    "mean_score": 83.23,
+    "by_category": {
+      "accounting": {
+        "n": 15,
+        "mean_score": 68.2
+      },
+      "company": {
+        "n": 100,
+        "mean_score": 76.48
+      },
+      "cross_domain": {
+        "n": 518,
+        "mean_score": 89.27
+      },
+      "documents": {
+        "n": 120,
+        "mean_score": 76.78
+      },
+      "government": {
+        "n": 15,
+        "mean_score": 94.08
+      },
+      "historical_replay": {
+        "n": 55,
+        "mean_score": 79.94
+      },
+      "industry": {
+        "n": 45,
+        "mean_score": 78.69
+      },
+      "macro": {
+        "n": 15,
+        "mean_score": 90.36
+      },
+      "portfolio": {
+        "n": 56,
+        "mean_score": 68.14
+      },
+      "risk": {
+        "n": 50,
+        "mean_score": 75.81
+      },
+      "valuation": {
+        "n": 11,
+        "mean_score": 72.05
+      }
+    },
+    "by_verdict": {
+      "PARTIAL": 117,
+      "PASS": 882,
+      "FAIL": 1
+    },
+    "top_root_causes": [
+      {
+        "cause": "framework_mismatch",
+        "count": 247
+      },
+      {
+        "cause": "intent_mismatch",
+        "count": 153
+      },
+      {
+        "cause": "future_leakage",
+        "count": 15
+      },
+      {
+        "cause": "memory_miss_on_analog_question",
+        "count": 11
+      }
+    ],
+    "passed": 882,
+    "failed": 118
+  }
+}

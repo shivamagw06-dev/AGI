@@ -1,0 +1,362 @@
+/* AGI Story Beta — magazine system. White / gray / navy / green / amber / red only. */
+
+.agi-beta {
+  --beta-white: #ffffff;
+  --beta-bg: #f3f4f6;
+  --beta-paper: #fafbfc;
+  --beta-surface: #ffffff;
+  --beta-border: #e5e7eb;
+  --beta-border-strong: #d1d5db;
+  --beta-ink: #0c1222;
+  --beta-ink-soft: #3b4559;
+  --beta-muted: #6b7280;
+  --beta-caption: #9ca3af;
+  --beta-navy: #0a1e38;
+  --beta-navy-soft: #163456;
+  --beta-green: #0f7a4a;
+  --beta-green-bg: #ecfdf3;
+  --beta-amber: #9a6700;
+  --beta-amber-bg: #fffbeb;
+  --beta-red: #b42318;
+  --beta-red-bg: #fef3f2;
+  --beta-serif: 'Source Serif 4', Georgia, serif;
+  --beta-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --beta-radius: 1.25rem;
+
+  font-family: var(--beta-sans);
+  color: var(--beta-ink);
+  background:
+    radial-gradient(1200px 600px at 12% -10%, rgba(10, 30, 56, 0.06), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(15, 122, 74, 0.04), transparent 50%),
+    var(--beta-bg);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.agi-beta * {
+  box-sizing: border-box;
+}
+
+.agi-beta h1,
+.agi-beta .beta-h1 {
+  font-family: var(--beta-serif);
+  font-size: clamp(2.4rem, 5vw, 3.5rem);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--beta-ink);
+}
+
+.agi-beta h2,
+.agi-beta .beta-h2 {
+  font-family: var(--beta-serif);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  line-height: 1.18;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--beta-ink);
+}
+
+.agi-beta h3,
+.agi-beta .beta-h3 {
+  font-family: var(--beta-serif);
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--beta-ink);
+}
+
+.agi-beta .beta-display {
+  font-family: var(--beta-serif);
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--beta-navy);
+}
+
+.agi-beta .beta-lede {
+  font-family: var(--beta-serif);
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--beta-ink-soft);
+}
+
+.agi-beta .beta-body {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--beta-ink-soft);
+}
+
+.agi-beta .beta-caption {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--beta-muted);
+}
+
+.agi-beta .beta-kicker {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--beta-navy);
+}
+
+.agi-beta .beta-chapter {
+  font-family: var(--beta-serif);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--beta-muted);
+}
+
+/* Prefer editorial blocks over boxed cards */
+.agi-beta .beta-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--beta-border);
+  border-radius: 0;
+  padding: 1.5rem 0;
+}
+
+.agi-beta .beta-card-quiet {
+  background: var(--beta-paper);
+  border: 1px solid var(--beta-border);
+  border-radius: var(--beta-radius);
+  padding: 1.35rem 1.5rem;
+}
+
+.agi-beta .beta-panel {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(209, 213, 219, 0.7);
+  border-radius: calc(var(--beta-radius) + 0.15rem);
+  padding: 1.5rem 1.6rem;
+  backdrop-filter: blur(10px);
+}
+
+.agi-beta .beta-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--beta-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--beta-ink-soft);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.agi-beta .beta-chip-pos {
+  border-color: #bbf7d0;
+  background: var(--beta-green-bg);
+  color: var(--beta-green);
+}
+
+.agi-beta .beta-chip-warn {
+  border-color: #fde68a;
+  background: var(--beta-amber-bg);
+  color: var(--beta-amber);
+}
+
+.agi-beta .beta-chip-neg {
+  border-color: #fecaca;
+  background: var(--beta-red-bg);
+  color: var(--beta-red);
+}
+
+.agi-beta .beta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--beta-navy);
+  background: var(--beta-navy);
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.agi-beta .beta-btn:hover {
+  background: var(--beta-navy-soft);
+  transform: translateY(-1px);
+}
+
+.agi-beta .beta-btn-ghost {
+  background: transparent;
+  color: var(--beta-navy);
+}
+
+.agi-beta .beta-btn-ghost:hover {
+  background: rgba(10, 30, 56, 0.05);
+}
+
+.agi-beta .beta-input,
+.agi-beta .beta-textarea {
+  width: 100%;
+  border: 1px solid var(--beta-border-strong);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--beta-ink);
+  font-family: var(--beta-sans);
+  font-size: 1rem;
+  padding: 1rem 1.15rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agi-beta .beta-textarea {
+  min-height: 8rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.agi-beta .beta-input:focus,
+.agi-beta .beta-textarea:focus {
+  border-color: var(--beta-navy);
+  box-shadow: 0 0 0 4px rgba(10, 30, 56, 0.08);
+}
+
+.agi-beta .beta-story-stack > * + * {
+  margin-top: 4.5rem;
+}
+
+.agi-beta .beta-divider {
+  height: 1px;
+  background: var(--beta-border);
+  border: 0;
+}
+
+/* Motion — presence, not noise */
+@keyframes beta-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes beta-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes beta-count-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+.agi-beta .beta-rise {
+  animation: beta-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.agi-beta .beta-rise-delay {
+  animation: beta-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.agi-beta .beta-rise-delay-2 {
+  animation: beta-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+}
+
+.agi-beta .beta-fade {
+  animation: beta-fade 0.9s ease both;
+}
+
+.agi-beta .beta-countdown {
+  font-variant-numeric: tabular-nums;
+  animation: beta-count-pulse 2.4s ease-in-out infinite;
+}
+
+.agi-beta .beta-hero {
+  position: relative;
+  min-height: min(88vh, 760px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3.5rem 0 3rem;
+  overflow: hidden;
+}
+
+.agi-beta .beta-hero::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 70%;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(10, 30, 56, 0.14), transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(15, 122, 74, 0.08), transparent 45%);
+  pointer-events: none;
+}
+
+.agi-beta .beta-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+}
+
+.agi-beta .beta-rail {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--beta-caption);
+}
+
+.agi-beta .beta-metric-hero {
+  font-family: var(--beta-serif);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--beta-navy);
+}
+
+.agi-beta .beta-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--beta-ink-soft);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.agi-beta .beta-nav-link:hover {
+  background: rgba(10, 30, 56, 0.04);
+  color: var(--beta-ink);
+}
+
+.agi-beta .beta-nav-link.active {
+  background: var(--beta-navy);
+  color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agi-beta .beta-rise,
+  .agi-beta .beta-rise-delay,
+  .agi-beta .beta-rise-delay-2,
+  .agi-beta .beta-fade,
+  .agi-beta .beta-countdown {
+    animation: none;
+  }
+}

@@ -1,0 +1,1 @@
+from institutional_memory.versioning.rules import assert_append_only, next_version

@@ -1,0 +1,778 @@
+{
+  "tables": {
+    "business_model": {
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.127956Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited, together with its subsidiaries, engages in the manufacture, distribution, and sale of paints, coatings, and products related to home decoration and bath fittings, kitchen, and wardrobe in India, Asia, the Middle East, Africa, and the South Pacific region. The company offers wall coverings, waterproofing products, adhesives; and bath fittings and sanitaryware, modular kitchens and wardrobes, fabric, furnishings, rugs, decorative lightings, unplasticized polyvinyl chloride windows and door systems, furniture, textures and painting aids, and mechanized tools. It also provides color consultancy, projects, home painting services, waterproofing and wood solutions, and assure services; and interior and exterior wall finishes, enamels, tools, undercoats, thinners, and varnishers. The company offers its products under the Asian Paints, SCIB Paints, Apco Coatings, Asian Paints Berger, Taubmans, Asian Paints Causeway, and Kadisco Asian Paints brand names. It serves homeowners, large projects, dealers, corporates, architects, interior designers, contractors, and influencers through multi-channel distribution network comprising wholesalers, distributors, retail outlets, and e-commerce platforms. Asian Paints Limited was founded in 1942 and is headquartered in Mumbai, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.651324Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited, together with its subsidiaries, engages in the manufacture, distribution, and sale of paints, coatings, and products related to home decoration and bath fittings, kitchen, and wardrobe in India, Asia, the Middle East, Africa, and the South Pacific region. The company offers wall coverings, waterproofing products, adhesives; and bath fittings and sanitaryware, modular kitchens and wardrobes, fabric, furnishings, rugs, decorative lightings, unplasticized polyvinyl chloride windows and door systems, furniture, textures and painting aids, and mechanized tools. It also provides color consultancy, projects, home painting services, waterproofing and wood solutions, and assure services; and interior and exterior wall finishes, enamels, tools, undercoats, thinners, and varnishers. The company offers its products under the Asian Paints, SCIB Paints, Apco Coatings, Asian Paints Berger, Taubmans, Asian Paints Causeway, and Kadisco Asian Paints brand names. It serves homeowners, large projects, dealers, corporates, architects, interior designers, contractors, and influencers through multi-channel distribution network comprising wholesalers, distributors, retail outlets, and e-commerce platforms. Asian Paints Limited was founded in 1942 and is headquartered in Mumbai, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.102598Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EM Asia/Materials (Sector) Index\n\nMSCI EM IMI Islamic/Materials (Sector) Index\n\nMSCI EM Quality Tilt Index\n\nMSCI EM IMI Value Weighted Index\n\nMSCI India IMI Islamic Index\n\nMSCI India Ex Coal Index\n\nMSCI India IMI Risk Weighted Index\n\nMSCI Kukje (ACWI Ex Korea) IMI Index\n\nMSCI Kukje (ACWI Ex Korea) Risk Weighted Index\n\nMSCI Kukje IMI/Materials (Industry Group) Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.616375Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "S&P GIVI Global ex Europe Index\n\nS&P GIVI Global Ex. Japan LargeMidCap Index\n\nS&P GIVI Global ex Australia Index\n\nS&P Emerging Plus AllCap Growth Index\n\nS&P Emerging Plus AllCap Index\n\nBSE 200 Index\n\nBSE LargeMidCap Index\n\nS&P Pan Asia Ex-Japan LargeCap Growth\n\nS&P Global Ex-U.S. LargeCap Growth\n\nS&P Emerging Asia Pacific LargeCap Growth",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.122805Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Materials (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.644583Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Materials (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.124181Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Shah Investor's Home Limited (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.646510Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Shah Investor's Home Limited (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.129271Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.652589Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.101374Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.614838Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.130350Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.654342Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.127028Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.650047Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.106706Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.620661Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.105340Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20212604",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.619619Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355585",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.121363Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Specialty Chemicals",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.642806Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Specialty Chemicals",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.125741Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited (NSEI:ASIANPAINT)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.648241Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asian Paints Limited (NSEI:ASIANPAINT)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.140539Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 47,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.667859Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 47,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.120481Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Materials",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.641525Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Materials",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.104211Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.617959Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.099844Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ASIANPAINT",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.612971Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ASIANPAINT",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.145013Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.asianpaints.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.671704Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.asianpaints.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.131227Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Akzo Nobel N.V. (ENXTAM:AKZA); Clariant AG (SWX:CLN); Sika AG (SWX:SIKA); Nippon Paint Holdings Co., Ltd. (TSE:4612); Kansai Paint Co., Ltd. (TSE:4613); Retina Paints Limited (BSE:543902); Ferro Corporation; The Sherwin-Williams Company (NYSE:SHW); Solvay SA (ENXTBR:SOLB); Evonik Industries AG (XTRA:EVK); Berger Paints India Limited (BSE:509480); Arkema S.A. (ENXTPA:AKE); MCON Rasayan India Limited (NSEI:MCON); Mystic Mann Panels Private Limited; BASF Coatings GmbH; Axalta Coating Systems Ltd. (NYSE:AXTA); Baazar Style Retail Limited (NSEI:STYLEBAAZA); RPM International Inc. (NYSE:RPM); NIPPON PAINT (India) Company Limited; Merino Industries Limited; SKSHU Paint Co.,Ltd. (SHSE:603737); Snowcem Paints Private Limited; JSW Paints Limited; Elementto Lifestyle Wallcoverings Pvt. Ltd; Masco Corporation (NYSE:MAS); DSM-Firmenich AG (ENXTAM:DSFIR); Cromology SAS; Stylam Industries Limited (BSE:526951); Greenlam Industries Limited (NSEI:GREENLAM); Jenson & Nicholson Paints Pvt Ltd; Euro Pratik Sales Limited (NSEI:EUROPRATIK); PPG Industries, Inc. (NYSE:PPG); Henkel AG & Co. KGaA (XTRA:HEN3); Marshalls Enterprise India Private Limited; Indigo Paints Limited (NSEI:INDIGOPNTS); Astral Adhesives; Silkflex Polymers (India) Limited (NSEI:SILKFLEX); Jotun A/S; JSW Dulux Limited (BSE:500710); Kansai Nerolac Paints Limited (BSE:500165); TOA Paint (Thailand) Public Company Limited (SET:TOA); UltraTech Cement Limited (NSEI:ULTRACEMCO); Deutsche Amphibolin-Werke von Robert Murjahn Stiftung & Co KG; Kamdhenu Paints India Limited; Pidilite Industries Limited (NSEI:PIDILITIND); Chugoku Marine Paints, Ltd. (TSE:4617); Asia Cuanon Technology (Shanghai) Co.,Ltd. (SHSE:603378); Meraki Laminates Industries Private Limited; Vivre Panels Pvt. Ltd.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.656038Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ferro Corporation; The Sherwin-Williams Company (NYSE:SHW); Solvay SA (ENXTBR:SOLB); Evonik Industries AG (XTRA:EVK); Berger Paints India Limited (BSE:509480); Arkema S.A. (ENXTPA:AKE); MCON Rasayan India Limited (NSEI:MCON); Mystic Mann Panels Private Limited; Akzo Nobel N.V. (ENXTAM:AKZA); Clariant AG (SWX:CLN); Sika AG (SWX:SIKA); Nippon Paint Holdings Co., Ltd. (TSE:4612); Kansai Paint Co., Ltd. (TSE:4613); Retina Paints Limited (BSE:543902); BASF Coatings GmbH; Axalta Coating Systems Ltd. (NYSE:AXTA); Baazar Style Retail Limited (NSEI:STYLEBAAZA); Masco Corporation (NYSE:MAS); DSM-Firmenich AG (ENXTAM:DSFIR); Cromology SAS; Stylam Industries Limited (BSE:526951); Greenlam Industries Limited (NSEI:GREENLAM); Jenson & Nicholson Paints Pvt Ltd; Euro Pratik Sales Limited (NSEI:EUROPRATIK); Pidilite Industries Limited (NSEI:PIDILITIND); Chugoku Marine Paints, Ltd. (TSE:4617); Asia Cuanon Technology (Shanghai) Co.,Ltd. (SHSE:603378); Meraki Laminates Industries Private Limited; Vivre Panels Pvt. Ltd.; Jotun A/S; JSW Dulux Limited (BSE:500710); Kansai Nerolac Paints Limited (BSE:500165); TOA Paint (Thailand) Public Company Limited (SET:TOA); UltraTech Cement Limited (NSEI:ULTRACEMCO); Deutsche Amphibolin-Werke von Robert Murjahn Stiftung & Co KG; Kamdhenu Paints India Limited; PPG Industries, Inc. (NYSE:PPG); Henkel AG & Co. KGaA (XTRA:HEN3); Marshalls Enterprise India Private Limited; Indigo Paints Limited (NSEI:INDIGOPNTS); Astral Adhesives; Silkflex Polymers (India) Limited (NSEI:SILKFLEX); RPM International Inc. (NYSE:RPM); NIPPON PAINT (India) Company Limited; Merino Industries Limited; SKSHU Paint Co.,Ltd. (SHSE:603737); Snowcem Paints Private Limited; JSW Paints Limited; Elementto Lifestyle Wallcoverings Pvt. Ltd",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.132642Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 728.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.658080Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 728.5,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.135648Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3933,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.661586Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3933,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.107406Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 28.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.621699Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 28.8,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.134332Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 27170.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.660038Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 27170.6,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.137492Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 27592.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.662966Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 27592.7,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_announced": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.138483Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-29 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.664964Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-29 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.139416Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-29 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.666615Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-29 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.109311Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.818,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.624434Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.811,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.111103Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.83,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.627858Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.82,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.110271Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.45,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.626075Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.44,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.117057Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 14.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.634443Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 14.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.111973Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.629330Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.7,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.117916Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -18.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.636899Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -18.6,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.118750Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.94,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.638857Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.98,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.113673Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 14.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.630918Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 14.2,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.115286Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 8.64,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.632575Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 8.65,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.108244Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.256,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.622706Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.233,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.119580Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.085,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.640027Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.27,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.143280Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ace; Ace Exterior Emulsion; Ace Power+; Ace Shyne; Ace Sparc; Adhesives; Anti-rust Metal Coatings; Apcolite Advanced Emulsion; Apcolite Advanced Shyne; Apcolite Gloss Enamel; Apcolite Premium Emulsion; Apcolite Premium Gloss Enamel; Apcolite Rust Shield; Apcolite Satin Enamel; Apcolite Spray Paint; Apcotherm 601 CUI Aluminum; Apex; Apex Createx Roller Finish; Apex Exterior Emulsion; Apex Shyne; Apex Ultima; Apex Ultima Allura Torino; Apex Ultima Allura Venezio; Apex Ultima Europa; Apex Ultima Protek; Apex Ultima Protek Duralife; Apex Ultima Stretch; Architectural Coatings; Bath Fittings; Coating System\ns; Consultancy Services; Cosmetics; Decals; Decorative Coatings/Paints; Decorative Lightings; Distemper; Emporio PU; Enamels; Epoxy Phenolic Tank Linings; Exterior Paints; Fabric and Furnishing Products; Floor and Textured Coatings; Furnitures; GloMax Ultra Polish; Health and Hygiene Coatings; Hyper Stain Resistant Coatings; Industrial Coatings; Industrial Paints; Interior and Exterior Wall Finishes; Interior Designing and Execution Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.670504Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ace; Ace Exterior Emulsion; Ace Power+; Ace Shyne; Ace Sparc; Adhesives; Anti-rust Metal Coatings; Apcolite Advanced Emulsion; Apcolite Advanced Shyne; Apcolite Gloss Enamel; Apcolite Premium Emulsion; Apcolite Premium Gloss Enamel; Apcolite Rust Shield; Apcolite Satin Enamel; Apcolite Spray Paint; Apcotherm 601 CUI Aluminum; Apex; Apex Createx Roller Finish; Apex Exterior Emulsion; Apex Shyne; Apex Ultima; Apex Ultima Allura Torino; Apex Ultima Allura Venezio; Apex Ultima Europa; Apex Ultima Protek; Apex Ultima Protek Duralife; Apex Ultima Stretch; Architectural Coatings; Bath Fittings; Coating System\ns; Consultancy Services; Cosmetics; Decals; Decorative Coatings/Paints; Decorative Lightings; Distemper; Emporio PU; Enamels; Epoxy Phenolic Tank Linings; Exterior Paints; Fabric and Furnishing Products; Floor and Textured Coatings; Furnitures; GloMax Ultra Polish; Health and Hygiene Coatings; Hyper Stain Resistant Coatings; Industrial Coatings; Industrial Paints; Interior and Exterior Wall Finishes; Interior Designing and Execution Services",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:31.141470Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ace Power+:\nAce Power+ is an Advanced anti-fade technology paint.\n\nAdhesives:\nAdhesives include TruGrip Dyna D4, TruGrip Suprema PVC Clear.\n\nApcolite Spray Paint:\nApcolite Spray Paint is a glossy enamel paint offered in an aerosol spray pack for the first time by Asian Paints.\n\nApcotherm 601 CUI Aluminum:\nApcotherm 601 CUI Aluminum\u2019, a 2K polysiloxane coating was developed and commercialized for hot mild steel surfaces up to 600 \u00b0C.\n\nApex Ultima Protek:\nApex Ultima Protek includes Base Coat & Top Coat.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:16.669201Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ace Power+:\nAce Power+ is an Advanced anti-fade technology paint.\n\nAdhesives:\nAdhesives include TruGrip Dyna D4, TruGrip Suprema PVC Clear.\n\nApcolite Spray Paint:\nApcolite Spray Paint is a glossy enamel paint offered in an aerosol spray pack for the first time by Asian Paints.\n\nApcotherm 601 CUI Aluminum:\nApcotherm 601 CUI Aluminum\u2019, a 2K polysiloxane coating was developed and commercialized for hot mild steel surfaces up to 600 \u00b0C.\n\nApex Ultima Protek:\nApex Ultima Protek includes Base Coat & Top Coat.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "ASIANPAINT",
+  "updated_at": "2026-08-01T19:36:16.671710Z"
+}

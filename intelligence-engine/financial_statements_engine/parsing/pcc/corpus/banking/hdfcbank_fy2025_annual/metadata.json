@@ -1,0 +1,22 @@
+{
+  "case_id": "hdfcbank_fy2025_annual",
+  "company_id": "nse:HDFCBANK",
+  "company_name": "HDFC Bank",
+  "currency": "INR",
+  "document_hash": "4e5ca3304e0cd5b0b326436c6e94af87b9b0e7f722b1142e225ce976c613aadf",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Private Bank",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "banking",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "HDFCBANK",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

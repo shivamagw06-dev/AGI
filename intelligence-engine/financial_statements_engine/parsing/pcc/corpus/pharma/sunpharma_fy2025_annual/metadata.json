@@ -1,0 +1,22 @@
+{
+  "case_id": "sunpharma_fy2025_annual",
+  "company_id": "nse:SUNPHARMA",
+  "company_name": "Sun Pharmaceutical",
+  "currency": "INR",
+  "document_hash": "18b9722d7189bceddc0dd446fbf965c2ee6488fbde65a1e407427208bcb05aa1",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Pharmaceuticals",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "pharma",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "SUNPHARMA",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

@@ -1,0 +1,3531 @@
+{
+  "entities": [
+    {
+      "id": "pc-simple",
+      "slug": "simple",
+      "entity_type": "portfolio_company",
+      "name": "+Simple",
+      "description": "Financials · Europe, Middle East And Africa",
+      "tags": [
+        "Financials",
+        "Europe, Middle East And Africa",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "France",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.plussimple.fr",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/simple-logo-raw.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-1-800-contacts-inc",
+      "slug": "1-800-contacts-inc",
+      "entity_type": "portfolio_company",
+      "name": "1-800 Contacts, Inc.",
+      "description": "Consumer Discretionary · Americas",
+      "tags": [
+        "Consumer Discretionary",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Consumer Discretionary",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2020",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.1800contacts.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/1800-contacts-logo-raw.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-123dentist",
+      "slug": "123dentist",
+      "entity_type": "portfolio_company",
+      "name": "123Dentist",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "Canada",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.123dentist.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/123-dentist-logo-raw.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-a-gas",
+      "slug": "a-gas",
+      "entity_type": "portfolio_company",
+      "name": "A-Gas",
+      "description": "Industrials · Europe, Middle East And Africa",
+      "tags": [
+        "Industrials",
+        "Europe, Middle East And Africa",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United Kingdom",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2017",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.agas.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/a-gas.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-accuris",
+      "slug": "accuris",
+      "entity_type": "portfolio_company",
+      "name": "Accuris",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "https://accuristech.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/Accuris.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-adopt-a-cow",
+      "slug": "adopt-a-cow",
+      "entity_type": "portfolio_company",
+      "name": "Adopt A Cow",
+      "description": "Consumer Staples · Asia Pacific",
+      "tags": [
+        "Consumer Staples",
+        "Asia Pacific",
+        "Tech Growth, Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Consumer Staples",
+        "country": "China",
+        "region": "Asia Pacific",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Tech Growth, Private Equity",
+        "website": "",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/adopt-a-cow.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-advanced-navigation",
+      "slug": "advanced-navigation",
+      "entity_type": "portfolio_company",
+      "name": "Advanced Navigation",
+      "description": "Information Technology · Asia Pacific",
+      "tags": [
+        "Information Technology",
+        "Asia Pacific",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "Australia",
+        "region": "Asia Pacific",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "https://www.advancednavigation.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/advanced-navigation.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-advanta-seeds",
+      "slug": "advanta-seeds",
+      "entity_type": "portfolio_company",
+      "name": "Advanta Seeds",
+      "description": "Materials · Asia Pacific",
+      "tags": [
+        "Materials",
+        "Asia Pacific",
+        "Global Impact",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Materials",
+        "country": "India",
+        "region": "Asia Pacific",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Global Impact",
+        "website": "www.advantaseeds.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/advanta.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-advent",
+      "slug": "advent",
+      "entity_type": "pe_firm",
+      "name": "Advent International",
+      "description": "International buyouts in five core sectors with deep sector-specialist teams.",
+      "tags": [
+        "Business Services",
+        "Financial Services",
+        "Healthcare",
+        "Industrial",
+        "Retail & Consumer",
+        "North America",
+        "Europe",
+        "Latin America",
+        "Asia",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": "Advent International is tracked in AGI as a Firm. International buyouts in five core sectors with deep sector-specialist teams. The firm reports $100B+ in assets under management. Founded in 1984, it operates across North America, Europe, Latin America, Asia. AGI tracks 1 portfolio holdings and 0 fund relationships. Connected to Business Services Group, Advent International / Business Services Group, Carlyle, Bain Capital. Recent activity includes pending: business services group and founded 1984.",
+      "ai_summary_updated_at": "2026-07-31T19:05:00.531Z",
+      "attachments": [],
+      "metadata": {
+        "hq": "Boston",
+        "aum": "$100B+",
+        "founded": 1984,
+        "offices": 14,
+        "portfolioCount": 95,
+        "fundCount": 18,
+        "exitCount": 220,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Latin America",
+          "Asia"
+        ],
+        "industries": [
+          "Business Services",
+          "Financial Services",
+          "Healthcare",
+          "Industrial",
+          "Retail & Consumer"
+        ],
+        "website": "https://www.adventinternational.com",
+        "logo": "https://www.google.com/s2/favicons?domain=adventinternational.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "advent"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:05:00.532Z"
+    },
+    {
+      "id": "tx-5",
+      "slug": "tx-5",
+      "entity_type": "transaction",
+      "name": "Advent International / Business Services Group",
+      "description": "$3.4B · Pending",
+      "tags": [
+        "Business Services",
+        "Pending",
+        "United Kingdom"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "Advent International",
+        "seller": "Corporate carve-out",
+        "target": "Business Services Group",
+        "dealValue": "$3.4B",
+        "enterpriseValue": "$3.6B",
+        "equityValue": "$1.8B",
+        "industry": "Business Services",
+        "country": "United Kingdom",
+        "status": "Pending",
+        "date": "2026-07-25"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-aep-transmission",
+      "slug": "aep-transmission",
+      "entity_type": "portfolio_company",
+      "name": "AEP Transmission",
+      "description": "Utilities · Americas",
+      "tags": [
+        "Utilities",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.aeptransmission.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/aep-transmission.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-agiloft",
+      "slug": "agiloft",
+      "entity_type": "portfolio_company",
+      "name": "Agiloft",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2024",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.agiloft.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/agiloft.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-aiwyn-inc",
+      "slug": "aiwyn-inc",
+      "entity_type": "portfolio_company",
+      "name": "Aiwyn Inc",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2024",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.aiwyn.ai",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/aiwyn.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-albioma",
+      "slug": "albioma",
+      "entity_type": "portfolio_company",
+      "name": "Albioma",
+      "description": "Utilities · Europe, Middle East And Africa",
+      "tags": [
+        "Utilities",
+        "Europe, Middle East And Africa",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "France",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.albioma.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/albioma.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-alchemer",
+      "slug": "alchemer",
+      "entity_type": "portfolio_company",
+      "name": "Alchemer",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.alchemer.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/alchemer.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-altitude-aircraft-leasing",
+      "slug": "altitude-aircraft-leasing",
+      "entity_type": "portfolio_company",
+      "name": "Altitude Aircraft Leasing",
+      "description": "Industrials · Americas",
+      "tags": [
+        "Industrials",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2019",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/altitude-aircraft-leasing.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-anchorage-digital",
+      "slug": "anchorage-digital",
+      "entity_type": "portfolio_company",
+      "name": "Anchorage Digital",
+      "description": "Financials · Americas",
+      "tags": [
+        "Financials",
+        "Americas",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.anchorage.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/anchorage-digital.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-apex-analytix",
+      "slug": "apex-analytix",
+      "entity_type": "portfolio_company",
+      "name": "Apex Analytix",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.apexanalytix.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/apex-analytix.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "tx-3",
+      "slug": "tx-3",
+      "entity_type": "transaction",
+      "name": "Apollo / Industrial Tech Platform",
+      "description": "$2.8B · Completed",
+      "tags": [
+        "Industrials",
+        "Completed",
+        "Germany"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "Apollo",
+        "seller": "Family owners",
+        "target": "Industrial Tech Platform",
+        "dealValue": "$2.8B",
+        "enterpriseValue": "$3.1B",
+        "equityValue": "$1.4B",
+        "industry": "Industrials",
+        "country": "Germany",
+        "status": "Completed",
+        "date": "2026-07-27"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-apollo",
+      "slug": "apollo",
+      "entity_type": "pe_firm",
+      "name": "Apollo Global Management",
+      "description": "Credit-first platform with private equity, hybrid value, and retirement solutions via Athene.",
+      "tags": [
+        "Credit",
+        "Financial Services",
+        "Industrials",
+        "Technology",
+        "Energy",
+        "North America",
+        "Europe",
+        "Asia",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": "Apollo Global Management is tracked in AGI as a Firm. Credit-first platform with private equity, hybrid value, and retirement solutions via Athene. The firm reports $800B+ in assets under management. Founded in 1990, it operates across North America, Europe, Asia. AGI tracks 1 portfolio holdings and 1 fund relationships. Connected to Apollo Hybrid Value Fund III, Industrial Tech Platform, Apollo / Industrial Tech Platform, Apollo portfolio company announces strategic sale to strategic buyer, KKR. Recent activity includes apollo portfolio company announces strategic sale to strategic buyer and completed: industrial tech platform.",
+      "ai_summary_updated_at": "2026-07-31T19:04:59.742Z",
+      "attachments": [],
+      "metadata": {
+        "hq": "New York",
+        "aum": "$800B+",
+        "founded": 1990,
+        "offices": 15,
+        "portfolioCount": 180,
+        "fundCount": 35,
+        "exitCount": 310,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Asia"
+        ],
+        "industries": [
+          "Credit",
+          "Financial Services",
+          "Industrials",
+          "Technology",
+          "Energy"
+        ],
+        "website": "https://www.apollo.com",
+        "logo": "https://www.google.com/s2/favicons?domain=apollo.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "apollo"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:59.743Z"
+    },
+    {
+      "id": "f-3",
+      "slug": "apollo-hybrid-value-fund-iii",
+      "entity_type": "fund",
+      "name": "Apollo Hybrid Value Fund III",
+      "description": "Hybrid value · Global",
+      "tags": [
+        "Hybrid value",
+        "Global",
+        "Fundraising"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "vintage": 2024,
+        "fundSize": "$6.0B",
+        "strategy": "Hybrid value",
+        "status": "Fundraising",
+        "gp": "Apollo",
+        "geography": "Global"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-3",
+      "slug": "apollo-portfolio-company-announces-strategic-sale-to-strategic-buyer",
+      "entity_type": "news",
+      "name": "Apollo portfolio company announces strategic sale to strategic buyer",
+      "description": "Cross-border exit highlights sponsor-to-strategic pathway in industrial technology.",
+      "tags": [
+        "Exits",
+        "Industrials",
+        "Europe"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "Exits",
+        "dealType": "Exit",
+        "firmSlug": "apollo",
+        "firmName": "Apollo",
+        "company": "Industrial Tech Platform",
+        "sector": "Industrials",
+        "geography": "Europe",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-28T16:45:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-april",
+      "slug": "april",
+      "entity_type": "portfolio_company",
+      "name": "April",
+      "description": "Financials · Europe, Middle East And Africa",
+      "tags": [
+        "Financials",
+        "Europe, Middle East And Africa",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "France",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "https://www.april.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/april.svg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-argenta",
+      "slug": "argenta",
+      "entity_type": "portfolio_company",
+      "name": "Argenta",
+      "description": "Healthcare · Asia Pacific",
+      "tags": [
+        "Healthcare",
+        "Asia Pacific",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "New Zealand",
+        "region": "Asia Pacific",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.argentaglobal.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/argenta.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-arnott-s",
+      "slug": "arnott-s",
+      "entity_type": "portfolio_company",
+      "name": "Arnott's",
+      "description": "Consumer Staples · Asia Pacific",
+      "tags": [
+        "Consumer Staples",
+        "Asia Pacific",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Consumer Staples",
+        "country": "Australia",
+        "region": "Asia Pacific",
+        "investmentYear": "2019",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.arnotts.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/arnotts-group.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-artlist",
+      "slug": "artlist",
+      "entity_type": "portfolio_company",
+      "name": "Artlist",
+      "description": "Communication Services · Europe, Middle East And Africa",
+      "tags": [
+        "Communication Services",
+        "Europe, Middle East And Africa",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Communication Services",
+        "country": "Israel",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2020",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.artlist.io",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/artlist.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-ascend-asia",
+      "slug": "ascend-asia",
+      "entity_type": "portfolio_company",
+      "name": "Ascend Asia",
+      "description": "Financials · Asia Pacific",
+      "tags": [
+        "Financials",
+        "Asia Pacific",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "Singapore",
+        "region": "Asia Pacific",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "https://ascendasiagroup.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/ascend-asia.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-aster-renewable-energy",
+      "slug": "aster-renewable-energy",
+      "entity_type": "portfolio_company",
+      "name": "Aster Renewable Energy",
+      "description": "Utilities · Asia Pacific",
+      "tags": [
+        "Utilities",
+        "Asia Pacific",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "Singapore",
+        "region": "Asia Pacific",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.asterrenewable.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/aster-renewable-energy.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-atlantic-aviation",
+      "slug": "atlantic-aviation",
+      "entity_type": "portfolio_company",
+      "name": "Atlantic Aviation",
+      "description": "Industrials · Americas",
+      "tags": [
+        "Industrials",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.atlanticaviation.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/atlantic-avation.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-avantus",
+      "slug": "avantus",
+      "entity_type": "portfolio_company",
+      "name": "Avantus",
+      "description": "Utilities · Americas",
+      "tags": [
+        "Utilities",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2024",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.avantus.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/avantus.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-avendus-capital",
+      "slug": "avendus-capital",
+      "entity_type": "portfolio_company",
+      "name": "Avendus Capital",
+      "description": "Financials · Asia Pacific",
+      "tags": [
+        "Financials",
+        "Asia Pacific",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "India",
+        "region": "Asia Pacific",
+        "investmentYear": "2016",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.avendus.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/avendus.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-4",
+      "slug": "avendus-capital-expands-india-advisory-platform",
+      "entity_type": "news",
+      "name": "Avendus Capital expands India advisory platform",
+      "description": "KKR-backed financial services platform deepens M&A and capital markets coverage in India.",
+      "tags": [
+        "Portfolio Company News",
+        "Financial Services",
+        "India"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "Portfolio Company News",
+        "dealType": "News",
+        "firmSlug": "kkr",
+        "firmName": "KKR",
+        "company": "Avendus Capital",
+        "sector": "Financial Services",
+        "geography": "India",
+        "source": "KKR Portfolio",
+        "timestamp": "2026-07-27T11:00:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-aviv-group",
+      "slug": "aviv-group",
+      "entity_type": "portfolio_company",
+      "name": "AVIV Group",
+      "description": "Information Technology · Europe, Middle East And Africa",
+      "tags": [
+        "Information Technology",
+        "Europe, Middle East And Africa",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "Germany",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.aviv-group.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/aviv-group.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-axius-water",
+      "slug": "axius-water",
+      "entity_type": "portfolio_company",
+      "name": "Axius Water",
+      "description": "Utilities · Americas",
+      "tags": [
+        "Utilities",
+        "Americas",
+        "Global Impact",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "Massachusetts",
+        "region": "Americas",
+        "investmentYear": "2019",
+        "status": "Active",
+        "assetClass": "Global Impact",
+        "website": "www.axiuswater.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/axius-water.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-bain-capital",
+      "slug": "bain-capital",
+      "entity_type": "pe_firm",
+      "name": "Bain Capital",
+      "description": "Private equity, venture, credit, real estate, and public equity with operator-led value creation.",
+      "tags": [
+        "Technology",
+        "Healthcare",
+        "Consumer",
+        "Financial Services",
+        "Industrials",
+        "North America",
+        "Europe",
+        "Asia",
+        "India",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "hq": "Boston",
+        "aum": "$185B+",
+        "founded": 1984,
+        "offices": 20,
+        "portfolioCount": 120,
+        "fundCount": 25,
+        "exitCount": 290,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Asia",
+          "India"
+        ],
+        "industries": [
+          "Technology",
+          "Healthcare",
+          "Consumer",
+          "Financial Services",
+          "Industrials"
+        ],
+        "website": "https://www.baincapital.com",
+        "logo": "https://www.google.com/s2/favicons?domain=baincapital.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "bain-capital"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "tx-4",
+      "slug": "tx-4",
+      "entity_type": "transaction",
+      "name": "Bain Capital / Consumer Retail Chain",
+      "description": "$1.1B · Announced",
+      "tags": [
+        "Consumer",
+        "Announced",
+        "India"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "Bain Capital",
+        "seller": "PE consortium",
+        "target": "Consumer Retail Chain",
+        "dealValue": "$1.1B",
+        "enterpriseValue": "$1.3B",
+        "equityValue": "$650M",
+        "industry": "Consumer",
+        "country": "India",
+        "status": "Announced",
+        "date": "2026-07-26"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-ballast",
+      "slug": "ballast",
+      "entity_type": "portfolio_company",
+      "name": "Ballast",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.treeline.bio",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/no-logo-pc.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-barracuda-networks",
+      "slug": "barracuda-networks",
+      "entity_type": "portfolio_company",
+      "name": "Barracuda Networks",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.barracuda.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/barracuda-networks.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bay-club",
+      "slug": "bay-club",
+      "entity_type": "portfolio_company",
+      "name": "Bay Club",
+      "description": "Consumer Discretionary · Americas",
+      "tags": [
+        "Consumer Discretionary",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Consumer Discretionary",
+        "country": "California",
+        "region": "Americas",
+        "investmentYear": "2018",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.bayclubs.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bay-club.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-beacon-pointe-advisors-holdings-llc",
+      "slug": "beacon-pointe-advisors-holdings-llc",
+      "entity_type": "portfolio_company",
+      "name": "Beacon Pointe Advisors Holdings, LLC",
+      "description": "Financials · Americas",
+      "tags": [
+        "Financials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.beaconpointe.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/beacon-pointe.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-biosynth",
+      "slug": "biosynth",
+      "entity_type": "portfolio_company",
+      "name": "Biosynth",
+      "description": "Healthcare · Europe, Middle East And Africa",
+      "tags": [
+        "Healthcare",
+        "Europe, Middle East And Africa",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "Switzerland",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.biosynth.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/biosynth.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-biotage",
+      "slug": "biotage",
+      "entity_type": "portfolio_company",
+      "name": "Biotage",
+      "description": "Healthcare · Europe, Middle East And Africa",
+      "tags": [
+        "Healthcare",
+        "Europe, Middle East And Africa",
+        "Private Equity, Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "Sweden",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Private Equity, Health Care Growth",
+        "website": "www.biotage.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/biotage.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-blackstone",
+      "slug": "blackstone",
+      "entity_type": "pe_firm",
+      "name": "Blackstone",
+      "description": "Large-scale buyouts, real estate, credit, infrastructure, and growth equity across global markets.",
+      "tags": [
+        "Real Estate",
+        "Private Equity",
+        "Credit",
+        "Infrastructure",
+        "Life Sciences",
+        "North America",
+        "Europe",
+        "Asia",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": "Blackstone is tracked in AGI as a Firm. Large-scale buyouts, real estate, credit, infrastructure, and growth equity across global markets. The firm reports $1.2T+ in assets under management. Founded in 1985, it operates across North America, Europe, Asia. AGI tracks 1 portfolio holdings and 1 fund relationships. Connected to Blackstone Capital Partners IX, Data Center Platform, Blackstone / Data Center Platform, Blackstone closes latest real estate flagship above target, KKR. Recent activity includes blackstone closes latest real estate flagship above target and completed: data center platform.",
+      "ai_summary_updated_at": "2026-07-31T19:04:59.368Z",
+      "attachments": [],
+      "metadata": {
+        "hq": "New York",
+        "aum": "$1.2T+",
+        "founded": 1985,
+        "offices": 26,
+        "portfolioCount": 270,
+        "fundCount": 80,
+        "exitCount": 650,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Asia"
+        ],
+        "industries": [
+          "Real Estate",
+          "Private Equity",
+          "Credit",
+          "Infrastructure",
+          "Life Sciences"
+        ],
+        "website": "https://www.blackstone.com",
+        "logo": "https://www.google.com/s2/favicons?domain=blackstone.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "blackstone"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:59.369Z"
+    },
+    {
+      "id": "tx-2",
+      "slug": "tx-2",
+      "entity_type": "transaction",
+      "name": "Blackstone / Data Center Platform",
+      "description": "$12.5B · Completed",
+      "tags": [
+        "Infrastructure",
+        "Completed",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "Blackstone",
+        "seller": "Founders",
+        "target": "Data Center Platform",
+        "dealValue": "$12.5B",
+        "enterpriseValue": "$13.0B",
+        "equityValue": "$5.5B",
+        "industry": "Infrastructure",
+        "country": "United States",
+        "status": "Completed",
+        "date": "2026-07-28"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "f-1",
+      "slug": "blackstone-capital-partners-ix",
+      "entity_type": "fund",
+      "name": "Blackstone Capital Partners IX",
+      "description": "Large-cap buyout · Global",
+      "tags": [
+        "Large-cap buyout",
+        "Global",
+        "Investing"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "vintage": 2024,
+        "fundSize": "$17.4B",
+        "strategy": "Large-cap buyout",
+        "status": "Investing",
+        "gp": "Blackstone",
+        "geography": "Global"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-2",
+      "slug": "blackstone-closes-latest-real-estate-flagship-above-target",
+      "entity_type": "news",
+      "name": "Blackstone closes latest real estate flagship above target",
+      "description": "Institutional demand for core-plus real estate strategies drives oversubscribed final close.",
+      "tags": [
+        "Fundraising Announcements",
+        "Real Estate",
+        "Global"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "Fundraising Announcements",
+        "dealType": "Fundraise",
+        "firmSlug": "blackstone",
+        "firmName": "Blackstone",
+        "company": "BREIT / Real Estate Flagship",
+        "sector": "Real Estate",
+        "geography": "Global",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-29T09:30:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-blue-sprig",
+      "slug": "blue-sprig",
+      "entity_type": "portfolio_company",
+      "name": "Blue Sprig",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2017",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.bluesprigpediatrics.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/blue-sprig.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bmc",
+      "slug": "bmc",
+      "entity_type": "portfolio_company",
+      "name": "BMC",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2018",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.bmc.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bmc.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bmh",
+      "slug": "bmh",
+      "entity_type": "portfolio_company",
+      "name": "BMH",
+      "description": "Healthcare · Asia Pacific",
+      "tags": [
+        "Healthcare",
+        "Asia Pacific",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "India",
+        "region": "Asia Pacific",
+        "investmentYear": "2024",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "https://babymhospital.org/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bmh.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bridgebio-pharma",
+      "slug": "bridgebio-pharma",
+      "entity_type": "portfolio_company",
+      "name": "BridgeBio Pharma",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2018",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.bridgebio.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bridgebio.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-brightline-inc",
+      "slug": "brightline-inc",
+      "entity_type": "portfolio_company",
+      "name": "Brightline, Inc.",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.hellobrightline.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/brightline.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-brightspring-health-services",
+      "slug": "brightspring-health-services",
+      "entity_type": "portfolio_company",
+      "name": "BrightSpring Health Services",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2017",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.brightspringhealth.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bright-spring-health-services.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-brightview",
+      "slug": "brightview",
+      "entity_type": "portfolio_company",
+      "name": "BrightView",
+      "description": "Industrials · Americas",
+      "tags": [
+        "Industrials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2013",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.brightview.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/brightview.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bushu-pharma",
+      "slug": "bushu-pharma",
+      "entity_type": "portfolio_company",
+      "name": "Bushu Pharma",
+      "description": "Healthcare · Asia Pacific",
+      "tags": [
+        "Healthcare",
+        "Asia Pacific",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "Japan",
+        "region": "Asia Pacific",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.bushu-pharma.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bushu-pharma.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-business-services",
+      "slug": "business-services",
+      "entity_type": "industry",
+      "name": "Business Services",
+      "description": "Business Services sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Business Services"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Business Services"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-business-services-group",
+      "slug": "business-services-group",
+      "entity_type": "company",
+      "name": "Business Services Group",
+      "description": "Business Services · United Kingdom",
+      "tags": [
+        "Business Services",
+        "United Kingdom"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Business Services",
+        "country": "United Kingdom"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-bytedance",
+      "slug": "bytedance",
+      "entity_type": "portfolio_company",
+      "name": "ByteDance",
+      "description": "Information Technology · Asia Pacific",
+      "tags": [
+        "Information Technology",
+        "Asia Pacific",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "China",
+        "region": "Asia Pacific",
+        "investmentYear": "2018",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.bytedance.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/bytedance.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-capeomega",
+      "slug": "capeomega",
+      "entity_type": "portfolio_company",
+      "name": "CapeOmega",
+      "description": "Industrials · Europe, Middle East And Africa",
+      "tags": [
+        "Industrials",
+        "Europe, Middle East And Africa",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "Norway",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.capeomega.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/capeomega.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-captive-resources",
+      "slug": "captive-resources",
+      "entity_type": "portfolio_company",
+      "name": "Captive Resources",
+      "description": "Financials · Americas",
+      "tags": [
+        "Financials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Financials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.captiveresources.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/captive-resources.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-carboncount-holdings",
+      "slug": "carboncount-holdings",
+      "entity_type": "portfolio_company",
+      "name": "CarbonCount Holdings",
+      "description": "Utilities · Americas",
+      "tags": [
+        "Utilities",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "MD",
+        "region": "Americas",
+        "investmentYear": "2024",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.hasi.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/cch1.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-carlyle",
+      "slug": "carlyle",
+      "entity_type": "pe_firm",
+      "name": "Carlyle",
+      "description": "Global private equity, credit, and investment solutions across corporate, real assets, and funds.",
+      "tags": [
+        "Aerospace",
+        "Consumer",
+        "Healthcare",
+        "Technology",
+        "Industrials",
+        "North America",
+        "Europe",
+        "Asia",
+        "Middle East",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": "Carlyle is tracked in AGI as a Firm. Global private equity, credit, and investment solutions across corporate, real assets, and funds. The firm reports $426B+ in assets under management. Founded in 1987, it operates across North America, Europe, Asia, Middle East. Connected to Carlyle Partners VIII, Carlyle appoints operating partner for aerospace vertical, Apollo Global Management, Advent International. Recent activity includes carlyle appoints operating partner for aerospace vertical and carlyle partners viii.",
+      "ai_summary_updated_at": "2026-07-31T19:04:59.939Z",
+      "attachments": [],
+      "metadata": {
+        "hq": "Washington, D.C.",
+        "aum": "$426B+",
+        "founded": 1987,
+        "offices": 28,
+        "portfolioCount": 200,
+        "fundCount": 40,
+        "exitCount": 380,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Asia",
+          "Middle East"
+        ],
+        "industries": [
+          "Aerospace",
+          "Consumer",
+          "Healthcare",
+          "Technology",
+          "Industrials"
+        ],
+        "website": "https://www.carlyle.com",
+        "logo": "https://www.google.com/s2/favicons?domain=carlyle.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "carlyle"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:59.940Z"
+    },
+    {
+      "id": "rf-8",
+      "slug": "carlyle-appoints-operating-partner-for-aerospace-vertical",
+      "entity_type": "news",
+      "name": "Carlyle appoints operating partner for aerospace vertical",
+      "description": "Industry executive joins to lead operational improvement across aerospace portfolio.",
+      "tags": [
+        "Operating Partner Appointments",
+        "Industrials",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "Operating Partner Appointments",
+        "dealType": "Leadership",
+        "firmSlug": "carlyle",
+        "firmName": "Carlyle",
+        "company": "Carlyle Aerospace",
+        "sector": "Industrials",
+        "geography": "United States",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-23T15:40:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "f-4",
+      "slug": "carlyle-partners-viii",
+      "entity_type": "fund",
+      "name": "Carlyle Partners VIII",
+      "description": "Buyout · Global",
+      "tags": [
+        "Buyout",
+        "Global",
+        "Investing"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "vintage": 2022,
+        "fundSize": "$22.0B",
+        "strategy": "Buyout",
+        "status": "Investing",
+        "gp": "Carlyle",
+        "geography": "Global"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-caruna-oy",
+      "slug": "caruna-oy",
+      "entity_type": "portfolio_company",
+      "name": "Caruna Oy",
+      "description": "Utilities · Europe, Middle East And Africa",
+      "tags": [
+        "Utilities",
+        "Europe, Middle East And Africa",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "Finland",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "https://caruna.fi/en",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/caruna.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-cegid",
+      "slug": "cegid",
+      "entity_type": "portfolio_company",
+      "name": "Cegid",
+      "description": "Information Technology · Europe, Middle East And Africa",
+      "tags": [
+        "Information Technology",
+        "Europe, Middle East And Africa",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "France",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.cegid.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/cegid.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-central-tank-terminal",
+      "slug": "central-tank-terminal",
+      "entity_type": "portfolio_company",
+      "name": "Central Tank Terminal",
+      "description": "Energy · Asia Pacific",
+      "tags": [
+        "Energy",
+        "Asia Pacific",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Energy",
+        "country": "Japan",
+        "region": "Asia Pacific",
+        "investmentYear": "2022",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.cttc.co.jp",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/central-tank-terminal.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-charter-next-generation",
+      "slug": "charter-next-generation",
+      "entity_type": "portfolio_company",
+      "name": "Charter Next Generation",
+      "description": "Materials · Americas",
+      "tags": [
+        "Materials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Materials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.cnginc.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/charter-next-generation.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-chase-corp",
+      "slug": "chase-corp",
+      "entity_type": "portfolio_company",
+      "name": "Chase Corp",
+      "description": "Industrials · Americas",
+      "tags": [
+        "Industrials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.chasecorp.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/chase-corp.jpg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-circor",
+      "slug": "circor",
+      "entity_type": "portfolio_company",
+      "name": "CIRCOR",
+      "description": "Industrials · Americas",
+      "tags": [
+        "Industrials",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.circor.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/circor.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-citation-group",
+      "slug": "citation-group",
+      "entity_type": "portfolio_company",
+      "name": "Citation Group",
+      "description": "Industrials · Europe, Middle East And Africa",
+      "tags": [
+        "Industrials",
+        "Europe, Middle East And Africa",
+        "Global Impact, Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "United Kingdom",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2025",
+        "status": "Active",
+        "assetClass": "Global Impact, Private Equity",
+        "website": "https://thecitationgroup.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/the-citation-group.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-clarify-health-solutions",
+      "slug": "clarify-health-solutions",
+      "entity_type": "portfolio_company",
+      "name": "Clarify Health Solutions",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2018",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.clarifyhealth.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/clarify-health-solutions.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-cleanpeak-energy",
+      "slug": "cleanpeak-energy",
+      "entity_type": "portfolio_company",
+      "name": "CleanPeak Energy",
+      "description": "Utilities · Asia Pacific",
+      "tags": [
+        "Utilities",
+        "Asia Pacific",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Utilities",
+        "country": "Australia",
+        "region": "Asia Pacific",
+        "investmentYear": "2026",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.cleanpeakenergy.com.au/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/cleanpeak-energy.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-clinisupplies",
+      "slug": "clinisupplies",
+      "entity_type": "portfolio_company",
+      "name": "Clinisupplies",
+      "description": "Healthcare · Europe, Middle East And Africa",
+      "tags": [
+        "Healthcare",
+        "Europe, Middle East And Africa",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United Kingdom",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2023",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.clinisupplies.co.uk",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/clinisupplies.svg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-cloudera",
+      "slug": "cloudera",
+      "entity_type": "portfolio_company",
+      "name": "Cloudera",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Private Equity",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2021",
+        "status": "Active",
+        "assetClass": "Private Equity",
+        "website": "www.cloudera.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/cloudera.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-cmc-packaging-automation",
+      "slug": "cmc-packaging-automation",
+      "entity_type": "portfolio_company",
+      "name": "CMC Packaging Automation",
+      "description": "Industrials · Europe, Middle East And Africa",
+      "tags": [
+        "Industrials",
+        "Europe, Middle East And Africa",
+        "Global Impact",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "Italy",
+        "region": "Europe, Middle East And Africa",
+        "investmentYear": "2020",
+        "status": "Active",
+        "assetClass": "Global Impact",
+        "website": "https://www.cmcsolutions.com/",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/cmc-packaging-automation.svg"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-coastal-gaslink",
+      "slug": "coastal-gaslink",
+      "entity_type": "portfolio_company",
+      "name": "Coastal GasLink",
+      "description": "Energy · Americas",
+      "tags": [
+        "Energy",
+        "Americas",
+        "Infrastructure",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Energy",
+        "country": "Canada",
+        "region": "Americas",
+        "investmentYear": "2020",
+        "status": "Active",
+        "assetClass": "Infrastructure",
+        "website": "www.coastalgaslink.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/coastal-gaslink-1.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-coder-technologies",
+      "slug": "coder-technologies",
+      "entity_type": "portfolio_company",
+      "name": "Coder Technologies",
+      "description": "Information Technology · Americas",
+      "tags": [
+        "Information Technology",
+        "Americas",
+        "Tech Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Information Technology",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2026",
+        "status": "Active",
+        "assetClass": "Tech Growth",
+        "website": "www.coder.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/coder-technologies.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "pc-coherus-biosciences",
+      "slug": "coherus-biosciences",
+      "entity_type": "portfolio_company",
+      "name": "Coherus BioSciences",
+      "description": "Healthcare · Americas",
+      "tags": [
+        "Healthcare",
+        "Americas",
+        "Health Care Growth",
+        "Active"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States",
+        "region": "Americas",
+        "investmentYear": "2014",
+        "status": "Active",
+        "assetClass": "Health Care Growth",
+        "website": "www.coherus.com",
+        "logo": "/content/dam/kkr/portfolio/resized-logos/coherus-biosciences-1.png"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-consumer",
+      "slug": "consumer",
+      "entity_type": "industry",
+      "name": "Consumer",
+      "description": "Consumer sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Consumer"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Consumer"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-consumer-retail-chain",
+      "slug": "consumer-retail-chain",
+      "entity_type": "company",
+      "name": "Consumer Retail Chain",
+      "description": "Consumer · India",
+      "tags": [
+        "Consumer",
+        "India"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Consumer",
+        "country": "India"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-data-center-platform",
+      "slug": "data-center-platform",
+      "entity_type": "company",
+      "name": "Data Center Platform",
+      "description": "Infrastructure · United States",
+      "tags": [
+        "Infrastructure",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Infrastructure",
+        "country": "United States"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-education",
+      "slug": "education",
+      "entity_type": "industry",
+      "name": "Education",
+      "description": "Education sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Education"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Education"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-energy",
+      "slug": "energy",
+      "entity_type": "industry",
+      "name": "Energy",
+      "description": "Energy sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Energy"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Energy"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-eqt",
+      "slug": "eqt",
+      "entity_type": "pe_firm",
+      "name": "EQT",
+      "description": "Thematic investing in healthcare, technology, services, and infrastructure across Europe and US.",
+      "tags": [
+        "Healthcare",
+        "Technology",
+        "Services",
+        "Infrastructure",
+        "Industrial Tech",
+        "Europe",
+        "North America",
+        "Asia Pacific",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "hq": "Stockholm",
+        "aum": "$250B+",
+        "founded": 1994,
+        "offices": 24,
+        "portfolioCount": 140,
+        "fundCount": 30,
+        "exitCount": 180,
+        "geoFocus": [
+          "Europe",
+          "North America",
+          "Asia Pacific"
+        ],
+        "industries": [
+          "Healthcare",
+          "Technology",
+          "Services",
+          "Infrastructure",
+          "Industrial Tech"
+        ],
+        "website": "https://eqtgroup.com",
+        "logo": "https://www.google.com/s2/favicons?domain=eqtgroup.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "eqt"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-7",
+      "slug": "eqt-publishes-portfolio-decarbonization-progress-report",
+      "entity_type": "news",
+      "name": "EQT publishes portfolio decarbonization progress report",
+      "description": "Scope 1–2 emissions reduction targets reported across infrastructure holdings.",
+      "tags": [
+        "ESG Updates",
+        "Infrastructure",
+        "Europe"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "ESG Updates",
+        "dealType": "ESG",
+        "firmSlug": "eqt",
+        "firmName": "EQT",
+        "company": "Portfolio-wide",
+        "sector": "Infrastructure",
+        "geography": "Europe",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-24T10:15:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-financial-services",
+      "slug": "financial-services",
+      "entity_type": "industry",
+      "name": "Financial Services",
+      "description": "Financial Services sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Financial Services"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Financial Services"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "person-george-roberts",
+      "slug": "george-roberts",
+      "entity_type": "person",
+      "name": "George Roberts",
+      "description": "Leads West Coast investment activities.",
+      "tags": [
+        "Private Equity"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "title": "Co-Founder & Co-Executive Chairman",
+        "office": "Menlo Park",
+        "prior": "Bear Stearns",
+        "education": "UC Hastings"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-healthcare",
+      "slug": "healthcare",
+      "entity_type": "industry",
+      "name": "Healthcare",
+      "description": "Healthcare sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Healthcare"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Healthcare"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-healthcare-services-co",
+      "slug": "healthcare-services-co",
+      "entity_type": "company",
+      "name": "Healthcare Services Co.",
+      "description": "Healthcare · United States",
+      "tags": [
+        "Healthcare",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-healthtech-platform",
+      "slug": "healthtech-platform",
+      "entity_type": "company",
+      "name": "HealthTech Platform",
+      "description": "Healthcare · United States",
+      "tags": [
+        "Healthcare",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Healthcare",
+        "country": "United States"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "person-henry-kravis",
+      "slug": "henry-kravis",
+      "entity_type": "person",
+      "name": "Henry Kravis",
+      "description": "Pioneer of the modern buyout industry.",
+      "tags": [
+        "Private Equity"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "title": "Co-Founder & Co-Executive Chairman",
+        "office": "New York",
+        "prior": "Bear Stearns",
+        "education": "Columbia Business School"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "co-industrial-tech-platform",
+      "slug": "industrial-tech-platform",
+      "entity_type": "company",
+      "name": "Industrial Tech Platform",
+      "description": "Industrials · Germany",
+      "tags": [
+        "Industrials",
+        "Germany"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "industry": "Industrials",
+        "country": "Germany"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-industrials",
+      "slug": "industrials",
+      "entity_type": "industry",
+      "name": "Industrials",
+      "description": "Industrials sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Industrials"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Industrials"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-infrastructure",
+      "slug": "infrastructure",
+      "entity_type": "industry",
+      "name": "Infrastructure",
+      "description": "Infrastructure sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Infrastructure"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Infrastructure"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "person-joseph-bae",
+      "slug": "joseph-bae",
+      "entity_type": "person",
+      "name": "Joseph Bae",
+      "description": "Oversees global private equity platform.",
+      "tags": [
+        "Private Equity",
+        "Growth"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "title": "Co-CEO",
+        "office": "New York",
+        "prior": "KKR",
+        "education": "Harvard"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-kkr",
+      "slug": "kkr",
+      "entity_type": "pe_firm",
+      "name": "KKR",
+      "description": "Private equity, infrastructure, tech growth, credit, and impact investing with global platform.",
+      "tags": [
+        "Technology",
+        "Healthcare",
+        "Industrials",
+        "Financials",
+        "Consumer",
+        "Americas",
+        "Europe",
+        "Asia Pacific",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": "KKR is tracked in AGI as a Firm. Private equity, infrastructure, tech growth, credit, and impact investing with global platform. The firm reports $650B+ in assets under management. Founded in 1976, it operates across Americas, Europe, Asia Pacific. AGI tracks 61 portfolio holdings and 1 fund relationships. Connected to KKR North America Fund XIII, Healthcare Services Co., KKR / Healthcare Services Co., +Simple, 1-800 Contacts, Inc.. Recent activity includes kkr completes take-private of healthcare services platform and announced: healthcare services co..",
+      "ai_summary_updated_at": "2026-07-31T19:04:59.578Z",
+      "attachments": [],
+      "metadata": {
+        "hq": "New York",
+        "aum": "$650B+",
+        "founded": 1976,
+        "offices": 22,
+        "portfolioCount": 300,
+        "fundCount": 45,
+        "exitCount": 420,
+        "geoFocus": [
+          "Americas",
+          "Europe",
+          "Asia Pacific"
+        ],
+        "industries": [
+          "Technology",
+          "Healthcare",
+          "Industrials",
+          "Financials",
+          "Consumer"
+        ],
+        "website": "https://www.kkr.com",
+        "logo": "https://www.google.com/s2/favicons?domain=kkr.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "kkr"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:59.579Z"
+    },
+    {
+      "id": "tx-1",
+      "slug": "tx-1",
+      "entity_type": "transaction",
+      "name": "KKR / Healthcare Services Co.",
+      "description": "$4.2B · Announced",
+      "tags": [
+        "Healthcare",
+        "Announced",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "KKR",
+        "seller": "Public shareholders",
+        "target": "Healthcare Services Co.",
+        "dealValue": "$4.2B",
+        "enterpriseValue": "$4.8B",
+        "equityValue": "$2.1B",
+        "industry": "Healthcare",
+        "country": "United States",
+        "status": "Announced",
+        "date": "2026-07-30"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-1",
+      "slug": "kkr-completes-take-private-of-healthcare-services-platform",
+      "entity_type": "news",
+      "name": "KKR completes take-private of healthcare services platform",
+      "description": "Sponsor-led transaction expands North American healthcare services footprint with operational value-creation plan.",
+      "tags": [
+        "New Acquisitions",
+        "Healthcare",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "New Acquisitions",
+        "dealType": "Acquisition",
+        "firmSlug": "kkr",
+        "firmName": "KKR",
+        "company": "Healthcare Services Co.",
+        "sector": "Healthcare",
+        "geography": "United States",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-30T14:00:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "f-2",
+      "slug": "kkr-north-america-fund-xiii",
+      "entity_type": "fund",
+      "name": "KKR North America Fund XIII",
+      "description": "Buyout · North America",
+      "tags": [
+        "Buyout",
+        "North America",
+        "Investing"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "vintage": 2023,
+        "fundSize": "$18.5B",
+        "strategy": "Buyout",
+        "status": "Investing",
+        "gp": "KKR",
+        "geography": "North America"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-software",
+      "slug": "software",
+      "entity_type": "industry",
+      "name": "Software",
+      "description": "Software sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Software"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Software"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "industry-technology",
+      "slug": "technology",
+      "entity_type": "industry",
+      "name": "Technology",
+      "description": "Technology sector coverage across global private markets.",
+      "tags": [
+        "Industry",
+        "Technology"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "sector": "Technology"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-tpg",
+      "slug": "tpg",
+      "entity_type": "pe_firm",
+      "name": "TPG",
+      "description": "Large-cap buyouts, growth, impact, and real estate with sector verticals.",
+      "tags": [
+        "Healthcare",
+        "Technology",
+        "Consumer",
+        "Business Services",
+        "Financial Services",
+        "North America",
+        "Europe",
+        "Asia Pacific",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "hq": "Fort Worth",
+        "aum": "$222B+",
+        "founded": 1992,
+        "offices": 18,
+        "portfolioCount": 110,
+        "fundCount": 22,
+        "exitCount": 250,
+        "geoFocus": [
+          "North America",
+          "Europe",
+          "Asia Pacific"
+        ],
+        "industries": [
+          "Healthcare",
+          "Technology",
+          "Consumer",
+          "Business Services",
+          "Financial Services"
+        ],
+        "website": "https://www.tpg.com",
+        "logo": "https://www.google.com/s2/favicons?domain=tpg.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "tpg"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "tx-6",
+      "slug": "tx-6",
+      "entity_type": "transaction",
+      "name": "TPG / HealthTech Platform",
+      "description": "$890M · Completed",
+      "tags": [
+        "Healthcare",
+        "Completed",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "buyer": "TPG",
+        "seller": "Founders + early investors",
+        "target": "HealthTech Platform",
+        "dealValue": "$890M",
+        "enterpriseValue": "$950M",
+        "equityValue": "$420M",
+        "industry": "Healthcare",
+        "country": "United States",
+        "status": "Completed",
+        "date": "2026-07-24"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-6",
+      "slug": "tpg-backed-consumer-brand-files-draft-registration",
+      "entity_type": "news",
+      "name": "TPG-backed consumer brand files draft registration",
+      "description": "PE-backed consumer company targets public listing amid improved IPO window sentiment.",
+      "tags": [
+        "IPOs",
+        "Consumer",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "IPOs",
+        "dealType": "IPO",
+        "firmSlug": "tpg",
+        "firmName": "TPG",
+        "company": "Consumer Brand Co.",
+        "sector": "Consumer",
+        "geography": "United States",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-25T08:00:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "rf-5",
+      "slug": "vista-equity-executes-bolt-on-for-enterprise-software-platform",
+      "entity_type": "news",
+      "name": "Vista Equity executes bolt-on for enterprise software platform",
+      "description": "Buy-and-build strategy adds complementary SaaS module to existing portfolio company.",
+      "tags": [
+        "Add-on Acquisitions",
+        "Software",
+        "United States"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "category": "Add-on Acquisitions",
+        "dealType": "Add-on",
+        "firmSlug": "vista",
+        "firmName": "Vista Equity Partners",
+        "company": "Enterprise SaaS Platform",
+        "sector": "Software",
+        "geography": "United States",
+        "source": "AGI PE Intelligence",
+        "timestamp": "2026-07-26T13:20:00Z"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-vista",
+      "slug": "vista",
+      "entity_type": "pe_firm",
+      "name": "Vista Equity Partners",
+      "description": "Enterprise software and data-focused private equity with operational playbooks.",
+      "tags": [
+        "Enterprise Software",
+        "Data & Analytics",
+        "FinTech",
+        "HealthTech",
+        "Cybersecurity",
+        "North America",
+        "Europe",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "hq": "Austin",
+        "aum": "$100B+",
+        "founded": 2000,
+        "offices": 10,
+        "portfolioCount": 85,
+        "fundCount": 12,
+        "exitCount": 95,
+        "geoFocus": [
+          "North America",
+          "Europe"
+        ],
+        "industries": [
+          "Enterprise Software",
+          "Data & Analytics",
+          "FinTech",
+          "HealthTech",
+          "Cybersecurity"
+        ],
+        "website": "https://www.vistaequitypartners.com",
+        "logo": "https://www.google.com/s2/favicons?domain=vistaequitypartners.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "vista"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "f-5",
+      "slug": "vista-fund-viii",
+      "entity_type": "fund",
+      "name": "Vista Fund VIII",
+      "description": "Enterprise software · North America",
+      "tags": [
+        "Enterprise software",
+        "North America",
+        "Investing"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "vintage": 2023,
+        "fundSize": "$20.0B",
+        "strategy": "Enterprise software",
+        "status": "Investing",
+        "gp": "Vista Equity Partners",
+        "geography": "North America"
+      },
+      "source_refs": [],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    },
+    {
+      "id": "firm-warburg-pincus",
+      "slug": "warburg-pincus",
+      "entity_type": "pe_firm",
+      "name": "Warburg Pincus",
+      "description": "Growth-oriented private equity across financial services, healthcare, technology, and energy.",
+      "tags": [
+        "Financial Services",
+        "Healthcare",
+        "Technology",
+        "Energy",
+        "Real Estate",
+        "North America",
+        "Asia",
+        "Latin America",
+        "Europe",
+        "Private Markets"
+      ],
+      "status": "published",
+      "ai_summary": null,
+      "ai_summary_updated_at": null,
+      "attachments": [],
+      "metadata": {
+        "hq": "New York",
+        "aum": "$90B+",
+        "founded": 1966,
+        "offices": 16,
+        "portfolioCount": 100,
+        "fundCount": 20,
+        "exitCount": 340,
+        "geoFocus": [
+          "North America",
+          "Asia",
+          "Latin America",
+          "Europe"
+        ],
+        "industries": [
+          "Financial Services",
+          "Healthcare",
+          "Technology",
+          "Energy",
+          "Real Estate"
+        ],
+        "website": "https://warburgpincus.com",
+        "logo": "https://www.google.com/s2/favicons?domain=warburgpincus.com&sz=128"
+      },
+      "source_refs": [
+        {
+          "type": "pe_seed",
+          "id": "warburg-pincus"
+        }
+      ],
+      "created_by": "system",
+      "updated_by": "system",
+      "created_at": "2026-07-31T18:54:37.790Z",
+      "updated_at": "2026-07-31T19:04:58.765Z"
+    }
+  ],
+  "bootstrapped": true,
+  "updated_at": "2026-07-31T19:05:00.532Z"
+}

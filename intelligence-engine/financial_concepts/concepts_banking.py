@@ -1,0 +1,143 @@
+"""Module 4 — Banking Concepts."""
+
+from __future__ import annotations
+
+from financial_concepts.schema import ConceptCard
+
+M = "banking"
+
+BANKING_CONCEPTS: dict[str, ConceptCard] = {
+    "book_value": ConceptCard(
+        "book_value", M, "Book Value (of Equity)",
+        "The accounting net worth of a company: total assets minus total liabilities, as recorded on the balance sheet.",
+        formula="Book Value = Total Assets − Total Liabilities = Total Shareholders' Equity",
+        business_meaning="For financial institutions, book value closely tracks real economic value since assets (loans, securities) and liabilities (deposits, borrowings) are already carried near fair or amortized-cost value.",
+        interpretation="Book value grows with retained profit and new capital raised, and shrinks with losses, dividends, and buybacks — it is a slower-moving, more 'anchored' measure of value than market price.",
+        common_mistakes="Treating book value as equally meaningful for asset-light businesses, where most true economic value (brand, network effects, IP) never appears on the balance sheet.",
+        related_concepts=("p_b", "tangible_book", "why_banks_use_pb"),
+    ),
+    "goodwill_and_intangibles": ConceptCard(
+        "goodwill_and_intangibles", M, "Goodwill and Intangibles",
+        "Goodwill is the premium paid over the fair value of net identifiable assets in an acquisition; identified intangibles (patents, customer relationships, brands) are specific non-physical assets recognized separately, typically also arising from M&A.",
+        business_meaning="Both sit on the balance sheet as a legacy of past acquisitions — they represent capital already spent, not cash available for future use, and are tested periodically for impairment rather than depreciated on a fixed schedule (goodwill) or amortized over their useful life (identified intangibles).",
+        interpretation="A balance sheet heavy with goodwill from serial acquisitions carries impairment risk if those deals underperform — tangible book value strips this out to show the more conservative capital base.",
+        common_mistakes="Treating goodwill as a real, liquid asset that could be sold or used as collateral — it has no value independent of the ongoing success of the acquired business.",
+        related_concepts=("tangible_book", "goodwill_impairment", "book_value"),
+    ),
+    "tangible_book": ConceptCard(
+        "tangible_book", M, "Tangible Book Value",
+        "Book value of equity minus goodwill and other intangible assets — the 'hard' net worth that would remain in a liquidation or stress scenario.",
+        formula="Tangible Book Value = Total Equity − Goodwill − Other Intangible Assets",
+        business_meaning="Goodwill from past acquisitions can be a large but illiquid component of book value; tangible book strips it out to show the more conservative, realizable capital base.",
+        interpretation="Price-to-Tangible-Book is often preferred over plain P/B for banks that have grown significantly through acquisitions, since it avoids inflating the 'real' capital base with accounting goodwill.",
+        related_concepts=("book_value", "p_b", "goodwill_and_intangibles"),
+    ),
+    "nim": ConceptCard(
+        "nim", M, "NIM (Net Interest Margin)",
+        "A bank's net interest income (interest earned on loans/investments minus interest paid on deposits/borrowings) expressed as a percentage of average interest-earning assets.",
+        formula="NIM = (Interest Income − Interest Expense) / Average Interest-Earning Assets",
+        business_meaning="NIM is the core 'gross margin' of a bank's lending business — the spread it earns for taking credit and duration risk between what it pays depositors and what it charges borrowers.",
+        interpretation="NIM expands when a bank has strong low-cost deposit franchise (CASA) and/or rising interest rates on a floating-rate loan book; it compresses under intense loan-pricing competition or a falling-rate environment with sticky deposit costs.",
+        related_concepts=("casa", "cost_of_funds", "deposit_franchise"),
+    ),
+    "casa": ConceptCard(
+        "casa", M, "CASA (Current Account Savings Account) Ratio",
+        "The proportion of a bank's total deposits held in low-cost current and savings accounts, versus higher-cost term/fixed deposits.",
+        formula="CASA Ratio = (Current Account + Savings Account Deposits) / Total Deposits",
+        business_meaning="CASA deposits are the cheapest, stickiest source of funding a bank can have — a high CASA ratio is a structural cost-of-funds advantage over peers.",
+        interpretation="A bank with a high and stable CASA ratio can sustain a healthy NIM even in competitive lending markets, because its funding cost stays low regardless of what it charges borrowers.",
+        related_concepts=("nim", "cost_of_funds", "deposit_franchise"),
+    ),
+    "gnpa": ConceptCard(
+        "gnpa", M, "GNPA (Gross Non-Performing Assets)",
+        "The total value of loans on a bank's books where the borrower has stopped servicing interest or principal for a defined period (typically 90+ days), before any provisions are deducted.",
+        formula="GNPA Ratio = Gross Non-Performing Assets / Gross Advances (Total Loans)",
+        business_meaning="The headline measure of asset-quality stress in a loan book — rising GNPA signals deteriorating borrower repayment capacity across the portfolio.",
+        interpretation="GNPA should always be read alongside Provision Coverage — a high GNPA ratio with high provision coverage is a much less risky situation than the same GNPA ratio with low coverage.",
+        related_concepts=("nnpa", "provision_coverage", "credit_ratings", "default_risk"),
+    ),
+    "nnpa": ConceptCard(
+        "nnpa", M, "NNPA (Net Non-Performing Assets)",
+        "Gross NPAs minus the provisions a bank has already set aside against those bad loans — the residual unprovided-for stressed exposure.",
+        formula="NNPA Ratio = (Gross NPA − Provisions Held) / Net Advances",
+        business_meaning="Represents the portion of bad loans not yet cushioned by provisions — the amount that would directly hit capital if fully written off.",
+        interpretation="A large gap between GNPA and NNPA (i.e., high provision coverage) means the bank has already absorbed most of the expected pain through its P&L; a small gap means further provisioning (and earnings hits) may still be coming.",
+        related_concepts=("gnpa", "provision_coverage"),
+    ),
+    "provision_coverage": ConceptCard(
+        "provision_coverage", M, "Provision Coverage Ratio (PCR)",
+        "The proportion of Gross NPAs that a bank has already covered with provisions (loan-loss reserves).",
+        formula="Provision Coverage Ratio = Total Provisions Held / Gross NPAs",
+        business_meaning="A higher PCR means the bank has been more conservative in recognizing expected losses upfront, reducing the risk of future earnings shocks from that stressed book.",
+        interpretation="A bank with rising GNPA but also rising PCR is managing credit stress proactively; rising GNPA with flat or falling PCR is a warning sign of under-provisioning.",
+        related_concepts=("gnpa", "nnpa", "default_risk"),
+    ),
+    "cet1": ConceptCard(
+        "cet1", M, "CET1 (Common Equity Tier 1 Ratio)",
+        "A bank's core equity capital (common shares plus retained earnings) expressed as a percentage of its risk-weighted assets — the primary Basel III capital-adequacy measure.",
+        formula="CET1 Ratio = Common Equity Tier 1 Capital / Risk-Weighted Assets",
+        business_meaning="Regulators set minimum CET1 thresholds because it is the capital cushion that absorbs losses before depositors or senior creditors are at risk.",
+        interpretation="A bank operating close to its regulatory CET1 minimum has little room to absorb unexpected losses or fund growth without raising fresh capital, which can be dilutive to existing shareholders.",
+        related_concepts=("risk_weighted_assets", "capital_structure", "credit_ratings"),
+    ),
+    "risk_weighted_assets": ConceptCard(
+        "risk_weighted_assets", M, "Risk-Weighted Assets (RWA)",
+        "A bank's assets adjusted by regulatory risk weights, so that riskier exposures (e.g. unsecured consumer loans) require more capital backing than safer ones (e.g. government bonds).",
+        formula="RWA = Σ (Asset Exposure × Regulatory Risk Weight) across all asset categories",
+        business_meaning="RWA, not simple total assets, is the denominator regulators use for capital-adequacy ratios like CET1 — it ensures capital requirements scale with actual risk taken, not just balance-sheet size.",
+        interpretation="A bank can grow its loan book (total assets) while RWA grows even faster if it shifts toward riskier lending categories — capital ratios can deteriorate even with modest headline balance-sheet growth.",
+        related_concepts=("cet1", "loan_growth"),
+    ),
+    "cost_of_funds": ConceptCard(
+        "cost_of_funds", M, "Cost of Funds",
+        "The average interest rate a bank pays across all its funding sources — deposits, borrowings, and other liabilities.",
+        formula="Cost of Funds = Total Interest Expense / Average Interest-Bearing Liabilities",
+        business_meaning="Together with asset yield, cost of funds directly determines NIM — a bank's structural funding-cost advantage (or disadvantage) versus peers is a key competitive moat (or weakness).",
+        interpretation="A rising cost of funds that outpaces the rise in asset yields compresses NIM and signals the bank is losing pricing power or its low-cost deposit base is shrinking.",
+        related_concepts=("nim", "casa", "deposit_franchise"),
+    ),
+    "loan_growth": ConceptCard(
+        "loan_growth", M, "Loan Growth",
+        "The year-over-year (or period-over-period) percentage growth in a bank's total advances/loan book.",
+        formula="Loan Growth = (Current Period Loans − Prior Period Loans) / Prior Period Loans",
+        business_meaning="A primary driver of a bank's revenue growth, but must be assessed alongside asset quality — growth achieved by loosening underwriting standards often shows up as higher GNPA a few years later.",
+        interpretation="Loan growth consistently outpacing system/industry averages can reflect genuine market-share gains, or can be an early signal of aggressive underwriting that raises future credit risk.",
+        related_concepts=("gnpa", "risk_weighted_assets", "deposit_franchise"),
+    ),
+    "deposit_franchise": ConceptCard(
+        "deposit_franchise", M, "Deposit Franchise",
+        "The strength, stickiness, and cost advantage of a bank's deposit base — its ability to attract and retain low-cost funding at scale.",
+        business_meaning="A strong deposit franchise (high CASA, wide branch/digital reach, trusted brand) is one of the most durable competitive moats in banking, because low-cost funding compounds into a structural NIM advantage over decades.",
+        interpretation="Two banks can have identical loan books yet very different profitability purely because of the strength of their deposit franchise and resulting cost of funds.",
+        related_concepts=("casa", "cost_of_funds", "nim"),
+    ),
+    "nim_vs_spread": ConceptCard(
+        "nim_vs_spread", M, "NIM vs. Interest Spread",
+        "Two related but distinct bank profitability measures: Interest Spread compares average yield on assets to average cost of liabilities; NIM expresses net interest income as a percentage of earning assets, capturing the leverage of non-interest-bearing funding too.",
+        formula="Interest Spread = Yield on Assets − Cost of Liabilities; NIM = Net Interest Income / Average Earning Assets",
+        business_meaning="NIM can exceed the pure interest spread because it also benefits from 'free float' — capital and non-interest-bearing current deposits that fund earning assets at zero explicit cost.",
+        related_concepts=("nim", "casa", "cost_of_funds"),
+    ),
+    "fee_income": ConceptCard(
+        "fee_income", M, "Fee (Non-Interest) Income",
+        "Bank revenue earned from fees and commissions — cards, wealth management, transaction banking, insurance distribution — rather than interest spreads.",
+        business_meaning="A higher share of fee income makes bank earnings less sensitive to interest-rate cycles and credit costs, generally supporting a higher, steadier valuation multiple.",
+        interpretation="A rising fee-income share alongside stable NIM is generally viewed as a sign of a maturing, diversifying, higher-quality banking franchise.",
+        related_concepts=("nim", "cost_to_income"),
+    ),
+    "cost_to_income": ConceptCard(
+        "cost_to_income", M, "Cost-to-Income Ratio",
+        "A bank's operating expenses expressed as a percentage of its total operating income (net interest income plus fee income) — the banking-sector analogue of an operating margin.",
+        formula="Cost-to-Income Ratio = Operating Expenses / (Net Interest Income + Fee Income)",
+        business_meaning="A lower ratio means the bank converts more of its revenue into pre-provision operating profit — reflecting scale efficiency, digital adoption, and branch productivity.",
+        interpretation="A structurally improving cost-to-income ratio over time, even amid branch or headcount growth, signals genuine operating leverage in the franchise.",
+        related_concepts=("operating_leverage", "nim"),
+    ),
+    "liquidity_coverage_ratio": ConceptCard(
+        "liquidity_coverage_ratio", M, "Liquidity Coverage Ratio (LCR)",
+        "A Basel III regulatory requirement that banks hold enough high-quality liquid assets to survive a 30-day acute stress/funding-outflow scenario.",
+        formula="LCR = High-Quality Liquid Assets / Total Net Cash Outflows over 30 days",
+        business_meaning="Designed as a direct regulatory response to bank runs and short-term funding crises — ensures a bank cannot be forced into fire-sale asset liquidation within a month of a shock.",
+        related_concepts=("cet1", "deposit_franchise", "refinancing_risk"),
+    ),
+}

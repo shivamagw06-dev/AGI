@@ -1,0 +1,868 @@
+{
+  "ok": true,
+  "strategies": [
+    {
+      "id": "long_short_equity",
+      "name": "Long / Short Equity",
+      "family": "Equity",
+      "alpha_rating": 4,
+      "capacity": "High",
+      "leverage": "Medium",
+      "holding_period": "2 weeks – 18 months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_source": "Stock selection",
+      "top_users": [
+        "Tiger Global",
+        "Viking Global",
+        "Lone Pine",
+        "Coatue"
+      ],
+      "typical_gross": "110–200%",
+      "typical_net": "20–60%"
+    },
+    {
+      "id": "equity_market_neutral",
+      "name": "Equity Market Neutral",
+      "family": "Equity",
+      "alpha_rating": 3,
+      "capacity": "Medium",
+      "leverage": "High",
+      "holding_period": "Days – months",
+      "risk": "Low to Medium",
+      "complexity": "High",
+      "alpha_source": "Relative value between paired exposures",
+      "top_users": [
+        "Millennium",
+        "Point72",
+        "Marshall Wace"
+      ],
+      "typical_gross": "200–400%",
+      "typical_net": "≈0%"
+    },
+    {
+      "id": "statistical_arbitrage",
+      "name": "Statistical Arbitrage",
+      "family": "Quantitative",
+      "alpha_rating": 4,
+      "capacity": "Medium",
+      "leverage": "High",
+      "holding_period": "Seconds – days",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_source": "Mean reversion in statistical relationships",
+      "top_users": [
+        "Renaissance",
+        "Two Sigma",
+        "D.E. Shaw"
+      ],
+      "typical_gross": "300–800%",
+      "typical_net": "≈0%"
+    },
+    {
+      "id": "global_macro",
+      "name": "Global Macro",
+      "family": "Macro",
+      "alpha_rating": 4,
+      "capacity": "High",
+      "leverage": "High",
+      "holding_period": "Days – months",
+      "risk": "High",
+      "complexity": "High",
+      "alpha_source": "Economic and policy themes across asset classes",
+      "top_users": [
+        "Bridgewater",
+        "Brevan Howard",
+        "Element Capital"
+      ],
+      "typical_gross": "200–600%",
+      "typical_net": "Directional"
+    },
+    {
+      "id": "merger_arbitrage",
+      "name": "Merger Arbitrage",
+      "family": "Event Driven",
+      "alpha_rating": 3,
+      "capacity": "Medium",
+      "leverage": "Medium",
+      "holding_period": "Weeks – months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_source": "Deal spread capture",
+      "top_users": [
+        "Millennium",
+        "Farallon",
+        "Pentwater"
+      ],
+      "typical_gross": "100–200%",
+      "typical_net": "Low"
+    },
+    {
+      "id": "convertible_arbitrage",
+      "name": "Convertible Arbitrage",
+      "family": "Relative Value",
+      "alpha_rating": 3,
+      "capacity": "Low",
+      "leverage": "High",
+      "holding_period": "Months",
+      "risk": "Medium",
+      "complexity": "Very High",
+      "alpha_source": "Mispriced optionality inside a convertible bond",
+      "top_users": [
+        "Citadel",
+        "Millennium",
+        "Linden"
+      ],
+      "typical_gross": "300–500%",
+      "typical_net": "Delta hedged"
+    },
+    {
+      "id": "cta_trend",
+      "name": "CTA / Managed Futures",
+      "family": "Systematic",
+      "alpha_rating": 3,
+      "capacity": "Very High",
+      "leverage": "High",
+      "holding_period": "Weeks – months",
+      "risk": "Medium to High",
+      "complexity": "Medium",
+      "alpha_source": "Persistent price trends across futures markets",
+      "top_users": [
+        "AHL",
+        "Winton",
+        "Aspect"
+      ],
+      "typical_gross": "200–500%",
+      "typical_net": "Directional"
+    },
+    {
+      "id": "distressed",
+      "name": "Distressed & Special Situations",
+      "family": "Event Driven",
+      "alpha_rating": 4,
+      "capacity": "Low",
+      "leverage": "Low",
+      "holding_period": "Months – years",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_source": "Recovery value versus distressed price",
+      "top_users": [
+        "Oaktree",
+        "Elliott",
+        "Apollo"
+      ],
+      "typical_gross": "100–150%",
+      "typical_net": "Directional"
+    }
+  ],
+  "count": 8,
+  "compare_rows": [
+    {
+      "strategy": "Long / Short Equity",
+      "alpha_source": "Stock selection",
+      "leverage": "Medium",
+      "capacity": "High",
+      "holding_period": "2 weeks – 18 months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_rating": 4
+    },
+    {
+      "strategy": "Equity Market Neutral",
+      "alpha_source": "Relative value between paired exposures",
+      "leverage": "High",
+      "capacity": "Medium",
+      "holding_period": "Days – months",
+      "risk": "Low to Medium",
+      "complexity": "High",
+      "alpha_rating": 3
+    },
+    {
+      "strategy": "Statistical Arbitrage",
+      "alpha_source": "Mean reversion in statistical relationships",
+      "leverage": "High",
+      "capacity": "Medium",
+      "holding_period": "Seconds – days",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_rating": 4
+    },
+    {
+      "strategy": "Global Macro",
+      "alpha_source": "Economic and policy themes across asset classes",
+      "leverage": "High",
+      "capacity": "High",
+      "holding_period": "Days – months",
+      "risk": "High",
+      "complexity": "High",
+      "alpha_rating": 4
+    },
+    {
+      "strategy": "Merger Arbitrage",
+      "alpha_source": "Deal spread capture",
+      "leverage": "Medium",
+      "capacity": "Medium",
+      "holding_period": "Weeks – months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_rating": 3
+    },
+    {
+      "strategy": "Convertible Arbitrage",
+      "alpha_source": "Mispriced optionality inside a convertible bond",
+      "leverage": "High",
+      "capacity": "Low",
+      "holding_period": "Months",
+      "risk": "Medium",
+      "complexity": "Very High",
+      "alpha_rating": 3
+    },
+    {
+      "strategy": "CTA / Managed Futures",
+      "alpha_source": "Persistent price trends across futures markets",
+      "leverage": "High",
+      "capacity": "Very High",
+      "holding_period": "Weeks – months",
+      "risk": "Medium to High",
+      "complexity": "Medium",
+      "alpha_rating": 3
+    },
+    {
+      "strategy": "Distressed & Special Situations",
+      "alpha_source": "Recovery value versus distressed price",
+      "leverage": "Low",
+      "capacity": "Low",
+      "holding_period": "Months – years",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_rating": 4
+    }
+  ],
+  "profiles": {
+    "long_short_equity": {
+      "id": "long_short_equity",
+      "name": "Long / Short Equity",
+      "family": "Equity",
+      "alpha_rating": 4,
+      "capacity": "High",
+      "leverage": "Medium",
+      "typical_gross": "110–200%",
+      "typical_net": "20–60%",
+      "holding_period": "2 weeks – 18 months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_source": "Stock selection",
+      "top_users": [
+        "Tiger Global",
+        "Viking Global",
+        "Lone Pine",
+        "Coatue"
+      ],
+      "flow": [
+        "Fundamental research",
+        "Identify mispriced long",
+        "Identify overvalued short",
+        "Size against factor exposure",
+        "Monitor spread and thesis",
+        "Exit on re-rating or thesis break"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Stock selection",
+          "share": 65
+        },
+        {
+          "source": "Sector rotation",
+          "share": 20
+        },
+        {
+          "source": "Net exposure timing",
+          "share": 10
+        },
+        {
+          "source": "Short rebate",
+          "share": 5
+        }
+      ],
+      "works_when": [
+        "Dispersion between winners and losers is wide",
+        "Fundamentals drive prices more than flows",
+        "Shorting is permitted and borrow is available"
+      ],
+      "fails_when": [
+        "Everything rallies together and shorts squeeze",
+        "Passive flows overwhelm fundamentals",
+        "Crowded shorts unwind violently"
+      ],
+      "regimes": [
+        "High dispersion",
+        "Mid-cycle",
+        "Rising rates with earnings differentiation"
+      ],
+      "risk_factors": [
+        "Net exposure drift",
+        "Factor crowding",
+        "Short squeeze",
+        "Borrow cost"
+      ],
+      "kpis": [
+        "Gross exposure",
+        "Net exposure",
+        "Hit rate",
+        "Slugging ratio",
+        "Factor beta"
+      ],
+      "mistakes": [
+        "Running unintended factor bets while claiming stock selection alpha",
+        "Sizing shorts like longs when the loss profile is unbounded",
+        "Letting net exposure become an implicit market call"
+      ],
+      "key_data": [
+        "Company fundamentals",
+        "Estimate revisions",
+        "Borrow availability",
+        "Ownership"
+      ]
+    },
+    "equity_market_neutral": {
+      "id": "equity_market_neutral",
+      "name": "Equity Market Neutral",
+      "family": "Equity",
+      "alpha_rating": 3,
+      "capacity": "Medium",
+      "leverage": "High",
+      "typical_gross": "200–400%",
+      "typical_net": "≈0%",
+      "holding_period": "Days – months",
+      "risk": "Low to Medium",
+      "complexity": "High",
+      "alpha_source": "Relative value between paired exposures",
+      "top_users": [
+        "Millennium",
+        "Point72",
+        "Marshall Wace"
+      ],
+      "flow": [
+        "Build factor-neutral universe",
+        "Rank on signal",
+        "Long top decile",
+        "Short bottom decile",
+        "Neutralise beta, sector and style",
+        "Rebalance on signal decay"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Cross-sectional signal",
+          "share": 70
+        },
+        {
+          "source": "Short rebate and financing",
+          "share": 15
+        },
+        {
+          "source": "Rebalancing capture",
+          "share": 15
+        }
+      ],
+      "works_when": [
+        "Signals decay slowly and dispersion persists",
+        "Financing is cheap enough to run high gross"
+      ],
+      "fails_when": [
+        "Factor unwinds hit crowded books simultaneously",
+        "Correlations converge to one",
+        "Leverage is forced down at the worst moment"
+      ],
+      "regimes": [
+        "Stable volatility",
+        "Normal correlation",
+        "Ample financing"
+      ],
+      "risk_factors": [
+        "Leverage",
+        "Crowding",
+        "Financing withdrawal",
+        "Signal decay"
+      ],
+      "kpis": [
+        "Beta to market",
+        "Factor exposures",
+        "Gross leverage",
+        "Signal half-life"
+      ],
+      "mistakes": [
+        "Treating dollar-neutral as risk-neutral",
+        "Ignoring that leverage converts a small edge into a large loss"
+      ],
+      "key_data": [
+        "Pricing",
+        "Fundamental ratios",
+        "Factor loadings",
+        "Borrow"
+      ]
+    },
+    "statistical_arbitrage": {
+      "id": "statistical_arbitrage",
+      "name": "Statistical Arbitrage",
+      "family": "Quantitative",
+      "alpha_rating": 4,
+      "capacity": "Medium",
+      "leverage": "High",
+      "typical_gross": "300–800%",
+      "typical_net": "≈0%",
+      "holding_period": "Seconds – days",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_source": "Mean reversion in statistical relationships",
+      "top_users": [
+        "Renaissance",
+        "Two Sigma",
+        "D.E. Shaw"
+      ],
+      "flow": [
+        "Identify cointegrated pair or basket",
+        "Model the spread",
+        "Compute z-score against the mean",
+        "Enter when the deviation exceeds threshold",
+        "Exit on reversion or stop on regime break"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Mean reversion",
+          "share": 75
+        },
+        {
+          "source": "Microstructure and liquidity provision",
+          "share": 20
+        },
+        {
+          "source": "Financing",
+          "share": 5
+        }
+      ],
+      "works_when": [
+        "Relationships are stable and liquidity is deep",
+        "Execution costs stay below the edge per trade"
+      ],
+      "fails_when": [
+        "The relationship structurally breaks rather than reverts",
+        "Liquidity disappears and slippage exceeds the edge"
+      ],
+      "regimes": [
+        "Range-bound",
+        "Stable correlation",
+        "Deep liquidity"
+      ],
+      "risk_factors": [
+        "Model decay",
+        "Regime break",
+        "Execution cost",
+        "Leverage"
+      ],
+      "kpis": [
+        "Z-score",
+        "Half-life of reversion",
+        "Turnover",
+        "Cost per trade",
+        "Hit rate"
+      ],
+      "mistakes": [
+        "Confusing a broken relationship with a wider entry opportunity",
+        "Underestimating transaction costs at high turnover"
+      ],
+      "key_data": [
+        "Tick data",
+        "Borrow",
+        "Corporate actions",
+        "Order book depth"
+      ]
+    },
+    "global_macro": {
+      "id": "global_macro",
+      "name": "Global Macro",
+      "family": "Macro",
+      "alpha_rating": 4,
+      "capacity": "High",
+      "leverage": "High",
+      "typical_gross": "200–600%",
+      "typical_net": "Directional",
+      "holding_period": "Days – months",
+      "risk": "High",
+      "complexity": "High",
+      "alpha_source": "Economic and policy themes across asset classes",
+      "top_users": [
+        "Bridgewater",
+        "Brevan Howard",
+        "Element Capital"
+      ],
+      "flow": [
+        "Form a view on growth, inflation and policy",
+        "Identify the cleanest instrument to express it",
+        "Size against conviction and carry",
+        "Hedge unintended exposures",
+        "Exit on thesis confirmation or invalidation"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Rates and FX positioning",
+          "share": 45
+        },
+        {
+          "source": "Equity index direction",
+          "share": 25
+        },
+        {
+          "source": "Commodities",
+          "share": 20
+        },
+        {
+          "source": "Carry",
+          "share": 10
+        }
+      ],
+      "works_when": [
+        "Policy is shifting and cross-asset correlations are meaningful",
+        "Volatility is high enough to pay for the option-like payoff"
+      ],
+      "fails_when": [
+        "Central banks suppress volatility and ranges compress",
+        "The thesis is right but the timing is early"
+      ],
+      "regimes": [
+        "Policy inflection",
+        "Inflation shocks",
+        "Currency crises"
+      ],
+      "risk_factors": [
+        "Timing",
+        "Leverage",
+        "Liquidity in stress",
+        "Correlated positioning"
+      ],
+      "kpis": [
+        "Real rates",
+        "Yield curve shape",
+        "Terms of trade",
+        "Positioning data"
+      ],
+      "mistakes": [
+        "Expressing a macro view in an instrument with the wrong sensitivity",
+        "Sizing conviction rather than risk"
+      ],
+      "key_data": [
+        "Inflation prints",
+        "Policy statements",
+        "Flows",
+        "Commodity balances"
+      ]
+    },
+    "merger_arbitrage": {
+      "id": "merger_arbitrage",
+      "name": "Merger Arbitrage",
+      "family": "Event Driven",
+      "alpha_rating": 3,
+      "capacity": "Medium",
+      "leverage": "Medium",
+      "typical_gross": "100–200%",
+      "typical_net": "Low",
+      "holding_period": "Weeks – months",
+      "risk": "Medium",
+      "complexity": "Medium",
+      "alpha_source": "Deal spread capture",
+      "top_users": [
+        "Millennium",
+        "Farallon",
+        "Pentwater"
+      ],
+      "flow": [
+        "Deal announced",
+        "Spread opens against offer price",
+        "Assess regulatory and financing risk",
+        "Long target, short acquirer if stock-for-stock",
+        "Hold to close",
+        "Capture spread"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Deal spread",
+          "share": 80
+        },
+        {
+          "source": "Interest on collateral",
+          "share": 10
+        },
+        {
+          "source": "Hedge and stub value",
+          "share": 5
+        },
+        {
+          "source": "Bumps and competing bids",
+          "share": 5
+        }
+      ],
+      "works_when": [
+        "Deal flow is heavy and regulators are predictable",
+        "Financing markets are open"
+      ],
+      "fails_when": [
+        "A deal breaks and the target falls back to the undisturbed price",
+        "Regulators turn hostile and the whole book re-prices at once"
+      ],
+      "regimes": [
+        "Active M&A cycle",
+        "Benign regulation",
+        "Open credit markets"
+      ],
+      "risk_factors": [
+        "Deal break",
+        "Regulatory intervention",
+        "Financing failure",
+        "Timing extension"
+      ],
+      "kpis": [
+        "Gross spread",
+        "Annualised spread",
+        "Days to close",
+        "Break probability"
+      ],
+      "mistakes": [
+        "Annualising a spread without weighting break probability",
+        "Concentrating in one regulator's jurisdiction"
+      ],
+      "key_data": [
+        "Deal terms",
+        "Regulatory filings",
+        "Antitrust precedent",
+        "Financing conditions"
+      ]
+    },
+    "convertible_arbitrage": {
+      "id": "convertible_arbitrage",
+      "name": "Convertible Arbitrage",
+      "family": "Relative Value",
+      "alpha_rating": 3,
+      "capacity": "Low",
+      "leverage": "High",
+      "typical_gross": "300–500%",
+      "typical_net": "Delta hedged",
+      "holding_period": "Months",
+      "risk": "Medium",
+      "complexity": "Very High",
+      "alpha_source": "Mispriced optionality inside a convertible bond",
+      "top_users": [
+        "Citadel",
+        "Millennium",
+        "Linden"
+      ],
+      "flow": [
+        "Buy the convertible bond",
+        "Decompose into bond value plus embedded option",
+        "Short equity to the option delta",
+        "Harvest volatility and carry",
+        "Re-hedge as delta moves"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Implied vs realised volatility",
+          "share": 50
+        },
+        {
+          "source": "Carry and coupon",
+          "share": 30
+        },
+        {
+          "source": "Credit spread",
+          "share": 15
+        },
+        {
+          "source": "Gamma trading",
+          "share": 5
+        }
+      ],
+      "works_when": [
+        "New issuance is cheap and realised volatility is high",
+        "Borrow is available and financing is stable"
+      ],
+      "fails_when": [
+        "Credit spreads widen while equity falls",
+        "Financing is withdrawn and positions must be unwound"
+      ],
+      "regimes": [
+        "Heavy issuance",
+        "Rising volatility",
+        "Stable credit"
+      ],
+      "risk_factors": [
+        "Credit",
+        "Liquidity",
+        "Financing",
+        "Model risk on the embedded option"
+      ],
+      "kpis": [
+        "Implied vs realised vol",
+        "Delta",
+        "Gamma",
+        "Credit spread",
+        "Borrow cost"
+      ],
+      "mistakes": [
+        "Hedging equity risk while leaving credit risk naked",
+        "Assuming financing will be there in a stress event"
+      ],
+      "key_data": [
+        "Bond terms",
+        "Option pricing inputs",
+        "Credit spreads",
+        "Borrow"
+      ]
+    },
+    "cta_trend": {
+      "id": "cta_trend",
+      "name": "CTA / Managed Futures",
+      "family": "Systematic",
+      "alpha_rating": 3,
+      "capacity": "Very High",
+      "leverage": "High",
+      "typical_gross": "200–500%",
+      "typical_net": "Directional",
+      "holding_period": "Weeks – months",
+      "risk": "Medium to High",
+      "complexity": "Medium",
+      "alpha_source": "Persistent price trends across futures markets",
+      "top_users": [
+        "AHL",
+        "Winton",
+        "Aspect"
+      ],
+      "flow": [
+        "Measure trend across lookbacks",
+        "Compare fast and slow moving averages",
+        "Size inversely to volatility",
+        "Enter with the trend",
+        "Exit on reversal or volatility spike"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Sustained directional trends",
+          "share": 70
+        },
+        {
+          "source": "Carry across futures curves",
+          "share": 20
+        },
+        {
+          "source": "Diversification across markets",
+          "share": 10
+        }
+      ],
+      "works_when": [
+        "Markets move in sustained directions, often during crises",
+        "Volatility is trending rather than mean-reverting"
+      ],
+      "fails_when": [
+        "Choppy, range-bound markets whipsaw the signal",
+        "Sharp reversals give back trend profits"
+      ],
+      "regimes": [
+        "Crisis",
+        "Sustained inflation or disinflation",
+        "Strong currency trends"
+      ],
+      "risk_factors": [
+        "Whipsaw",
+        "Volatility targeting error",
+        "Correlation convergence"
+      ],
+      "kpis": [
+        "Trend strength",
+        "Realised volatility",
+        "Time in market",
+        "Win/loss asymmetry"
+      ],
+      "mistakes": [
+        "Over-optimising lookbacks to recent history",
+        "Cutting the strategy after a drawdown, which is when it usually pays"
+      ],
+      "key_data": [
+        "Futures prices",
+        "Roll yields",
+        "Volatility estimates"
+      ]
+    },
+    "distressed": {
+      "id": "distressed",
+      "name": "Distressed & Special Situations",
+      "family": "Event Driven",
+      "alpha_rating": 4,
+      "capacity": "Low",
+      "leverage": "Low",
+      "typical_gross": "100–150%",
+      "typical_net": "Directional",
+      "holding_period": "Months – years",
+      "risk": "High",
+      "complexity": "Very High",
+      "alpha_source": "Recovery value versus distressed price",
+      "top_users": [
+        "Oaktree",
+        "Elliott",
+        "Apollo"
+      ],
+      "flow": [
+        "Identify stressed capital structure",
+        "Model recovery by seniority",
+        "Buy the fulcrum security",
+        "Engage in restructuring",
+        "Realise on emergence"
+      ],
+      "revenue_sources": [
+        {
+          "source": "Recovery versus purchase price",
+          "share": 70
+        },
+        {
+          "source": "Restructuring influence",
+          "share": 20
+        },
+        {
+          "source": "Coupon and accrual",
+          "share": 10
+        }
+      ],
+      "works_when": [
+        "Default cycles create forced selling",
+        "Legal process is predictable"
+      ],
+      "fails_when": [
+        "Liquidity dries up before the process completes",
+        "Legal outcomes surprise on seniority"
+      ],
+      "regimes": [
+        "Credit stress",
+        "Rising defaults",
+        "Post-recession recovery"
+      ],
+      "risk_factors": [
+        "Illiquidity",
+        "Legal outcome",
+        "Duration of process",
+        "Concentration"
+      ],
+      "kpis": [
+        "Recovery rate",
+        "Fulcrum identification",
+        "Time to emergence",
+        "Leverage of target"
+      ],
+      "mistakes": [
+        "Buying the wrong layer of the capital structure",
+        "Underestimating how long a restructuring takes"
+      ],
+      "key_data": [
+        "Indentures",
+        "Court filings",
+        "Capital structure",
+        "Asset appraisals"
+      ]
+    }
+  }
+}

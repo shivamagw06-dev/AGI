@@ -1,0 +1,224 @@
+/* Upstox Full-Universe Bootstrap — Phase 7.4d ops console */
+
+.ub-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(30, 90, 70, 0.12), transparent 55%),
+    linear-gradient(180deg, #0f1412 0%, #121816 40%, #0e1210 100%);
+  color: #e7efe9;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+.ub-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 18px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ub-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ub-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8aa396;
+  font-weight: 650;
+}
+
+.ub-title {
+  margin: 4px 0 0;
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ub-sub {
+  margin: 6px 0 0;
+  max-width: 52rem;
+  color: #a8b8af;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.ub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ub-btn {
+  border: 1px solid #2d4038;
+  background: #1a2420;
+  color: #e7efe9;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ub-btn:hover { background: #223029; }
+.ub-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.ub-btn.primary { background: #1f6b4a; border-color: #2a8a5f; }
+.ub-btn.primary:hover { background: #258257; }
+.ub-btn.danger { background: #5a2a2a; border-color: #7a3a3a; }
+.ub-btn.ghost { background: transparent; }
+
+.ub-back {
+  color: #8aa396;
+  text-decoration: none;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ub-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.ub-stat {
+  padding: 10px 12px;
+  background: rgba(26, 36, 32, 0.9);
+  border: 1px solid #27352f;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ub-stat .label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8aa396;
+  font-weight: 650;
+}
+
+.ub-stat .value {
+  font-size: 1.15rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.ub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.ub-panel {
+  padding: 12px 14px;
+  background: rgba(26, 36, 32, 0.9);
+  border: 1px solid #27352f;
+  border-radius: 4px;
+}
+
+.ub-panel h2 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8aa396;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ub-kv {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  font-size: 13px;
+}
+
+.ub-kv span:first-child { color: #a8b8af; }
+.ub-kv span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.ub-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ub-badge.running { background: #1f4d38; color: #9eecc4; }
+.ub-badge.completed { background: #1e3d55; color: #9ec9ec; }
+.ub-badge.paused, .ub-badge.stopped { background: #4a3a1e; color: #ecd49e; }
+.ub-badge.idle { background: #2a3330; color: #a8b8af; }
+
+.ub-error {
+  padding: 10px 12px;
+  border: 1px solid #7a3a3a;
+  background: rgba(90, 42, 42, 0.35);
+  border-radius: 4px;
+  color: #f0c0c0;
+  font-size: 13px;
+}
+
+.ub-table-wrap { overflow-x: auto; }
+
+.ub-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ub-table th,
+.ub-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #27352f;
+  white-space: nowrap;
+}
+
+.ub-table th {
+  color: #8aa396;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ub-muted { color: #8aa396; font-size: 13px; }
+
+.ub-progress {
+  height: 8px;
+  background: #1a2420;
+  border: 1px solid #27352f;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ub-progress > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #1f6b4a, #3cb371);
+}
+
+@media (max-width: 640px) {
+  .ub-shell { padding: 14px 12px 36px; }
+  .ub-title { font-size: 1.35rem; }
+}

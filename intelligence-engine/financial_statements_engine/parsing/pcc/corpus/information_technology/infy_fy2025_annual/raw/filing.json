@@ -1,0 +1,44 @@
+{
+  "consolidation_type": "consolidated",
+  "document": {
+    "fields": {
+      "CashAndCashEquivalents": {
+        "unit_scale": "crores",
+        "value": 22000.0
+      },
+      "Finance Costs": {
+        "unit_scale": "crores",
+        "value": 400.0
+      },
+      "NetCashFlowsFromUsedInOperatingActivities": {
+        "unit_scale": "crores",
+        "value": 28000.0
+      },
+      "Other Income": {
+        "unit_scale": "crores",
+        "value": 3200.0
+      },
+      "PAT": {
+        "unit_scale": "crores",
+        "value": 26000.0
+      },
+      "Revenue From Operations": {
+        "unit_scale": "crores",
+        "value": 153000.0
+      },
+      "TotalAssets": {
+        "unit_scale": "crores",
+        "value": 110000.0
+      },
+      "TotalEquity": {
+        "unit_scale": "crores",
+        "value": 75000.0
+      }
+    }
+  },
+  "document_type": "json",
+  "evidence_id": "pcc:information_technology:infy_fy2025_annual",
+  "period_end": "2025-03-31",
+  "period_type": "annual",
+  "ticker": "INFY"
+}
