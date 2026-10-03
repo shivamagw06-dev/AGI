@@ -170,6 +170,11 @@ jobs:
           cp index.html dist/index.html
           rm -rf dist/assets
           cp -R assets dist/assets
+          # Company marks are Vite public assets, outside the compiled assets tree.
+          if [ -d public/company-logos ]; then
+            mkdir -p dist/company-logos
+            cp -R public/company-logos/. dist/company-logos/
+          fi
           cp .htaccess dist/.htaccess 2>/dev/null || true
           cp version.json dist/version.json
           cp og-article.php dist/og-article.php 2>/dev/null || true
