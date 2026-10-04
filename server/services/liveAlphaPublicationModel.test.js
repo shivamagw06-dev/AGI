@@ -39,7 +39,7 @@ test('missing prices stay null and chart gaps are explicit',()=>{
 test('one-to-one entry relation supports PostgREST object and test array shapes',()=>{assert.equal(entryRow({price:10}).price,10);assert.equal(entryRow([{price:10}]).price,10);assert.equal(entryRow(null),null);});
 test('a session close never settles at a 15:29 live price',async()=>{
  const row={due_at:'2026-10-01T10:00:00Z',horizon:'close',publication:{instrument_key:'TEST',reference_price:100}};
- const result=await settlePublicationFollowup(row,{now:new Date('2026-10-01T10:01:00Z'),request:async()=>[quote('2026-10-01T09:29:20Z')]});assert.equal(result.status,'pending');assert.equal(result.price,undefined);
+ const result=await settlePublicationFollowup(row,{now:new Date('2026-10-01T10:01:00Z'),request:async()=>[quote('2026-10-01T09:59:20Z')]});assert.equal(result.status,'pending');assert.equal(result.price,undefined);
  const settled=await settlePublicationFollowup(row,{now:new Date('2026-10-04T05:00:00Z'),request:async()=>[],book:{closeOn:async()=>({price:102,candle_end:'2026-10-01T10:00:00Z'})}});
  assert.equal(settled.status,'completed');assert.equal(settled.price,102);assert.equal(settled.simulated_net_return_pct,null);
 });
@@ -58,6 +58,7 @@ test('market closed and partially failed evaluations cannot become published cal
  const request=async()=>{throw new Error('must not publish');};
  assert.equal((await publishAlphaSnapshot([],[],{request,now:new Date('2026-10-04')})).skipped,'market_closed');
  assert.equal((await publishAlphaSnapshot([],[{status:'failed'}],{request,now})).skipped,'partial_engine_failure');
+ assert.equal((await publishAlphaSnapshot([],[{status:'stored',rejected_signals:1}],{request,now})).skipped,'partial_engine_failure');
 });
 test('entry collection never re-enters a one-to-one entry already captured',async()=>{
  let queries=0;const result=await collectPublicationEntries({now,request:async()=>{queries++;return [{direction:'positive',quality:{quote_fresh:true},entries:{price:100}}];}});assert.equal(result,0);assert.equal(queries,1);

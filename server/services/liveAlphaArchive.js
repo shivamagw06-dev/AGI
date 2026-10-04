@@ -70,7 +70,9 @@ export async function archiveDetail(id,{request=rest,book=sharedCandleBook(),now
   referenceCheck={status:anchor.price&&positive(record.reference_price)&&Math.abs(Number(record.reference_price)/anchor.price-1)<=.03?'candle_consistent':'unverified',observed_price:anchor.price||null,reason:anchor.reason||null};
  }
  const validReference=referenceCheck.status!=='unverified';
- const chart=chartRows({...record,reference_price:validReference?record.reference_price:null},prices,benchmark);
+ let chart=chartRows({...record,reference_price:validReference?record.reference_price:null},prices,benchmark);
+ for(const f of record.followups||[]){if(f.status==='completed'&&positive(f.price)&&Date.parse(f.observed_at)>Date.parse(start))chart.push({at:f.observed_at,price:Number(f.price),stock_return_pct:validReference?stockReturn(record.reference_price,f.price):null,benchmark_return_pct:f.benchmark_return_pct,kind:'followup'});}
+ chart=[...new Map(chart.map(p=>[p.at,p])).values()].sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));
  const live=latestLiveAlphaPrints().get(record.instrument_key);const liveAt=Date.parse(live?.observed_at||'');
  if(positive(live?.ltp)&&liveAt>=Date.parse(start)&&liveAt<=now.getTime()&&(!chart.length||liveAt>Date.parse(chart.at(-1).at)))chart.push({at:live.observed_at,price:live.ltp,stock_return_pct:validReference?stockReturn(record.reference_price,live.ltp):null,benchmark_return_pct:null,kind:'recorded_quote'});
  const measured=chart.filter(p=>p.price&&Date.parse(p.at)>Date.parse(start));const last=measured.at(-1);const changes=measured.map(p=>p.stock_return_pct).filter(v=>v!=null);
@@ -78,6 +80,6 @@ export async function archiveDetail(id,{request=rest,book=sharedCandleBook(),now
   latest_price:last?.price||null,latest_price_at:last?.at||null,stock_return_pct:last?.stock_return_pct??null,directional_return_pct:directionReturn(record.direction,last?.stock_return_pct),
   best_observed_change_pct:changes.length?Math.max(...changes):null,worst_observed_change_pct:changes.length?Math.min(...changes):null,
   methodology:'Raw price change, before fees, tax and dividends. Daily closes and recorded quotes only; best/worst are observed points, not intraday extremes. Missing sessions break the chart. Corporate actions are not reconciled. A negative directional result assumes a hypothetical short, not buying the stock.',
-  cost_model:COST_MODEL,generated_at:now.toISOString()};
+  chart_limited:prices.length>=260,cost_model:COST_MODEL,generated_at:now.toISOString()};
  detailCache.set(id,{at:now.getTime(),value});if(detailCache.size>100)detailCache.delete(detailCache.keys().next().value);return value;
 }
