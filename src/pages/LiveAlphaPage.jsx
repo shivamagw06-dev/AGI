@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import API_ORIGIN from '@/config';
 import {
   buildCanonicalSignals,
@@ -10,6 +10,7 @@ import {
   filterRadarRows,
   plainSignalDirection,
 } from '@/lib/liveAlphaDashboardModel';
+import { buildLiveAlphaSetups } from '@/lib/liveAlphaSetupModel';
 import './liveAlphaPage.css';
 
 /**
@@ -101,6 +102,51 @@ function Metric({ label, value, sub }) {
   );
 }
 
+const money = (value) => Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const istTime = (timestamp) => new Date(timestamp).toLocaleTimeString('en-IN', {
+  timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit',
+});
+
+function SetupCards({ setups, onSelect, active }) {
+  return (
+    <section className="la-setups" aria-label="Current research setups">
+      <div className="la-section__head">
+        <h2>Current research setups</h2>
+        <p className="la-section__note">
+          Aligned intraday signals with a recent quote. Direction is a model reading, not an instruction to trade.
+          A target appears only when a measured opening range supports a transparent scenario level; it is not a forecast.
+        </p>
+      </div>
+      {!active ? (
+        <p className="la-setups__empty">No live setups outside a healthy market session. Historical signals remain in the board below.</p>
+      ) : setups.length === 0 ? (
+        <p className="la-setups__empty">No aligned signals currently have both a fresh quote and verified input quality.</p>
+      ) : (
+        <div className="la-setups__grid">
+          {setups.map((setup) => (
+            <button key={setup.symbol} type="button" className={`la-setup la-setup--${setup.direction}`} onClick={() => onSelect(setup.symbol)}
+              aria-label={`Inspect ${setup.symbol} ${setup.direction === 'positive' ? 'bullish' : 'bearish'} research setup`}>
+              <div className="la-setup__top">
+                <strong>{setup.symbol}</strong>
+                <span>{setup.direction === 'positive' ? 'BULLISH SETUP' : 'BEARISH SETUP'}</span>
+              </div>
+              <div className="la-setup__prices">
+                <div><small>Current price</small><strong>₹{money(setup.price)}</strong></div>
+                <div><small>Scenario target</small><strong>{setup.target === null ? 'Not established' : `₹${money(setup.target)}`}</strong></div>
+              </div>
+              <p className="la-setup__basis">{setup.target === null ? 'No measured, validated target from these engines.' : setup.target_basis}</p>
+              <div className="la-setup__meta">
+                <span>{setup.engines.length} {setup.engines.length === 1 ? 'engine' : 'aligned engines'} · {setup.confidence === 'MODEL-ONLY' ? 'Model only' : setup.confidence}</span>
+                <span>Signal {istTime(setup.signal_at)} · Price {istTime(setup.price_as_of)} IST</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function ConfidenceBadge({ confidence, basis }) {
   const tone = confidence === 'SAMPLE-RICH' || confidence === 'HIGH' ? 'good'
     : confidence === 'MEDIUM' ? 'mid'
@@ -183,7 +229,7 @@ export function SectorRotation({ groww }) {
  */
 export function Shortlist({ rows, onSelect }) {
   const top = rows
-    .filter((row) => row.active.length >= 2)
+    .filter((row) => row.active.length >= 2 && row.signal_structure !== 'CONFLICTING')
     .slice()
     .sort((a, b) => (b.active.length - a.active.length) || (Math.abs(b.composite) - Math.abs(a.composite)))
     .slice(0, 12);
@@ -304,7 +350,7 @@ export function SignalRow({ row, expanded, onToggle }) {
   // Signals stored before liquidity_verified existed have no such field, which
   // is unknown rather than fine — only an explicit false is a measured miss.
   const unverified = row.active.filter((signal) => signal.liquidity_verified === false).length;
-  const unknownLiquidity = row.active.filter((signal) => signal.liquidity_verified === undefined).length;
+  const unknownLiquidity = row.active.filter((signal) => signal.liquidity_verified == null).length;
 
   return (
     <>
@@ -373,6 +419,8 @@ export default function LiveAlphaPage() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(null);
+  const boardRef = useRef(null);
+  const [clock, setClock] = useState(() => Date.now());
 
   const load = async () => {
     setError('');
@@ -395,7 +443,8 @@ export default function LiveAlphaPage() {
     document.title = 'Live Alpha | Agarwal Global Investments';
     load();
     const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
+    const clockTimer = setInterval(() => setClock(Date.now()), 15_000);
+    return () => { clearInterval(timer); clearInterval(clockTimer); };
   }, []);
 
   const allRows = useMemo(
@@ -404,6 +453,15 @@ export default function LiveAlphaPage() {
   );
   const isFresh = payload.freshness?.stale === false;
   const directional = useMemo(() => allRows.filter((row) => row.active?.length), [allRows]);
+  const setups = useMemo(() => buildLiveAlphaSetups(directional, {
+    freshness: payload.freshness, runtime, now: new Date(clock),
+  }), [directional, payload.freshness, runtime, clock]);
+  const selectSetup = (symbol) => {
+    setFilter('all');
+    setSearch(symbol);
+    setOpen(symbol);
+    boardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   const shown = useMemo(
     () => filterRadarRows(directional, filter, { search })
       .slice()
@@ -441,13 +499,15 @@ export default function LiveAlphaPage() {
 
       <StateBanner readiness={payload.readiness} freshness={payload.freshness} runtime={runtime} />
 
+      <SetupCards setups={setups} onSelect={selectSetup} active={!error && isFresh && runtime?.market_session?.open === true} />
+
       <section className="la-metrics">
         <Metric label="Names with an active signal" value={directional.length} sub={`of ${allRows.length} evaluated`} />
         <Metric label="Positive" value={directional.filter((row) => row.composite > 0).length} />
         <Metric label="Negative" value={directional.filter((row) => row.composite < 0).length} />
         <Metric
           label="Multi-engine agreement"
-          value={directional.filter((row) => row.active.length >= 2).length}
+          value={directional.filter((row) => row.active.length >= 2 && row.signal_structure !== 'CONFLICTING').length}
           sub="two or more engines aligned"
         />
         <Metric
@@ -459,9 +519,9 @@ export default function LiveAlphaPage() {
 
       <SectorRotation groww={payload.groww} />
 
-      <Shortlist rows={directional} onSelect={setSearch} />
+      <Shortlist rows={directional} onSelect={selectSetup} />
 
-      <section className="la-board">
+      <section className="la-board" ref={boardRef}>
         <div className="la-board__bar">
           <div className="la-filters">
             {['all', 'positive', 'negative'].map((option) => (
