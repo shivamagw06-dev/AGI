@@ -1,0 +1,1869 @@
+{
+  "logos": {
+    "DHR": {
+      "src": "DHR.svg",
+      "name": "Danaher Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/danaher.svg",
+      "instrument": "NYSE:DHR"
+    },
+    "VTR": {
+      "src": "VTR.svg",
+      "name": "Ventas, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/ventas.svg",
+      "instrument": "NYSE:VTR"
+    },
+    "GE": {
+      "src": "GE.svg",
+      "name": "GE Aerospace",
+      "source": "https://s3-symbol-logo.tradingview.com/ge-aerospace.svg",
+      "instrument": "NYSE:GE"
+    },
+    "ESLT": {
+      "src": "ESLT.svg",
+      "name": "Elbit Systems Ltd",
+      "source": "https://s3-symbol-logo.tradingview.com/elbit-systems.svg",
+      "instrument": "NASDAQ:ESLT"
+    },
+    "GOOGL": {
+      "src": "GOOGL.svg",
+      "name": "Alphabet Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/alphabet.svg",
+      "instrument": "NASDAQ:GOOGL"
+    },
+    "LEA": {
+      "src": "LEA.svg",
+      "name": "Lear Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/lear.svg",
+      "instrument": "NYSE:LEA"
+    },
+    "HUBB": {
+      "src": "HUBB.svg",
+      "name": "Hubbell Incorporated",
+      "source": "https://s3-symbol-logo.tradingview.com/hubbell.svg",
+      "instrument": "NYSE:HUBB"
+    },
+    "KO": {
+      "src": "KO.svg",
+      "name": "Coca-Cola Company",
+      "source": "https://s3-symbol-logo.tradingview.com/coca-cola.svg",
+      "instrument": "NYSE:KO"
+    },
+    "CORZ": {
+      "src": "CORZ.svg",
+      "name": "Core Scientific Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/core-scientific.svg",
+      "instrument": "NASDAQ:CORZ"
+    },
+    "PLTR": {
+      "src": "PLTR.svg",
+      "name": "Palantir Technologies Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/palantir.svg",
+      "instrument": "NASDAQ:PLTR"
+    },
+    "TEM": {
+      "src": "TEM.svg",
+      "name": "Tempus AI, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/tempus-ai.svg",
+      "instrument": "NASDAQ:TEM"
+    },
+    "LI": {
+      "src": "LI.svg",
+      "name": "Li Auto, Inc. Sponsored ADR Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/li.svg",
+      "instrument": "NASDAQ:LI"
+    },
+    "MSFT": {
+      "src": "MSFT.svg",
+      "name": "Microsoft Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/microsoft.svg",
+      "instrument": "NASDAQ:MSFT"
+    },
+    "HYDB": {
+      "src": "HYDB.svg",
+      "name": "iShares High Yield Systematic Bond ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:HYDB"
+    },
+    "CNR": {
+      "src": "CNR.svg",
+      "name": "Core Natural Resources, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/consol-energy.svg",
+      "instrument": "NYSE:CNR"
+    },
+    "AMZN": {
+      "src": "AMZN.svg",
+      "name": "Amazon.com, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/amazon.svg",
+      "instrument": "NASDAQ:AMZN"
+    },
+    "GLXY": {
+      "src": "GLXY.svg",
+      "name": "Galaxy Digital Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/galaxy-digital.svg",
+      "instrument": "NASDAQ:GLXY"
+    },
+    "HOOD": {
+      "src": "HOOD.svg",
+      "name": "Robinhood Markets, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/robinhood.svg",
+      "instrument": "NASDAQ:HOOD"
+    },
+    "SIZE": {
+      "src": "SIZE.svg",
+      "name": "iShares MSCI USA Size Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "AMEX:SIZE"
+    },
+    "ALLY": {
+      "src": "ALLY.svg",
+      "name": "Ally Financial Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/ally.svg",
+      "instrument": "NYSE:ALLY"
+    },
+    "RIOT": {
+      "src": "RIOT.svg",
+      "name": "Riot Platforms, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/riot-blockchain.svg",
+      "instrument": "NASDAQ:RIOT"
+    },
+    "PM": {
+      "src": "PM.svg",
+      "name": "Philip Morris International Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/philip-morris.svg",
+      "instrument": "NYSE:PM"
+    },
+    "EEM": {
+      "src": "EEM.svg",
+      "name": "iShares MSCI Emerging Markets ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "AMEX:EEM"
+    },
+    "QGEN": {
+      "src": "QGEN.svg",
+      "name": "QIAGEN NV",
+      "source": "https://s3-symbol-logo.tradingview.com/qiagen-nv.svg",
+      "instrument": "NYSE:QGEN"
+    },
+    "CME": {
+      "src": "CME.svg",
+      "name": "CME Group Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/cme.svg",
+      "instrument": "NASDAQ:CME"
+    },
+    "XPEV": {
+      "src": "XPEV.svg",
+      "name": "XPeng, Inc. ADR Sponsored Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/xpeng.svg",
+      "instrument": "NYSE:XPEV"
+    },
+    "PYPL": {
+      "src": "PYPL.svg",
+      "name": "PayPal Holdings, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/paypal.svg",
+      "instrument": "NASDAQ:PYPL"
+    },
+    "GLD": {
+      "src": "GLD.svg",
+      "name": "SPDR Gold Shares",
+      "source": "https://s3-symbol-logo.tradingview.com/spdr-sandp500-etf-tr.svg",
+      "instrument": "AMEX:GLD"
+    },
+    "SQM": {
+      "src": "SQM.svg",
+      "name": "Sociedad Quimica y Minera de Chile S.A. Sponsored ADR Pfd Series B",
+      "source": "https://s3-symbol-logo.tradingview.com/sqm.svg",
+      "instrument": "NYSE:SQM"
+    },
+    "DVA": {
+      "src": "DVA.svg",
+      "name": "DaVita Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/davita.svg",
+      "instrument": "NYSE:DVA"
+    },
+    "JBHT": {
+      "src": "JBHT.svg",
+      "name": "J.B. Hunt Transport Services, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/j-b-hunt.svg",
+      "instrument": "NASDAQ:JBHT"
+    },
+    "S": {
+      "src": "S.svg",
+      "name": "SentinelOne, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/sentinelone.svg",
+      "instrument": "NYSE:S"
+    },
+    "INCY": {
+      "src": "INCY.svg",
+      "name": "Incyte Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/incyte.svg",
+      "instrument": "NASDAQ:INCY"
+    },
+    "TECK": {
+      "src": "TECK.svg",
+      "name": "Teck Resources Limited Class B",
+      "source": "https://s3-symbol-logo.tradingview.com/teck-resources.svg",
+      "instrument": "NYSE:TECK"
+    },
+    "CCJ": {
+      "src": "CCJ.svg",
+      "name": "Cameco Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/cameco.svg",
+      "instrument": "NYSE:CCJ"
+    },
+    "BWXT": {
+      "src": "BWXT.svg",
+      "name": "BWX Technologies, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/bwx-technologies.svg",
+      "instrument": "NYSE:BWXT"
+    },
+    "JPM": {
+      "src": "JPM.svg",
+      "name": "JPMorgan Chase & Co.",
+      "source": "https://s3-symbol-logo.tradingview.com/jpmorgan-chase.svg",
+      "instrument": "NYSE:JPM"
+    },
+    "AUR": {
+      "src": "AUR.svg",
+      "name": "Aurora Innovation, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/aurora-innovation.svg",
+      "instrument": "NASDAQ:AUR"
+    },
+    "WELL": {
+      "src": "WELL.svg",
+      "name": "Welltower Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/welltower-indrn.svg",
+      "instrument": "NYSE:WELL"
+    },
+    "VWO": {
+      "src": "VWO.svg",
+      "name": "Vanguard FTSE Emerging Markets ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "AMEX:VWO"
+    },
+    "NXT": {
+      "src": "NXT.svg",
+      "name": "Nextpower Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/nextracker.svg",
+      "instrument": "NASDAQ:NXT"
+    },
+    "TLT": {
+      "src": "TLT.svg",
+      "name": "iShares 20+ Year Treasury Bond ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "NASDAQ:TLT"
+    },
+    "TDY": {
+      "src": "TDY.svg",
+      "name": "Teledyne Technologies Incorporated",
+      "source": "https://s3-symbol-logo.tradingview.com/teledyne-technologies.svg",
+      "instrument": "NYSE:TDY"
+    },
+    "QUAL": {
+      "src": "QUAL.svg",
+      "name": "iShares MSCI USA Quality Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:QUAL"
+    },
+    "NTNX": {
+      "src": "NTNX.svg",
+      "name": "Nutanix, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/nutanix.svg",
+      "instrument": "NASDAQ:NTNX"
+    },
+    "PCAR": {
+      "src": "PCAR.svg",
+      "name": "PACCAR Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/paccar.svg",
+      "instrument": "NASDAQ:PCAR"
+    },
+    "TWLO": {
+      "src": "TWLO.svg",
+      "name": "Twilio, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/twilio.svg",
+      "instrument": "NYSE:TWLO"
+    },
+    "LAR": {
+      "src": "LAR.svg",
+      "name": "Lithium Argentina AG",
+      "source": "https://s3-symbol-logo.tradingview.com/lithium-americas.svg",
+      "instrument": "NYSE:LAR"
+    },
+    "BBOT": {
+      "src": "BBOT.svg",
+      "name": "BridgeBio Oncology Therapeutics, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/bridgebio-oncology-therapeutics.svg",
+      "instrument": "NASDAQ:BBOT"
+    },
+    "CLSK": {
+      "src": "CLSK.svg",
+      "name": "Cleanspark, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/cleanspark.svg",
+      "instrument": "NASDAQ:CLSK"
+    },
+    "BMNR": {
+      "src": "BMNR.svg",
+      "name": "BitMine Immersion Technologies Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/bitmine-immersion-technologies.svg",
+      "instrument": "NYSE:BMNR"
+    },
+    "GRMN": {
+      "src": "GRMN.svg",
+      "name": "Garmin Ltd.",
+      "source": "https://s3-symbol-logo.tradingview.com/garmin-ltd.svg",
+      "instrument": "NYSE:GRMN"
+    },
+    "CRCL": {
+      "src": "CRCL.svg",
+      "name": "Circle Internet Group, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/circle-internet-group-inc.svg",
+      "instrument": "NYSE:CRCL"
+    },
+    "NXE": {
+      "src": "NXE.svg",
+      "name": "NexGen Energy Ltd.",
+      "source": "https://s3-symbol-logo.tradingview.com/nexgen-energy.svg",
+      "instrument": "NYSE:NXE"
+    },
+    "LMT": {
+      "src": "LMT.svg",
+      "name": "Lockheed Martin Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/lockheed-martin.svg",
+      "instrument": "NYSE:LMT"
+    },
+    "IBM": {
+      "src": "IBM.svg",
+      "name": "International Business Machines Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/international-bus-mach.svg",
+      "instrument": "NYSE:IBM"
+    },
+    "ETOR": {
+      "src": "ETOR.svg",
+      "name": "eToro Group Ltd. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/etoro-limited.svg",
+      "instrument": "NASDAQ:ETOR"
+    },
+    "LHX": {
+      "src": "LHX.svg",
+      "name": "L3Harris Technologies Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/l3-harris.svg",
+      "instrument": "NYSE:LHX"
+    },
+    "GD": {
+      "src": "GD.svg",
+      "name": "General Dynamics Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/general-dynamics.svg",
+      "instrument": "NYSE:GD"
+    },
+    "SMR": {
+      "src": "SMR.svg",
+      "name": "NuScale Power Corporation Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/nuscale-power.svg",
+      "instrument": "NYSE:SMR"
+    },
+    "FISV": {
+      "src": "FISV.svg",
+      "name": "Fiserv, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/fiserv.svg",
+      "instrument": "NASDAQ:FISV"
+    },
+    "CPNG": {
+      "src": "CPNG.svg",
+      "name": "Coupang, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/coupang.svg",
+      "instrument": "NYSE:CPNG"
+    },
+    "GLUE": {
+      "src": "GLUE.svg",
+      "name": "Monte Rosa Therapeutics, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/monte-rosa-therapeutics.svg",
+      "instrument": "NASDAQ:GLUE"
+    },
+    "ABBV": {
+      "src": "ABBV.svg",
+      "name": "AbbVie, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/abbvie.svg",
+      "instrument": "NYSE:ABBV"
+    },
+    "FIS": {
+      "src": "FIS.svg",
+      "name": "Fidelity National Information Services, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/fidelity-information-services.svg",
+      "instrument": "NYSE:FIS"
+    },
+    "UEC": {
+      "src": "UEC.svg",
+      "name": "Uranium Energy Corp.",
+      "source": "https://s3-symbol-logo.tradingview.com/uranium-energy.svg",
+      "instrument": "AMEX:UEC"
+    },
+    "CRWD": {
+      "src": "CRWD.svg",
+      "name": "CrowdStrike Holdings, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/crowdstrike.svg",
+      "instrument": "NASDAQ:CRWD"
+    },
+    "VLUE": {
+      "src": "VLUE.svg",
+      "name": "iShares MSCI USA Value Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:VLUE"
+    },
+    "TRMB": {
+      "src": "TRMB.svg",
+      "name": "Trimble Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/trimble.svg",
+      "instrument": "NASDAQ:TRMB"
+    },
+    "APLD": {
+      "src": "APLD.svg",
+      "name": "Applied Digital Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/applied-digital.svg",
+      "instrument": "NASDAQ:APLD"
+    },
+    "ALGM": {
+      "src": "ALGM.svg",
+      "name": "Allegro MicroSystems, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/allegro-microsystems.svg",
+      "instrument": "NASDAQ:ALGM"
+    },
+    "OHI": {
+      "src": "OHI.svg",
+      "name": "Omega Healthcare Investors, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/omega-healthcare-investors.svg",
+      "instrument": "NYSE:OHI"
+    },
+    "VTI": {
+      "src": "VTI.svg",
+      "name": "Vanguard Morningstar Total Stock Market ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "AMEX:VTI"
+    },
+    "HWM": {
+      "src": "HWM.svg",
+      "name": "Howmet Aerospace Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/howmet-aerospace.svg",
+      "instrument": "NYSE:HWM"
+    },
+    "WMT": {
+      "src": "WMT.svg",
+      "name": "Walmart Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/walmart.svg",
+      "instrument": "NASDAQ:WMT"
+    },
+    "VRNS": {
+      "src": "VRNS.svg",
+      "name": "Varonis Systems, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/varonis-systems.svg",
+      "instrument": "NASDAQ:VRNS"
+    },
+    "CEG": {
+      "src": "CEG.svg",
+      "name": "Constellation Energy Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/constellation-energy-cad-hedged-cibc-cdr.svg",
+      "instrument": "NASDAQ:CEG"
+    },
+    "HUBS": {
+      "src": "HUBS.svg",
+      "name": "HubSpot, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/hubspot.svg",
+      "instrument": "NYSE:HUBS"
+    },
+    "DXCM": {
+      "src": "DXCM.svg",
+      "name": "DexCom, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/dexcom.svg",
+      "instrument": "NASDAQ:DXCM"
+    },
+    "VRSN": {
+      "src": "VRSN.svg",
+      "name": "VeriSign, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/verisign.svg",
+      "instrument": "NASDAQ:VRSN"
+    },
+    "UUUU": {
+      "src": "UUUU.svg",
+      "name": "Energy Fuels Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/energy-fuels.svg",
+      "instrument": "AMEX:UUUU"
+    },
+    "BA": {
+      "src": "BA.svg",
+      "name": "Boeing Company",
+      "source": "https://s3-symbol-logo.tradingview.com/boeing.svg",
+      "instrument": "NYSE:BA"
+    },
+    "ZBH": {
+      "src": "ZBH.svg",
+      "name": "Zimmer Biomet Holdings, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/zimmer-biomet.svg",
+      "instrument": "NYSE:ZBH"
+    },
+    "IUSB": {
+      "src": "IUSB.svg",
+      "name": "iShares Core Total USD Bond Market ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "NASDAQ:IUSB"
+    },
+    "USMV": {
+      "src": "USMV.svg",
+      "name": "iShares MSCI USA Min Vol Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:USMV"
+    },
+    "NVDA": {
+      "src": "NVDA.svg",
+      "name": "NVIDIA Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/nvidia.svg",
+      "instrument": "NASDAQ:NVDA"
+    },
+    "GOOG": {
+      "src": "GOOG.svg",
+      "name": "Alphabet Inc. Class C",
+      "source": "https://s3-symbol-logo.tradingview.com/alphabet.svg",
+      "instrument": "NASDAQ:GOOG"
+    },
+    "NUE": {
+      "src": "NUE.svg",
+      "name": "Nucor Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/nucor.svg",
+      "instrument": "NYSE:NUE"
+    },
+    "MDT": {
+      "src": "MDT.svg",
+      "name": "Medtronic Plc",
+      "source": "https://s3-symbol-logo.tradingview.com/medtronic.svg",
+      "instrument": "NYSE:MDT"
+    },
+    "MU": {
+      "src": "MU.svg",
+      "name": "Micron Technology, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/micron-technology.svg",
+      "instrument": "NASDAQ:MU"
+    },
+    "DBC": {
+      "src": "DBC.svg",
+      "name": "Invesco DB Commodity Index Tracking Fund",
+      "source": "https://s3-symbol-logo.tradingview.com/invesco.svg",
+      "instrument": "AMEX:DBC"
+    },
+    "DAL": {
+      "src": "DAL.svg",
+      "name": "Delta Air Lines, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/delta-air-lines.svg",
+      "instrument": "NYSE:DAL"
+    },
+    "MPWR": {
+      "src": "MPWR.svg",
+      "name": "Monolithic Power Systems, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/monolithic-power-system.svg",
+      "instrument": "NASDAQ:MPWR"
+    },
+    "PATH": {
+      "src": "PATH.svg",
+      "name": "UiPath, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/uipath.svg",
+      "instrument": "NYSE:PATH"
+    },
+    "PG": {
+      "src": "PG.svg",
+      "name": "Procter & Gamble Company",
+      "source": "https://s3-symbol-logo.tradingview.com/procter-and-gamble.svg",
+      "instrument": "NYSE:PG"
+    },
+    "MAZE": {
+      "src": "MAZE.svg",
+      "name": "Maze Therapeutics, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/maze-therapeutics.svg",
+      "instrument": "NASDAQ:MAZE"
+    },
+    "WCN": {
+      "src": "WCN.svg",
+      "name": "Waste Connections, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/waste-connections-ca.svg",
+      "instrument": "NYSE:WCN"
+    },
+    "BVN": {
+      "src": "BVN.svg",
+      "name": "Compania de Minas Buenaventura SAA Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/compania-de-minas-buenaventura-saa.svg",
+      "instrument": "NYSE:BVN"
+    },
+    "GPN": {
+      "src": "GPN.svg",
+      "name": "Global Payments Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/global-payments.svg",
+      "instrument": "NYSE:GPN"
+    },
+    "TDG": {
+      "src": "TDG.svg",
+      "name": "TransDigm Group Incorporated",
+      "source": "https://s3-symbol-logo.tradingview.com/transdigm-group.svg",
+      "instrument": "NYSE:TDG"
+    },
+    "MA": {
+      "src": "MA.svg",
+      "name": "Mastercard Incorporated Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/mastercard.svg",
+      "instrument": "NYSE:MA"
+    },
+    "CRS": {
+      "src": "CRS.svg",
+      "name": "Carpenter Technology Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/carpenter-technology.svg",
+      "instrument": "NYSE:CRS"
+    },
+    "VNQ": {
+      "src": "VNQ.svg",
+      "name": "Vanguard Real Estate ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "AMEX:VNQ"
+    },
+    "CRWV": {
+      "src": "CRWV.svg",
+      "name": "CoreWeave, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/coreweave.svg",
+      "instrument": "NASDAQ:CRWV"
+    },
+    "SYK": {
+      "src": "SYK.svg",
+      "name": "Stryker Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/stryker.svg",
+      "instrument": "NYSE:SYK"
+    },
+    "CAT": {
+      "src": "CAT.svg",
+      "name": "Caterpillar Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/caterpillar.svg",
+      "instrument": "NYSE:CAT"
+    },
+    "NOC": {
+      "src": "NOC.svg",
+      "name": "Northrop Grumman Corp.",
+      "source": "https://s3-symbol-logo.tradingview.com/northrop-grumman.svg",
+      "instrument": "NYSE:NOC"
+    },
+    "CIFR": {
+      "src": "CIFR.svg",
+      "name": "Cipher Digital Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/cipher-mining.svg",
+      "instrument": "NASDAQ:CIFR"
+    },
+    "WSE": {
+      "src": "WSE.svg",
+      "name": "Wise Group plc Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/wise.svg",
+      "instrument": "NASDAQ:WSE"
+    },
+    "NTRA": {
+      "src": "NTRA.svg",
+      "name": "Natera, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/natera.svg",
+      "instrument": "NASDAQ:NTRA"
+    },
+    "NET": {
+      "src": "NET.svg",
+      "name": "Cloudflare Inc Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/cloudflare-inc.svg",
+      "instrument": "NYSE:NET"
+    },
+    "RKLB": {
+      "src": "RKLB.svg",
+      "name": "Rocket Lab Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/rocket-lab.svg",
+      "instrument": "NASDAQ:RKLB"
+    },
+    "AMAT": {
+      "src": "AMAT.svg",
+      "name": "Applied Materials, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/applied-materials.svg",
+      "instrument": "NASDAQ:AMAT"
+    },
+    "WULF": {
+      "src": "WULF.svg",
+      "name": "TeraWulf Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/terawulf.svg",
+      "instrument": "NASDAQ:WULF"
+    },
+    "EEMV": {
+      "src": "EEMV.svg",
+      "name": "iShares MSCI Emerging Markets Min Vol Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:EEMV"
+    },
+    "IREN": {
+      "src": "IREN.svg",
+      "name": "IREN Limited",
+      "source": "https://s3-symbol-logo.tradingview.com/iris-energy.svg",
+      "instrument": "NASDAQ:IREN"
+    },
+    "RDWR": {
+      "src": "RDWR.svg",
+      "name": "Radware Ltd.",
+      "source": "https://s3-symbol-logo.tradingview.com/radware.svg",
+      "instrument": "NASDAQ:RDWR"
+    },
+    "ILMN": {
+      "src": "ILMN.svg",
+      "name": "Illumina, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/illumina.svg",
+      "instrument": "NASDAQ:ILMN"
+    },
+    "CRM": {
+      "src": "CRM.svg",
+      "name": "Salesforce, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/salesforce.svg",
+      "instrument": "NYSE:CRM"
+    },
+    "EW": {
+      "src": "EW.svg",
+      "name": "Edwards Lifesciences Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/edwards.svg",
+      "instrument": "NYSE:EW"
+    },
+    "SDGR": {
+      "src": "SDGR.svg",
+      "name": "Schrodinger, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/schrodinger.svg",
+      "instrument": "NASDAQ:SDGR"
+    },
+    "RIVN": {
+      "src": "RIVN.svg",
+      "name": "Rivian Automotive, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/rivian.svg",
+      "instrument": "NASDAQ:RIVN"
+    },
+    "REGN": {
+      "src": "REGN.svg",
+      "name": "Regeneron Pharmaceuticals, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/regeneron-pharmaceuticals.svg",
+      "instrument": "NASDAQ:REGN"
+    },
+    "CW": {
+      "src": "CW.svg",
+      "name": "Curtiss-Wright Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/curtiss-wright.svg",
+      "instrument": "NYSE:CW"
+    },
+    "LLYVK": {
+      "src": "LLYVK.svg",
+      "name": "Liberty Live Holdings, Inc. Series -C-",
+      "source": "https://s3-symbol-logo.tradingview.com/liberty-media.svg",
+      "instrument": "NASDAQ:LLYVK"
+    },
+    "VSAT": {
+      "src": "VSAT.svg",
+      "name": "ViaSat, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/viasat.svg",
+      "instrument": "NASDAQ:VSAT"
+    },
+    "MRVL": {
+      "src": "MRVL.svg",
+      "name": "Marvell Technology, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/marvell-tech.svg",
+      "instrument": "NASDAQ:MRVL"
+    },
+    "LIFE": {
+      "src": "LIFE.svg",
+      "name": "Ethos Technologies Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/ethos-technologies.svg",
+      "instrument": "NASDAQ:LIFE"
+    },
+    "WM": {
+      "src": "WM.svg",
+      "name": "Waste Management, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/waste-management.svg",
+      "instrument": "NYSE:WM"
+    },
+    "PCG": {
+      "src": "PCG.svg",
+      "name": "PG&E Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/pg-and-e.svg",
+      "instrument": "NYSE:PCG"
+    },
+    "OXY": {
+      "src": "OXY.svg",
+      "name": "Occidental Petroleum Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/occidental-petroleum.svg",
+      "instrument": "NYSE:OXY"
+    },
+    "EFAV": {
+      "src": "EFAV.svg",
+      "name": "iShares MSCI EAFE Min Vol Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:EFAV"
+    },
+    "KOF": {
+      "src": "KOF.svg",
+      "name": "Coca-Cola FEMSA SAB de CV Sponsored ADR Class L",
+      "source": "https://s3-symbol-logo.tradingview.com/coca-cola.svg",
+      "instrument": "NYSE:KOF"
+    },
+    "ATI": {
+      "src": "ATI.svg",
+      "name": "ATI Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/allegheny-technologies.svg",
+      "instrument": "NYSE:ATI"
+    },
+    "PL": {
+      "src": "PL.svg",
+      "name": "Planet Labs PBC Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/planet-labs.svg",
+      "instrument": "NYSE:PL"
+    },
+    "FSLR": {
+      "src": "FSLR.svg",
+      "name": "First Solar, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/first-solar.svg",
+      "instrument": "NASDAQ:FSLR"
+    },
+    "QLYS": {
+      "src": "QLYS.svg",
+      "name": "Qualys, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/qualys.svg",
+      "instrument": "NASDAQ:QLYS"
+    },
+    "MDB": {
+      "src": "MDB.svg",
+      "name": "MongoDB, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/mongodb.svg",
+      "instrument": "NASDAQ:MDB"
+    },
+    "ZS": {
+      "src": "ZS.svg",
+      "name": "Zscaler, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/zscaler.svg",
+      "instrument": "NASDAQ:ZS"
+    },
+    "VOO": {
+      "src": "VOO.svg",
+      "name": "Vanguard S&P 500 ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "AMEX:VOO"
+    },
+    "DDOG": {
+      "src": "DDOG.svg",
+      "name": "Datadog, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/datadog.svg",
+      "instrument": "NASDAQ:DDOG"
+    },
+    "KHC": {
+      "src": "KHC.svg",
+      "name": "Kraft Heinz Company",
+      "source": "https://s3-symbol-logo.tradingview.com/kraft-heinz.svg",
+      "instrument": "NYSE:KHC"
+    },
+    "AMD": {
+      "src": "AMD.svg",
+      "name": "Advanced Micro Devices, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/advanced-micro-devices.svg",
+      "instrument": "NASDAQ:AMD"
+    },
+    "TOST": {
+      "src": "TOST.svg",
+      "name": "Toast, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/toast.svg",
+      "instrument": "NYSE:TOST"
+    },
+    "AXON": {
+      "src": "AXON.svg",
+      "name": "Axon Enterprise Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/axon-enterprise.svg",
+      "instrument": "NASDAQ:AXON"
+    },
+    "MARA": {
+      "src": "MARA.svg",
+      "name": "MARA Holdings, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/marathon-digital-holdings.svg",
+      "instrument": "NASDAQ:MARA"
+    },
+    "PODD": {
+      "src": "PODD.svg",
+      "name": "Insulet Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/insulet.svg",
+      "instrument": "NASDAQ:PODD"
+    },
+    "BUD": {
+      "src": "BUD.svg",
+      "name": "Anheuser-Busch InBev SA/NV Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/anheuser-busch-inbev.svg",
+      "instrument": "NYSE:BUD"
+    },
+    "CSCO": {
+      "src": "CSCO.svg",
+      "name": "Cisco Systems, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/cisco.svg",
+      "instrument": "NASDAQ:CSCO"
+    },
+    "NVTS": {
+      "src": "NVTS.svg",
+      "name": "Navitas Semiconductor Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/navitas-semiconductor.svg",
+      "instrument": "NASDAQ:NVTS"
+    },
+    "KR": {
+      "src": "KR.svg",
+      "name": "Kroger Co.",
+      "source": "https://s3-symbol-logo.tradingview.com/kroger.svg",
+      "instrument": "NYSE:KR"
+    },
+    "SPCX": {
+      "src": "SPCX.svg",
+      "name": "Space Exploration Technologies Corp",
+      "source": "https://s3-symbol-logo.tradingview.com/spacex.svg",
+      "instrument": "NASDAQ:SPCX"
+    },
+    "BMY": {
+      "src": "BMY.svg",
+      "name": "Bristol-Myers Squibb Company",
+      "source": "https://s3-symbol-logo.tradingview.com/bristol-myers-squibb.svg",
+      "instrument": "NYSE:BMY"
+    },
+    "OKLO": {
+      "src": "OKLO.svg",
+      "name": "Oklo Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/altc.svg",
+      "instrument": "NYSE:OKLO"
+    },
+    "INTC": {
+      "src": "INTC.svg",
+      "name": "Intel Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/intel.svg",
+      "instrument": "NASDAQ:INTC"
+    },
+    "XYZ": {
+      "src": "XYZ.svg",
+      "name": "Block, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/block.svg",
+      "instrument": "NYSE:XYZ"
+    },
+    "AAPL": {
+      "src": "AAPL.svg",
+      "name": "Apple Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/apple.svg",
+      "instrument": "NASDAQ:AAPL"
+    },
+    "LAC": {
+      "src": "LAC.svg",
+      "name": "Lithium Americas Corp",
+      "source": "https://s3-symbol-logo.tradingview.com/lithium-americas.svg",
+      "instrument": "NYSE:LAC"
+    },
+    "BAC": {
+      "src": "BAC.svg",
+      "name": "Bank of America Corp",
+      "source": "https://s3-symbol-logo.tradingview.com/bank-of-america.svg",
+      "instrument": "NYSE:BAC"
+    },
+    "SGML": {
+      "src": "SGML.svg",
+      "name": "Sigma Lithium Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/sigma-lithium.svg",
+      "instrument": "NASDAQ:SGML"
+    },
+    "AKAM": {
+      "src": "AKAM.svg",
+      "name": "Akamai Technologies, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/akamai.svg",
+      "instrument": "NASDAQ:AKAM"
+    },
+    "CVX": {
+      "src": "CVX.svg",
+      "name": "Chevron Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/chevron.svg",
+      "instrument": "NYSE:CVX"
+    },
+    "TSM": {
+      "src": "TSM.svg",
+      "name": "Taiwan Semiconductor Manufacturing Co., Ltd. Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/taiwan-semiconductor.svg",
+      "instrument": "NYSE:TSM"
+    },
+    "PH": {
+      "src": "PH.svg",
+      "name": "Parker-Hannifin Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/parker-hannifin.svg",
+      "instrument": "NYSE:PH"
+    },
+    "DUK": {
+      "src": "DUK.svg",
+      "name": "Duke Energy Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/duke-energy.svg",
+      "instrument": "NYSE:DUK"
+    },
+    "ROK": {
+      "src": "ROK.svg",
+      "name": "Rockwell Automation, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/rockwell-automation.svg",
+      "instrument": "NYSE:ROK"
+    },
+    "PRME": {
+      "src": "PRME.svg",
+      "name": "Prime Medicine, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/prime-medicine.svg",
+      "instrument": "NASDAQ:PRME"
+    },
+    "PLUG": {
+      "src": "PLUG.svg",
+      "name": "Plug Power Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/plug-power.svg",
+      "instrument": "NASDAQ:PLUG"
+    },
+    "CRSP": {
+      "src": "CRSP.svg",
+      "name": "CRISPR Therapeutics AG",
+      "source": "https://s3-symbol-logo.tradingview.com/crispr-therapeutics-ag.svg",
+      "instrument": "NASDAQ:CRSP"
+    },
+    "AME": {
+      "src": "AME.svg",
+      "name": "AMETEK, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/ametek.svg",
+      "instrument": "NYSE:AME"
+    },
+    "TSLA": {
+      "src": "TSLA.svg",
+      "name": "Tesla, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/tesla.svg",
+      "instrument": "NASDAQ:TSLA"
+    },
+    "SNOW": {
+      "src": "SNOW.svg",
+      "name": "Snowflake, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/snowflake.svg",
+      "instrument": "NYSE:SNOW"
+    },
+    "ITRI": {
+      "src": "ITRI.svg",
+      "name": "Itron, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/itron.svg",
+      "instrument": "NASDAQ:ITRI"
+    },
+    "RTX": {
+      "src": "RTX.svg",
+      "name": "RTX Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/raytheon.svg",
+      "instrument": "NYSE:RTX"
+    },
+    "GLDM": {
+      "src": "GLDM.svg",
+      "name": "SPDR Gold Minishares Trust of beneficial interest",
+      "source": "https://s3-symbol-logo.tradingview.com/spdr-sandp500-etf-tr.svg",
+      "instrument": "AMEX:GLDM"
+    },
+    "PDBC": {
+      "src": "PDBC.svg",
+      "name": "Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/invesco.svg",
+      "instrument": "NASDAQ:PDBC"
+    },
+    "SCCO": {
+      "src": "SCCO.svg",
+      "name": "Southern Copper Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/southern-copper.svg",
+      "instrument": "NYSE:SCCO"
+    },
+    "MRK": {
+      "src": "MRK.svg",
+      "name": "Merck & Co., Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/merck-and-co.svg",
+      "instrument": "NYSE:MRK"
+    },
+    "DAR": {
+      "src": "DAR.svg",
+      "name": "Darling Ingredients Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/darling-ingredients.svg",
+      "instrument": "NYSE:DAR"
+    },
+    "MSGS": {
+      "src": "MSGS.svg",
+      "name": "Madison Square Garden Sports Corp. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/madison-square-garden.svg",
+      "instrument": "NYSE:MSGS"
+    },
+    "COIN": {
+      "src": "COIN.svg",
+      "name": "Coinbase Global, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/coinbase.svg",
+      "instrument": "NASDAQ:COIN"
+    },
+    "SGOV": {
+      "src": "SGOV.svg",
+      "name": "iShares 0-3 Month Treasury Bond ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "NYSE:SGOV"
+    },
+    "EFA": {
+      "src": "EFA.svg",
+      "name": "iShares MSCI EAFE ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "AMEX:EFA"
+    },
+    "NOW": {
+      "src": "NOW.svg",
+      "name": "ServiceNow, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/servicenow.svg",
+      "instrument": "NYSE:NOW"
+    },
+    "BLSH": {
+      "src": "BLSH.svg",
+      "name": "Bullish",
+      "source": "https://s3-symbol-logo.tradingview.com/bullish.svg",
+      "instrument": "NYSE:BLSH"
+    },
+    "DBX": {
+      "src": "DBX.svg",
+      "name": "Dropbox, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/dropbox.svg",
+      "instrument": "NASDAQ:DBX"
+    },
+    "NIO": {
+      "src": "NIO.svg",
+      "name": "NIO Inc. Sponsored ADR Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/nio.svg",
+      "instrument": "NYSE:NIO"
+    },
+    "FTNT": {
+      "src": "FTNT.svg",
+      "name": "Fortinet, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/fortinet.svg",
+      "instrument": "NASDAQ:FTNT"
+    },
+    "DE": {
+      "src": "DE.svg",
+      "name": "Deere & Company",
+      "source": "https://s3-symbol-logo.tradingview.com/deere.svg",
+      "instrument": "NYSE:DE"
+    },
+    "MIR": {
+      "src": "MIR.svg",
+      "name": "Mirion Technologies, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/mirion-technologies.svg",
+      "instrument": "NYSE:MIR"
+    },
+    "HD": {
+      "src": "HD.svg",
+      "name": "Home Depot, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/home-depot.svg",
+      "instrument": "NYSE:HD"
+    },
+    "TENB": {
+      "src": "TENB.svg",
+      "name": "Tenable Holdings, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/tenable-holdings.svg",
+      "instrument": "NASDAQ:TENB"
+    },
+    "PAYP": {
+      "src": "PAYP.svg",
+      "name": "PayPay Corporation Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/paypay.svg",
+      "instrument": "NASDAQ:PAYP"
+    },
+    "ZM": {
+      "src": "ZM.svg",
+      "name": "Zoom Communications, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/zoom-video-communications.svg",
+      "instrument": "NASDAQ:ZM"
+    },
+    "WDAY": {
+      "src": "WDAY.svg",
+      "name": "Workday, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/workday.svg",
+      "instrument": "NASDAQ:WDAY"
+    },
+    "ORA": {
+      "src": "ORA.svg",
+      "name": "Ormat Technologies, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/ormat-technologies.svg",
+      "instrument": "NYSE:ORA"
+    },
+    "ARM": {
+      "src": "ARM.svg",
+      "name": "ARM Holdings PLC Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/arm.svg",
+      "instrument": "NASDAQ:ARM"
+    },
+    "ECL": {
+      "src": "ECL.svg",
+      "name": "Ecolab Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/ecolab.svg",
+      "instrument": "NYSE:ECL"
+    },
+    "AMGN": {
+      "src": "AMGN.svg",
+      "name": "Amgen Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/amgen.svg",
+      "instrument": "NASDAQ:AMGN"
+    },
+    "META": {
+      "src": "META.svg",
+      "name": "Meta Platforms Inc Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/meta-platforms.svg",
+      "instrument": "NASDAQ:META"
+    },
+    "GH": {
+      "src": "GH.svg",
+      "name": "Guardant Health, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/guardant-health.svg",
+      "instrument": "NASDAQ:GH"
+    },
+    "GTLB": {
+      "src": "GTLB.svg",
+      "name": "Gitlab, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/gitlab.svg",
+      "instrument": "NASDAQ:GTLB"
+    },
+    "COF": {
+      "src": "COF.svg",
+      "name": "Capital One Financial Corp",
+      "source": "https://s3-symbol-logo.tradingview.com/capital-one.svg",
+      "instrument": "NYSE:COF"
+    },
+    "VGIT": {
+      "src": "VGIT.svg",
+      "name": "Vanguard Intermediate-Term Treasury ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "NASDAQ:VGIT"
+    },
+    "VCYT": {
+      "src": "VCYT.svg",
+      "name": "Veracyte, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/veracyte.svg",
+      "instrument": "NASDAQ:VCYT"
+    },
+    "AXP": {
+      "src": "AXP.svg",
+      "name": "American Express Company",
+      "source": "https://s3-symbol-logo.tradingview.com/american-express.svg",
+      "instrument": "NYSE:AXP"
+    },
+    "DOCN": {
+      "src": "DOCN.svg",
+      "name": "DigitalOcean Holdings, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/digitalocean.svg",
+      "instrument": "NYSE:DOCN"
+    },
+    "WST": {
+      "src": "WST.svg",
+      "name": "West Pharmaceutical Services, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/west-pharmaceutical-services.svg",
+      "instrument": "NYSE:WST"
+    },
+    "BSX": {
+      "src": "BSX.svg",
+      "name": "Boston Scientific Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/boston-scientific.svg",
+      "instrument": "NYSE:BSX"
+    },
+    "FCX": {
+      "src": "FCX.svg",
+      "name": "Freeport-McMoRan, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/freeport-mcmoran.svg",
+      "instrument": "NYSE:FCX"
+    },
+    "MCO": {
+      "src": "MCO.svg",
+      "name": "Moody's Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/moodys.svg",
+      "instrument": "NYSE:MCO"
+    },
+    "WWD": {
+      "src": "WWD.svg",
+      "name": "Woodward, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/woodward.svg",
+      "instrument": "NASDAQ:WWD"
+    },
+    "TWST": {
+      "src": "TWST.svg",
+      "name": "Twist Bioscience Corp.",
+      "source": "https://s3-symbol-logo.tradingview.com/twist-bioscience.svg",
+      "instrument": "NASDAQ:TWST"
+    },
+    "BTDR": {
+      "src": "BTDR.svg",
+      "name": "Bitdeer Technologies Group Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/bitdeer.svg",
+      "instrument": "NASDAQ:BTDR"
+    },
+    "PANW": {
+      "src": "PANW.svg",
+      "name": "Palo Alto Networks, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/palo-alto-networks.svg",
+      "instrument": "NASDAQ:PANW"
+    },
+    "TIP": {
+      "src": "TIP.svg",
+      "name": "iShares TIPS Bond ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "AMEX:TIP"
+    },
+    "HEI": {
+      "src": "HEI.svg",
+      "name": "HEICO Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/heico.svg",
+      "instrument": "NYSE:HEI"
+    },
+    "ATEN": {
+      "src": "ATEN.svg",
+      "name": "A10 Networks, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/a10-networks.svg",
+      "instrument": "NYSE:ATEN"
+    },
+    "VRTX": {
+      "src": "VRTX.svg",
+      "name": "Vertex Pharmaceuticals Incorporated",
+      "source": "https://s3-symbol-logo.tradingview.com/vertex-pharmaceutical.svg",
+      "instrument": "NASDAQ:VRTX"
+    },
+    "RUN": {
+      "src": "RUN.svg",
+      "name": "Sunrun Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/sunrun.svg",
+      "instrument": "NASDAQ:RUN"
+    },
+    "HBM": {
+      "src": "HBM.svg",
+      "name": "Hudbay Minerals Inc",
+      "source": "https://s3-symbol-logo.tradingview.com/hudbay-minerals.svg",
+      "instrument": "NYSE:HBM"
+    },
+    "MP": {
+      "src": "MP.svg",
+      "name": "MP Materials Corp Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/mp-materials.svg",
+      "instrument": "NYSE:MP"
+    },
+    "IVV": {
+      "src": "IVV.svg",
+      "name": "iShares Core S&P 500 ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "AMEX:IVV"
+    },
+    "ORCL": {
+      "src": "ORCL.svg",
+      "name": "Oracle Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/oracle.svg",
+      "instrument": "NYSE:ORCL"
+    },
+    "AEIS": {
+      "src": "AEIS.svg",
+      "name": "Advanced Energy Industries, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/advanced-energy-industries.svg",
+      "instrument": "NASDAQ:AEIS"
+    },
+    "MTUM": {
+      "src": "MTUM.svg",
+      "name": "iShares MSCI USA Momentum Factor ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "CBOE:MTUM"
+    },
+    "RBRK": {
+      "src": "RBRK.svg",
+      "name": "Rubrik, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/rubrik.svg",
+      "instrument": "NYSE:RBRK"
+    },
+    "AFRM": {
+      "src": "AFRM.svg",
+      "name": "Affirm Holdings, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/affirm.svg",
+      "instrument": "NASDAQ:AFRM"
+    },
+    "MCD": {
+      "src": "MCD.svg",
+      "name": "McDonald's Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/mcdonalds.svg",
+      "instrument": "NYSE:MCD"
+    },
+    "IEF": {
+      "src": "IEF.svg",
+      "name": "iShares 7-10 Year Treasury Bond ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/ishares.svg",
+      "instrument": "NASDAQ:IEF"
+    },
+    "DNN": {
+      "src": "DNN.svg",
+      "name": "Denison Mines Corp.",
+      "source": "https://s3-symbol-logo.tradingview.com/denison-mines.svg",
+      "instrument": "AMEX:DNN"
+    },
+    "SIRI": {
+      "src": "SIRI.svg",
+      "name": "SiriusXM Holdings Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/sirius-xm.svg",
+      "instrument": "NASDAQ:SIRI"
+    },
+    "LLY": {
+      "src": "LLY.svg",
+      "name": "Eli Lilly and Company",
+      "source": "https://s3-symbol-logo.tradingview.com/eli-lilly.svg",
+      "instrument": "NYSE:LLY"
+    },
+    "OLED": {
+      "src": "OLED.svg",
+      "name": "Universal Display Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/universal-display.svg",
+      "instrument": "NASDAQ:OLED"
+    },
+    "RLAY": {
+      "src": "RLAY.svg",
+      "name": "Relay Therapeutics, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/relay-therapeutics.svg",
+      "instrument": "NASDAQ:RLAY"
+    },
+    "MBLY": {
+      "src": "MBLY.svg",
+      "name": "Mobileye Global, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/mobileye-global.svg",
+      "instrument": "NASDAQ:MBLY"
+    },
+    "FRSH": {
+      "src": "FRSH.svg",
+      "name": "Freshworks, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/freshworks.svg",
+      "instrument": "NASDAQ:FRSH"
+    },
+    "ON": {
+      "src": "ON.svg",
+      "name": "ON Semiconductor Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/on-semiconductor.svg",
+      "instrument": "NASDAQ:ON"
+    },
+    "BE": {
+      "src": "BE.svg",
+      "name": "Bloom Energy Corporation Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/bloom-energy.svg",
+      "instrument": "NYSE:BE"
+    },
+    "HUT": {
+      "src": "HUT.svg",
+      "name": "Hut 8 Corp.",
+      "source": "https://s3-symbol-logo.tradingview.com/hut-8-mining.svg",
+      "instrument": "NASDAQ:HUT"
+    },
+    "CHKP": {
+      "src": "CHKP.svg",
+      "name": "Check Point Software Technologies Ltd.",
+      "source": "https://s3-symbol-logo.tradingview.com/check-point-software-technologies.svg",
+      "instrument": "NASDAQ:CHKP"
+    },
+    "JNJ": {
+      "src": "JNJ.svg",
+      "name": "Johnson & Johnson",
+      "source": "https://s3-symbol-logo.tradingview.com/johnson-and-johnson.svg",
+      "instrument": "NYSE:JNJ"
+    },
+    "AVGO": {
+      "src": "AVGO.svg",
+      "name": "Broadcom Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/broadcom.svg",
+      "instrument": "NASDAQ:AVGO"
+    },
+    "NYT": {
+      "src": "NYT.svg",
+      "name": "New York Times Company Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/new-york-times.svg",
+      "instrument": "NYSE:NYT"
+    },
+    "LEU": {
+      "src": "LEU.svg",
+      "name": "Centrus Energy Corp. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/centrus.svg",
+      "instrument": "NYSE:LEU"
+    },
+    "BRK-B": {
+      "src": "BRK-B.svg",
+      "name": "Berkshire Hathaway Inc. Class B",
+      "source": "https://s3-symbol-logo.tradingview.com/berkshire-hathaway.svg",
+      "instrument": "NYSE:BRK.B"
+    },
+    "V": {
+      "src": "V.svg",
+      "name": "Visa Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/visa.svg",
+      "instrument": "NYSE:V"
+    },
+    "ALB": {
+      "src": "ALB.svg",
+      "name": "Albemarle Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/albemarle.svg",
+      "instrument": "NYSE:ALB"
+    },
+    "MRNA": {
+      "src": "MRNA.svg",
+      "name": "Moderna, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/moderna.svg",
+      "instrument": "NASDAQ:MRNA"
+    },
+    "OKTA": {
+      "src": "OKTA.svg",
+      "name": "Okta, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/okta.svg",
+      "instrument": "NASDAQ:OKTA"
+    },
+    "LRCX": {
+      "src": "LRCX.svg",
+      "name": "Lam Research Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/lam-research.svg",
+      "instrument": "NASDAQ:LRCX"
+    },
+    "CDNA": {
+      "src": "CDNA.svg",
+      "name": "CareDx, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/caredx.svg",
+      "instrument": "NASDAQ:CDNA"
+    },
+    "FDX": {
+      "src": "FDX.svg",
+      "name": "FedEx Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/fedex.svg",
+      "instrument": "NYSE:FDX"
+    },
+    "NNE": {
+      "src": "NNE.svg",
+      "name": "Nano Nuclear Energy Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/nano-nuclear-energy.svg",
+      "instrument": "NASDAQ:NNE"
+    },
+    "COST": {
+      "src": "COST.svg",
+      "name": "Costco Wholesale Corporation",
+      "source": "https://s3-symbol-logo.tradingview.com/costco-wholesale.svg",
+      "instrument": "NASDAQ:COST"
+    },
+    "LEN": {
+      "src": "LEN.svg",
+      "name": "Lennar Corporation Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/lennar.svg",
+      "instrument": "NYSE:LEN"
+    },
+    "ASTS": {
+      "src": "ASTS.svg",
+      "name": "AST SpaceMobile, Inc. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/ast-spacemobile.svg",
+      "instrument": "NASDAQ:ASTS"
+    },
+    "ASML": {
+      "src": "ASML.svg",
+      "name": "ASML Holding NV Sponsored ADR",
+      "source": "https://s3-symbol-logo.tradingview.com/asml.svg",
+      "instrument": "NASDAQ:ASML"
+    },
+    "SEDG": {
+      "src": "SEDG.svg",
+      "name": "SolarEdge Technologies, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/solaredge-technologies.svg",
+      "instrument": "NASDAQ:SEDG"
+    },
+    "ENPH": {
+      "src": "ENPH.svg",
+      "name": "Enphase Energy, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/enphase-energy.svg",
+      "instrument": "NASDAQ:ENPH"
+    },
+    "NXPI": {
+      "src": "NXPI.svg",
+      "name": "NXP Semiconductors NV",
+      "source": "https://s3-symbol-logo.tradingview.com/nxp-semiconductors.svg",
+      "instrument": "NASDAQ:NXPI"
+    },
+    "NBIS": {
+      "src": "NBIS.svg",
+      "name": "Nebius Group N.V. Class A",
+      "source": "https://s3-symbol-logo.tradingview.com/nebius-group-nv.svg",
+      "instrument": "NASDAQ:NBIS"
+    },
+    "ETN": {
+      "src": "ETN.svg",
+      "name": "Eaton Corp. Plc",
+      "source": "https://s3-symbol-logo.tradingview.com/eaton.svg",
+      "instrument": "NYSE:ETN"
+    },
+    "VEA": {
+      "src": "VEA.svg",
+      "name": "Vanguard FTSE Developed Markets ETF",
+      "source": "https://s3-symbol-logo.tradingview.com/vanguard.svg",
+      "instrument": "AMEX:VEA"
+    },
+    "RVMD": {
+      "src": "RVMD.svg",
+      "name": "Revolution Medicines, Inc.",
+      "source": "https://s3-symbol-logo.tradingview.com/revolution-medicines.svg",
+      "instrument": "NASDAQ:RVMD"
+    },
+    "HONA": {
+      "src": "HONA.svg",
+      "name": "Honeywell Aerospace Inc",
+      "source": "https://www.honeywellaerospace.com/content/dam/aero/icons/Aerospace-logo.svg",
+      "instrument": "NASDAQ:HONA"
+    }
+  },
+  "names": {
+    "DaVita HealthCare Partners Inc.": "DVA",
+    "Omega Healthcare Investors Inc.": "OHI",
+    "Welltower Inc.": "WELL",
+    "Stryker Corporation": "SYK",
+    "Ventas, Inc.": "VTR",
+    "Bristol-Myers Squibb Co.": "BMY",
+    "Merck & Co. Inc.": "MRK",
+    "Johnson & Johnson": "JNJ",
+    "Amgen Inc.": "AMGN",
+    "Regeneron Pharmaceuticals, Inc.": "REGN",
+    "DexCom, Inc.": "DXCM",
+    "Incyte Corporation": "INCY",
+    "Edwards Lifesciences Corp.": "EW",
+    "AbbVie Inc": "ABBV",
+    "Eli Lilly and Company": "LLY",
+    "Insulet Corporation": "PODD",
+    "Zimmer Biomet Holdings, Inc.": "ZBH",
+    "Boston Scientific Corp.": "BSX",
+    "Medtronic PLC": "MDT",
+    "20+ Year Treasury Bond iShares": "TLT",
+    "U.S. Total Stock Market Index Vanguard": "VTI",
+    "7-10 Year Treasury Bond iShares": "IEF",
+    "DB Commodity Tracking PowerShares": "DBC",
+    "Gold Shares SPDR": "GLD",
+    "CME Group Inc.": "CME",
+    "AST SPACEMOBILE INC": "ASTS",
+    "REVOLUTION Medicines Inc": "RVMD",
+    "Planet Labs PBC": "PL",
+    "ARM HOLDINGS LTD": "ARM",
+    "Freshworks": "FRSH",
+    "GITLAB INC.": "GTLB",
+    "TEMPUS AI": "TEM",
+    "UiPath, Inc.": "PATH",
+    "PRIME MEDICINE, INC.": "PRME",
+    "PayPay Corp": "PAYP",
+    "Ethos Technologies Corp.": "LIFE",
+    "Maze Therapeutics": "MAZE",
+    "Relay Therapeutics Inc": "RLAY",
+    "BridgeBio Oncology Therapeutics Inc": "BBOT",
+    "MONTE ROSA THERAPEUTICS INC": "GLUE",
+    "Micron Technology Inc.": "MU",
+    "Advanced Micro Devices, Inc.": "AMD",
+    "NVIDIA Corporation": "NVDA",
+    "Meta Platforms Inc": "META",
+    "Taiwan Semiconductor Manufacturing Co.": "TSM",
+    "Palo Alto Networks, Inc.": "PANW",
+    "Marvell Technology Group Ltd.": "MRVL",
+    "Microsoft Corporation": "MSFT",
+    "Palantir Technologies Inc": "PLTR",
+    "Alphabet Inc. - Class A Shares": "GOOGL",
+    "Snowflake Inc.": "SNOW",
+    "Amazon.com Inc.": "AMZN",
+    "Broadcom Inc.": "AVGO",
+    "Tesla, Inc.": "TSLA",
+    "ServiceNow, Inc.": "NOW",
+    "Datadog Inc": "DDOG",
+    "International Business Machines Corp.": "IBM",
+    "Oracle Corp.": "ORCL",
+    "Nebius Group N.V.": "NBIS",
+    "CoreWeave Inc.": "CRWV",
+    "Apple, Inc.": "AAPL",
+    "American Express Co.": "AXP",
+    "Coca-Cola Company, The": "KO",
+    "Bank of America Corp.": "BAC",
+    "Chevron Corporation": "CVX",
+    "Occidental Petroleum Corporation": "OXY",
+    "Moody's Corporation": "MCO",
+    "Kraft Heinz Company, The": "KHC",
+    "Kroger Co., The": "KR",
+    "Delta Air Lines Inc.": "DAL",
+    "Sirius XM Holdings Inc": "SIRI",
+    "VeriSign, Inc.": "VRSN",
+    "Capital One Financial Corporation": "COF",
+    "New York Times Company, The": "NYT",
+    "Ally Financial Inc.": "ALLY",
+    "LIBERTY MEDIA CORP-LIBERTY-C": "LLYVK",
+    "Lennar Corp.": "LEN",
+    "Alphabet Inc. - Class C Shares": "GOOG",
+    "Nucor Corporation": "NUE",
+    "Intel Corporation": "INTC",
+    "ASML Holding NV": "ASML",
+    "Lam Research Corporation": "LRCX",
+    "Cisco Systems, Inc.": "CSCO",
+    "Applied Materials, Inc.": "AMAT",
+    "iShares MSCI USA Value Factor ETF": "VLUE",
+    "iShares MSCI USA Min Vol Factor ETF": "USMV",
+    "iShares MSCI USA Size Factor ETF": "SIZE",
+    "iShares MSCI USA Momentum Factor": "MTUM",
+    "iShares MSCI USA Quality Factor ETF": "QUAL",
+    "iShares MSCI EAFE Min Vol Factor ETF": "EFAV",
+    "MSCI Emerging Markets Mini Vol iShares": "EEMV",
+    "Bitmine Immersion Technologies Inc": "BMNR",
+    "Coinbase Global Inc": "COIN",
+    "Circle Internet Group Inc": "CRCL",
+    "IREN Ltd": "IREN",
+    "MARA Holdings Inc": "MARA",
+    "HUT 8 MINING CORP": "HUT",
+    "Robinhood Markets, Inc.": "HOOD",
+    "GALAXY DIGITAL PUBCO INC-A": "GLXY",
+    "Bitdeer Technologies Group": "BTDR",
+    "Riot Platforms Inc": "RIOT",
+    "Terawulf Inc": "WULF",
+    "Cipher Digital Inc": "CIFR",
+    "Cleanspark Inc": "CLSK",
+    "CORE SCIENTIFIC INC": "CORZ",
+    "Bullish": "BLSH",
+    "Applied Digital Corp": "APLD",
+    "eToro Group Ltd.": "ETOR",
+    "PayPal Holdings, Inc.": "PYPL",
+    "Bloom Energy, Corp.": "BE",
+    "Monolithic Power Systems Inc": "MPWR",
+    "First Solar, Inc.": "FSLR",
+    "RIVIAN AUTOMOTIVE, INC.": "RIVN",
+    "Darling Ingredients Inc.": "DAR",
+    "Advanced Energy Industries Inc": "AEIS",
+    "MP Materials Corp.": "MP",
+    "Itron, Inc.": "ITRI",
+    "Nextpower Inc": "NXT",
+    "Universal Display Corp.": "OLED",
+    "Albemarle Corporation": "ALB",
+    "Chemical & Mining Co. of Chile Inc.": "SQM",
+    "Ormat Technologies Inc": "ORA",
+    "Enphase Energy, Inc.": "ENPH",
+    "Navitas Semiconductor Corp": "NVTS",
+    "Plug Power Inc.": "PLUG",
+    "Sunrun Inc.": "RUN",
+    "SolarEdge Technologies, Inc.": "SEDG",
+    "CloudFlare Inc.": "NET",
+    "Twilio": "TWLO",
+    "Salesforce Inc": "CRM",
+    "DigitalOcean Holdings, Inc.": "DOCN",
+    "Nutanix, Inc.": "NTNX",
+    "Workday, Inc.": "WDAY",
+    "Zscaler, Inc.": "ZS",
+    "MongoDB, Inc.": "MDB",
+    "Zoom Communications Inc": "ZM",
+    "HubSpot, Inc.": "HUBS",
+    "Dropbox, Inc.": "DBX",
+    "Freeport-McMoRan Inc.": "FCX",
+    "Teck Resources Limited": "TECK",
+    "Southern Copper Corp.": "SCCO",
+    "Cameco Corporation": "CCJ",
+    "Hudbay Minerals Inc": "HBM",
+    "Compa\u00f1\u00eda de Minas Buenaventura S.A.A.": "BVN",
+    "LITHIUM AMERICAS (ARGENTINA) CORP": "LAR",
+    "Lithium Americas Corp.": "LAC",
+    "SIGMA LITHIUM CORP": "SGML",
+    "Energy Fuels Inc/Canada": "UUUU",
+    "Okta, Inc.": "OKTA",
+    "CrowdStrike Holdings, Inc.": "CRWD",
+    "Fortinet Inc.": "FTNT",
+    "SentinelOne, Inc.": "S",
+    "RUBRIK INC.": "RBRK",
+    "Varonis Systems, Inc.": "VRNS",
+    "Qualys, Inc.": "QLYS",
+    "Tenable Holdings Inc.": "TENB",
+    "Check Point Software Technologies Ltd.": "CHKP",
+    "A10 Networks Inc": "ATEN",
+    "Radware Ltd": "RDWR",
+    "Akamai Technologies, Inc.": "AKAM",
+    "General Electric Company": "GE",
+    "RTX Corp": "RTX",
+    "Boeing Company, The": "BA",
+    "Lockheed Martin Corporation": "LMT",
+    "General Dynamics Corporation": "GD",
+    "Northrop Grumman Corporation": "NOC",
+    "Howmet Aerospace Inc": "HWM",
+    "L3Harris Technologies Inc": "LHX",
+    "ATI Inc.": "ATI",
+    "TransDigm Group Incorporated": "TDG",
+    "Heico Corp": "HEI",
+    "Woodward Inc": "WWD",
+    "Rocket Lab USA Inc": "RKLB",
+    "Axon Enterprise Inc.": "AXON",
+    "Curtiss-Wright Corp": "CW",
+    "Carpenter Technology Corp.": "CRS",
+    "Eaton Corporation plc": "ETN",
+    "Parker-Hannifin Corporation": "PH",
+    "Caterpillar Inc.": "CAT",
+    "Rockwell Automation Inc.": "ROK",
+    "JB Hunt Transport Services Inc.": "JBHT",
+    "Ametek Inc.": "AME",
+    "Hubbell Inc.": "HUBB",
+    "Visa, Inc.": "V",
+    "Block Inc": "XYZ",
+    "MasterCard Inc.": "MA",
+    "Affirm Holdings Inc": "AFRM",
+    "Global Payments Inc.": "GPN",
+    "Toast Inc": "TOST",
+    "Fiserv, Inc.": "FISV",
+    "WISE GROUP PLC-CL A": "WSE",
+    "Fidelity National Information Services": "FIS",
+    "NIO Inc.": "NIO",
+    "Li Auto Inc": "LI",
+    "XPeng Inc.": "XPEV",
+    "NXP Semiconductors NV": "NXPI",
+    "Aurora Innovation Inc": "AUR",
+    "Lear Corp.": "LEA",
+    "Allegro Microsystems, Inc.": "ALGM",
+    "ON Semiconductor Corp.": "ON",
+    "MOBILEYE GLOBAL INC.": "MBLY",
+    "Waste Management, Inc.": "WM",
+    "Core Natural Resources Inc": "CNR",
+    "Deere & Company": "DE",
+    "Ecolab Inc.": "ECL",
+    "Walmart Inc.": "WMT",
+    "FedEx Corporation": "FDX",
+    "Coca-Cola FEMSA S.A.B de C.V.": "KOF",
+    "Waste Connections, Inc.": "WCN",
+    "Madison Square Garden Company": "MSGS",
+    "Schrodinger Inc": "SDGR",
+    "Coupang, LLC": "CPNG",
+    "West Pharmaceutical Services Inc": "WST",
+    "PACCAR Inc.": "PCAR",
+    "Anheuser-Busch InBev SA/NV": "BUD",
+    "Danaher Corp.": "DHR",
+    "McDonald's Corp.": "MCD",
+    "Twist Bioscience Corp": "TWST",
+    "CareDx, Inc.": "CDNA",
+    "CRISPR Therapeutics AG": "CRSP",
+    "Natera Inc": "NTRA",
+    "Veracyte, Inc.": "VCYT",
+    "Illumina Inc.": "ILMN",
+    "Vertex Pharmaceuticals Incorporated": "VRTX",
+    "Guardant Health, Inc.": "GH",
+    "Moderna, Inc.": "MRNA",
+    "Qiagen NV": "QGEN",
+    "Core S&P 500 iShares ETF": "IVV",
+    "EAFE MSCI ETF iShares": "EFA",
+    "MSCI Emerging Markets ETF iShares": "EEM",
+    "iShares Core Universal USD Bond ETF": "IUSB",
+    "Invesco Optimum Yield Diversified Commodity Strategy No K-1": "PDBC",
+    "iShares High Yield Systematic Bond ETF": "HYDB",
+    "SPDR Gold MiniShares Trust": "GLDM",
+    "ISHARES 0-3 MONTH TREASURY B": "SGOV",
+    "Philip Morris International, Inc.": "PM",
+    "Procter & Gamble Company, The": "PG",
+    "Costco Wholesale": "COST",
+    "Home Depot, Inc., The": "HD",
+    "Constellation Energy Corp": "CEG",
+    "Duke Energy Corporation": "DUK",
+    "PG&E Corporation": "PCG",
+    "Nexgen Energy Ltd": "NXE",
+    "Uranium Energy Corp.": "UEC",
+    "BWX Technologies, Inc.": "BWXT",
+    "Oklo Inc": "OKLO",
+    "Denison Mines Corp": "DNN",
+    "NuScale Power Corp": "SMR",
+    "Centrus Energy Corp": "LEU",
+    "NANO NUCLEAR ENERGY": "NNE",
+    "Mirion Technologies Inc": "MIR",
+    "Space Exploration Technologies Corp": "SPCX",
+    "ViaSat, Inc.": "VSAT",
+    "Trimble Navigation Limited": "TRMB",
+    "Garmin Ltd.": "GRMN",
+    "Teledyne Technologies Inc": "TDY",
+    "Elbit Systems Ltd.": "ESLT",
+    "Honeywell Aerospace Inc": "HONA",
+    "S&P 500 Vanguard ETF": "VOO",
+    "FTSE Developed Market Index ETF Vanguard": "VEA",
+    "REIT Vanguard ETF": "VNQ",
+    "TIPS Bond iShares": "TIP",
+    "Vanguard Interm-Term Govt Bond": "VGIT",
+    "Emerging Markets Stock Idx ETF Vanguard": "VWO",
+    "JPMorgan Chase & Co.": "JPM",
+    "Berkshire Hathaway Inc. Class B": "BRK-B",
+    "GE Aerospace": "GE"
+  }
+}
