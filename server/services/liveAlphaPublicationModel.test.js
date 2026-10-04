@@ -63,3 +63,9 @@ test('market closed and partially failed evaluations cannot become published cal
 test('entry collection never re-enters a one-to-one entry already captured',async()=>{
  let queries=0;const result=await collectPublicationEntries({now,request:async()=>{queries++;return [{direction:'positive',quality:{quote_fresh:true},entries:{price:100}}];}});assert.equal(result,0);assert.equal(queries,1);
 });
+
+test('close simulation never exits before its post-publication entry',async()=>{
+ const row={due_at:'2026-10-01T10:00:00Z',horizon:'close',publication:{direction:'positive',instrument_key:'TEST',reference_price:100,entries:{price:100,observed_at:'2026-10-01T09:59:50Z'}}};
+ const result=await settlePublicationFollowup(row,{now:new Date('2026-10-04T05:00:00Z'),request:async()=>[quote('2026-10-01T09:59:10Z')],book:{closeOn:async()=>({price:102,candle_end:'2026-10-01T10:00:00Z'})}});
+ assert.equal(result.stock_return_pct,2.0000000000000018);assert.equal(result.simulated_net_return_pct,null);
+});

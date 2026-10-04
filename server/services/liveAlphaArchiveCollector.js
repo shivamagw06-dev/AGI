@@ -47,10 +47,11 @@ export async function settlePublicationFollowup(row,{request=rest,book=sharedCan
  if(!price){const expired=now.getTime()-Date.parse(row.due_at)>7*86400000;return {...base,status:expired?'missing':'pending',reason:expired?'No usable follow-up price after seven days':'Awaiting quote or published historical candle'};}
  const raw=stockReturn(p.reference_price,price);
  const entry=entryRow(p.entries);
+ const validExit=entry&&quote&&Date.parse(quote.observed_at)>Date.parse(entry.observed_at);
  return {...base,status:'completed',price,observed_at:observed,price_source:source,benchmark_price:bm?.price||null,benchmark_observed_at:bm?.candle_end||null,
   stock_return_pct:raw,directional_return_pct:directionReturn(p.direction,raw),benchmark_return_pct:stockReturn(p.benchmark_price,bm?.price),
-  simulated_net_return_pct:entry&&quote?simulatedReturn(p.direction,entry,quote):null,
-  reason:entry&&quote?'Hypothetical fixed-horizon bid/ask return; not an executed trade. Short borrow not verified':'Price tracking only; eligible post-publication entry or exit quote missing'};
+  simulated_net_return_pct:validExit?simulatedReturn(p.direction,entry,quote):null,
+  reason:validExit?'Hypothetical fixed-horizon bid/ask return; not an executed trade. Short borrow not verified':'Price tracking only; eligible post-publication entry or exit quote missing'};
 }
 export async function runArchiveCollection({request=rest,book=sharedCandleBook(),now=new Date()}={}){
  const entries=await collectPublicationEntries({request,now});
