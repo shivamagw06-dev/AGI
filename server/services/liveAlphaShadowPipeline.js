@@ -23,6 +23,7 @@ function compactFeaturePoint(point, at) {
   return {
     instrument_key: String(point.instrument_key || ''),
     received_at: new Date(at).toISOString(),
+    exchange_timestamp: point.exchange_timestamp ?? null,
     ltp: Number(point.ltp),
     cumulative_volume: finiteOrNull(point.cumulative_volume),
     open_interest: finiteOrNull(point.open_interest),
@@ -193,6 +194,10 @@ export class MomentumShadowPipeline {
         persistence.push({ engine: entry.engine, status: 'failed', error: error.message });
       }
     }
+    if (this.repository?.publishSnapshot) {
+      try { await this.repository.publishSnapshot(entries, persistence); }
+      catch { persistence.push({ engine: 'publication_archive', status: 'failed', error: 'Publication archive write failed' }); }
+    }
     return persistence;
   }
   async evaluate(now = new Date()) {
@@ -293,6 +298,15 @@ export class MomentumShadowPipeline {
       const sector = this.featureStore.latest(member?.sectorInstrumentKey);
       return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: sector?.ltp ?? null, sector_instrument_key: member?.sectorInstrumentKey ?? null };
     });
+    for (const output of [result, volumeResult, openingResult, meanReversionResult, derivativesResult].filter(Boolean)) {
+      output.signals = output.signals.map(signal => {
+        const member = this.universe.find(row => row.symbol === signal.symbol);
+        const quote = this.featureStore.latest(member?.instrumentKey);
+        const stamp = quote?.exchange_timestamp;
+        return { ...signal, cash_instrument_key: member?.instrumentKey,
+          price_quote_at: stamp && Number.isFinite(new Date(stamp).getTime()) ? new Date(stamp).toISOString() : null };
+      });
+    }
     this.lastRunBucket = bucket;
     const diagnostics = { benchmark_key: this.benchmarkKey, minute_of_session: minute };
     const persistence = await this.persistEngines([
