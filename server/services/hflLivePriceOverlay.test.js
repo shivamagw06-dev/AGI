@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { overlayPayloadWithPrices } from './hflLivePriceOverlay.js';
+import { overlayPayloadWithPrices, priceFreshness } from './hflLivePriceOverlay.js';
 
 test('overlays LTP onto terminal card rows without changing the rank payload identity fields', () => {
   const prices = new Map([
@@ -17,7 +17,7 @@ test('overlays LTP onto terminal card rows without changing the rank payload ide
         consensus: { target_price: 1600, upside: 22.16 },
       }],
     }],
-  }, prices);
+  }, prices, {now:new Date("2026-08-25T07:00:10Z")});
   const row = overlaid.cards[0].results[0];
   assert.equal(row.price, 1300.6);
   assert.equal(row.live_price, 1300.6);
@@ -90,4 +90,12 @@ test('scales dividend yield from implied DPS and does not rewrite trailing PE', 
   assert.equal(row.dividend_yield, 3.2);
   assert.equal(row.forward_pe, 20);
   assert.equal(row.pe, 24.5);
+});
+
+
+test('old, future and closed-session prices are never labelled live', () => {
+  assert.equal(priceFreshness('2026-10-01T07:00:00Z', new Date('2026-10-01T07:00:30Z')), 'LIVE');
+  assert.equal(priceFreshness('2026-10-01T07:00:00Z', new Date('2026-10-01T07:02:00Z')), 'STALE');
+  assert.equal(priceFreshness('2026-10-03T07:00:00Z', new Date('2026-10-04T07:00:00Z')), 'MARKET_CLOSED');
+  assert.equal(priceFreshness('2026-10-01T08:00:00Z', new Date('2026-10-01T07:00:00Z')), 'UNKNOWN');
 });

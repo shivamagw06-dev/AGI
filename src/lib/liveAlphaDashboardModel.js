@@ -141,7 +141,7 @@ export function buildLiveBrief(allRows, { isFresh = false, now = new Date() } = 
   const conflicts = directional.filter((row) => row.signal_structure === 'CONFLICTING');
   const positive = clean.filter((row) => row.composite > 0).sort((a, b) => b.composite - a.composite);
   const negative = clean.filter((row) => row.composite < 0).sort((a, b) => a.composite - b.composite);
-  const multi = directional.filter((row) => row.active.length >= 2);
+  const multi = clean.filter((row) => row.active.length >= 2);
 
   const behaviourCounts = Object.fromEntries(
     LIVE_ALPHA_STRATEGIES.map(([engine]) => [engine, directional.filter((row) => row.strategies[engine]?.direction).length]),
@@ -170,9 +170,9 @@ export function buildLiveBrief(allRows, { isFresh = false, now = new Date() } = 
   const highEvidence = directional.filter((row) => row.confidence === 'HIGH' || row.confidence === 'SAMPLE-RICH').length;
   const evidenceStrength = !isFresh
     ? 'STALE'
-    : highEvidence >= 8 || multi.length >= 5
+    : highEvidence >= 8
       ? 'HIGH'
-      : highEvidence >= 3 || multi.length >= 2
+      : highEvidence >= 3
         ? 'MEDIUM'
         : directional.length
           ? 'LOW'
@@ -248,7 +248,7 @@ export function filterRadarRows(rows, filter, { search = '', sector = '' } = {})
   const query = search.trim().toUpperCase();
   const sectorQuery = sector.trim().toUpperCase();
   return rows.filter((row) => {
-    if (query && !String(row.symbol || '').toUpperCase().includes(query)) return false;
+    if (query && !`${row.symbol || ''} ${row.sector || ''}`.toUpperCase().includes(query)) return false;
     if (sectorQuery && !String(row.sector || '').toUpperCase().includes(sectorQuery)) return false;
     if (filter === 'all') return true;
     if (filter === 'positive') return row.composite > 0 && row.signal_structure !== 'CONFLICTING';

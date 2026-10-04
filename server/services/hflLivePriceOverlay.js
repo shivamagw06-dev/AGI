@@ -5,6 +5,8 @@
  * track the Live Alpha tape (in-process) and live_market_snapshots (Supabase).
  */
 
+import { sessionState } from './liveAlphaSession.js';
+
 const PRICE_CACHE_MS = 20_000;
 const ALIAS_CACHE_MS = 10 * 60_000;
 const MAX_AGE_MS = 20 * 60_000;
@@ -61,7 +63,7 @@ async function loadAliases() {
 async function loadSnapshotPrices(prices) {
   const since = new Date(Date.now() - MAX_AGE_MS).toISOString();
   const query = new URLSearchParams({
-    select: 'instrument_key,observed_at,ltp',
+    select: 'instrument_key,observed_at,exchange_timestamp,ltp',
     observed_at: `gte.${since}`,
     order: 'observed_at.desc',
     limit: '5000',
@@ -70,7 +72,7 @@ async function loadSnapshotPrices(prices) {
   if (!Array.isArray(rows)) return;
   const now = Date.now();
   for (const row of rows) {
-    const observed = row?.observed_at;
+    const observed = row?.exchange_timestamp || row?.observed_at;
     const age = now - Date.parse(observed || '');
     if (!Number.isFinite(age) || age > MAX_AGE_MS) continue;
     putPrice(prices, row.instrument_key, row.ltp, observed, 'live_market_snapshots');
@@ -106,7 +108,7 @@ async function loadPriceMap() {
   return prices;
 }
 
-function overlayRow(row, prices) {
+function overlayRow(row, prices, now) {
   const key = String(row.instrument_key || '').trim();
   const symbol = String(row.ticker || row.symbol || '').trim().toUpperCase();
   const pack = (key && prices.get(key)) || (symbol && prices.get(symbol));
@@ -123,7 +125,7 @@ function overlayRow(row, prices) {
     ...(row.data_context || {}),
     price_source: pack.source,
     price_as_of: pack.observed_at,
-    price_freshness: 'LIVE',
+    price_freshness: priceFreshness(pack.observed_at, now),
   };
   const target = Number(row.consensus?.target_price ?? row.target_price);
   if (target > 0) {
@@ -155,21 +157,28 @@ function overlayRow(row, prices) {
   }
 }
 
-function applyInPlace(node, prices) {
+function applyInPlace(node, prices, now) {
   if (Array.isArray(node)) {
-    for (const item of node) applyInPlace(item, prices);
+    for (const item of node) applyInPlace(item, prices, now);
     return;
   }
   if (!node || typeof node !== 'object') return;
-  for (const value of Object.values(node)) applyInPlace(value, prices);
-  if (node.ticker || node.instrument_key || node.symbol) overlayRow(node, prices);
+  for (const value of Object.values(node)) applyInPlace(value, prices, now);
+  if (node.ticker || node.instrument_key || node.symbol) overlayRow(node, prices, now);
 }
 
-export function overlayPayloadWithPrices(payload, priceMap) {
+export function priceFreshness(observedAt, now = new Date()) {
+  const age = new Date(now).getTime() - Date.parse(observedAt || '');
+  if (!Number.isFinite(age) || age < 0) return 'UNKNOWN';
+  if (!sessionState(new Date(now)).open) return 'MARKET_CLOSED';
+  return age <= 60_000 && sessionState(new Date(observedAt)).open ? 'LIVE' : 'STALE';
+}
+
+export function overlayPayloadWithPrices(payload, priceMap, { now = new Date() } = {}) {
   if (!payload || typeof payload !== 'object') return payload;
   if (!priceMap || priceMap.size === 0) return payload;
   const copy = JSON.parse(JSON.stringify(payload));
-  applyInPlace(copy, priceMap);
+  applyInPlace(copy, priceMap, now);
   return copy;
 }
 

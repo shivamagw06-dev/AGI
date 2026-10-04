@@ -35,7 +35,8 @@ export function confidenceLabel(score, sample = 0) {
 /** Plain-language basis for the label, so the page never has to imply one. */
 export function confidenceBasis(sample = 0) {
   const samples = Number(sample) || 0;
-  if (samples < 30) return 'Model state only — no historical comparables behind this signal yet.';
+  if (samples === 0) return 'Model only — no historical comparables attached. Agreement is not independent evidence.';
+  if (samples < 30) return `Limited evidence — ${samples} comparables per component at minimum; not validated.`;
   if (samples < 100) return `Partial evidence — ${samples} comparable observations, below the 100 required.`;
   return `${samples} comparable observations - sample threshold met, not research validation.`;
 }
@@ -72,10 +73,10 @@ export function interpretCanonicalSignal(row) {
   return {
     direction, structure, alignment, primary_driver: primary, supporting_components: supporting,
     contradicting_components: contradicting, dominant_positive: positiveLead, dominant_negative: negativeLead,
-    active_components: active, inactive_components: LIVE_ALPHA_STRATEGIES.map(([key]) => key).filter((key) => !row.strategies[key]?.direction),
+    active_components: active, inactive_components: LIVE_ALPHA_STRATEGIES.map(([key]) => key).filter((key) => !active.some(signal => signal.engine === key)),
     summary,
     why_flagged: [primary ? `${scored(primary)} is the primary measurable driver` : null, ...supporting.map((signal) => `${scored(signal)} is supporting`), conflicting ? 'Active components point in opposing directions' : active.length > 1 ? 'Active components are directionally aligned' : null, `Composite research signal is ${row.composite > 0 ? '+' : ''}${row.composite}`].filter(Boolean),
-    caveats: [active.length === 1 ? 'The signal currently lacks independent component confirmation.' : null, conflicting ? 'This is a mixed research state, not a clean directional signal.' : null, 'Confidence is model-state confidence, not probability of future return.', 'Historical predictive validation is still collecting.'].filter(Boolean),
+    caveats: [active.length === 1 ? 'The signal currently has only one active component.' : null, conflicting ? 'This is a mixed research state, not a clean directional signal.' : null, 'Confidence is model-state confidence, not probability of future return.', 'Engines share price and volume inputs; agreement is not independent validation.'].filter(Boolean),
     strengthening_conditions: ['Continued persistence in the primary component', active.length === 1 ? 'Independent confirmation from another strategy' : 'Continued component agreement', 'Stable input quality and freshness', 'Positive forward outcomes during validation'],
     weakening_conditions: ['Primary component weakening materially', 'Component disagreement increasing', 'Signal becoming stale', 'Strategy or data-quality degradation'],
   };
@@ -91,7 +92,7 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
   for (const signal of latest.values()) {
     const row = symbols.get(signal.symbol) || { instrument: signal.instrument_key, symbol: signal.symbol, sector: signal.sector || '—', strategies: {}, timestamp: signal.as_of };
     row.strategies[signal.engine] = signal;
-    if (signal.live_price || signal.price) {
+    if ((signal.live_price || signal.price) && (!row.live_price || (Date.parse(signal.price_as_of) || 0) >= (Date.parse(row.price_as_of) || 0))) {
       row.live_price = signal.live_price || signal.price;
       row.price_as_of = signal.price_as_of || row.price_as_of;
       row.price_source = signal.price_source || row.price_source;
@@ -100,18 +101,19 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
     symbols.set(signal.symbol, row);
   }
   return [...symbols.values()].map((row) => {
-    const active = Object.values(row.strategies).filter((signal) => signal.direction);
+    const active = Object.values(row.strategies).filter((signal) => signal.direction && Date.parse(signal.as_of) === Date.parse(row.timestamp));
+    const excluded_components = Object.values(row.strategies).filter((signal) => signal.direction && Date.parse(signal.as_of) !== Date.parse(row.timestamp));
     const scores = active.map(signedSignalScore);
     const composite = Math.max(-99, Math.min(99, scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / Math.sqrt(scores.length)) : 0));
     const quality = active.length ? Math.round(active.reduce((sum, signal) => sum + Number(signal.empirical_confidence_score ?? signal.signal_quality_score ?? 0), 0) / active.length) : 0;
-    const samples = Math.max(0, ...active.map((signal) => Number(signal.comparable_observations) || 0));
+    const samples = active.length ? Math.min(...active.map((signal) => Math.max(0, Number(signal.comparable_observations) || 0))) : 0;
     const canonical = {
       ...row, newest: row.timestamp, input_timestamp: row.timestamp, data_cutoff: row.timestamp,
       signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples),
-      confidence_basis: confidenceBasis(samples), active,
+      confidence_basis: confidenceBasis(samples), active, excluded_components,
       validation_status: samples >= 100 ? 'SAMPLE THRESHOLD MET' : 'EVIDENCE BUILDING', strategy_status: 'RESEARCH ONLY',
       strategy_version: 'live-alpha-v1', model_version: 'signal-composite-v1',
-      input_data_status: active.every((signal) => signal.liquidity_ok) ? 'READY' : 'REVIEW REQUIRED',
+      input_data_status: active.length > 0 && active.every((signal) => signal.liquidity_ok && signal.liquidity_verified === true) ? 'READY' : 'REVIEW REQUIRED',
       data_fingerprint: active.map((signal) => signal.id).filter(Boolean).sort().join(':'),
       component_states: Object.fromEntries(LIVE_ALPHA_STRATEGIES.map(([key]) => [key, componentState(row.strategies[key], strategyHealth[key])])),
     };

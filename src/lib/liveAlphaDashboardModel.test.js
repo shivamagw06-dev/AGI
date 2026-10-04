@@ -69,3 +69,13 @@ test('plainSignalDirection returns an object, so callers must read .label', () =
   assert.equal(typeof out.label, 'string');
   assert.ok(out.label.length > 0);
 });
+
+test('agreement filters reject opposing directions and search includes sectors', () => {
+  const rows = [
+    { symbol:'SAIL',sector:'METALS',composite:-30,signal_structure:'CONFLICTING',active:[{},{}] },
+    { symbol:'TEST',sector:'BANKS',composite:20,signal_structure:'MULTI-FACTOR POSITIVE',active:[{},{}] },
+  ];
+  assert.deepEqual(filterRadarRows(rows,'multi').map(r=>r.symbol),['TEST']);
+  assert.deepEqual(filterRadarRows(rows,'all',{search:'metals'}).map(r=>r.symbol),['SAIL']);
+  assert.equal(filterRadarRows(rows,'negative').length,0);
+});

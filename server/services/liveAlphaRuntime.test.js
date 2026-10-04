@@ -119,3 +119,11 @@ test('stored sector labels resolve to the index they were anchored to', () => {
   assert.equal(sectorKeyForLabel('METALS_MINING'), 'NSE_INDEX|Nifty Metal');
   assert.equal(sectorKeyForLabel('TEXTILES'), null);
 });
+
+test('repeated 503 failures and exhausted primary permit configured fallback', () => {
+  const options = {provider:'upstox',allowFallback:true,growwConfigured:true};
+  assert.equal(shouldUseGrowwFallback({...options,feedStatus:'exhausted',lastError:'Unexpected server response: 503'}),true);
+  assert.equal(shouldUseGrowwFallback({...options,feedStatus:'reconnecting',reconnects:3,lastError:'Unexpected server response: 503'}),true);
+  assert.equal(shouldUseGrowwFallback({...options,feedStatus:'reconnecting',reconnects:1,lastError:'503'}),false);
+  assert.equal(shouldUseGrowwFallback({...options,allowFallback:false,feedStatus:'exhausted'}),false);
+});

@@ -211,3 +211,12 @@ test('an unmeasurable spread is flagged rather than passed off as liquid', () =>
     assert.equal(signal.liquidity_reason, 'spread_unknown');
   }
 });
+
+
+test('all engines retain the difference between measured and unknown liquidity', () => {
+  const rows=universe().map(r=>({...r,spreadBps:null,currentPrice:102,openingHigh:101,openingLow:100,priceReturn15m:1,oiChange15m:2,openInterest:1000}));
+  for (const evaluate of [evaluateCrossSectionalMomentum,evaluateVolumeLiquidityAnomaly,evaluateOpeningRangeExpansion,evaluateIntradayMeanReversion,evaluateDerivativesPositioning]) {
+    assert.ok(evaluate(rows).signals.every(s=>s.liquidity_verified===false));
+    assert.ok(evaluate(rows.map(r=>({...r,spreadBps:5}))).signals.every(s=>s.liquidity_verified===true));
+  }
+});

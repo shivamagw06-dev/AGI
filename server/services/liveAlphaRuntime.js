@@ -88,10 +88,10 @@ export function classifyEvaluationStatus(evaluation) {
 
 export function shouldUseGrowwFallback({ provider, feedStatus, reconnects = 0, lastError = '', allowFallback, growwConfigured }) {
   const status = String(feedStatus || '').toLowerCase();
-  const terminalFailure = ['auth_failed', 'failed'].includes(status);
+  const terminalFailure = ['auth_failed', 'failed', 'exhausted'].includes(status);
   const repeatedHandshakeFailure = status === 'reconnecting'
     && Number(reconnects) >= 3
-    && /403|handshake rejected/i.test(String(lastError || ''));
+    && /403|429|5\d\d|handshake rejected|ECONNRESET|ETIMEDOUT/i.test(String(lastError || ''));
   return provider === 'upstox'
     && (terminalFailure || repeatedHandshakeFailure)
     && allowFallback === true
@@ -315,6 +315,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     if (provider === 'upstox' && allowGrowwFallback && isGrowwConfigured() && runtime?.provider === 'upstox') {
       const fallbackMonitor = setInterval(async () => {
         if (!runtime || runtime.provider !== 'upstox' || runtime.switchingFeed) return;
+        if (!sessionState(new Date(), { leadMs: 10 * 60_000 }).open) return;
         const current = runtime.feed.status?.() || runtime.feed.state || {};
         if (!shouldUseGrowwFallback({ provider: 'upstox', feedStatus: current.status, reconnects: current.reconnects, lastError: current.last_error, allowFallback: true, growwConfigured: true })) return;
         runtime.switchingFeed = true;
@@ -475,7 +476,7 @@ export function latestLiveAlphaPrints() {
   };
   try {
     for (const [key, row] of runtime?.store?.latest || []) {
-      put(key, row?.ltp, row?.received_at || row?.effective_timestamp, row?.source || 'live_alpha_store');
+      put(key, row?.ltp, (row?.exchange_timestamp ? new Date(row.exchange_timestamp).toISOString() : null) || row?.effective_timestamp || row?.received_at, row?.source || 'live_alpha_store');
     }
   } catch {
     /* store is optional until the feed starts */
@@ -483,7 +484,7 @@ export function latestLiveAlphaPrints() {
   try {
     for (const [key, values] of runtime?.pipeline?.featureStore?.series || []) {
       const last = values?.at?.(-1);
-      put(key, last?.ltp, last?.received_at, last?.source || 'live_alpha_features');
+      put(key, last?.ltp, last?.exchange_timestamp ? new Date(last.exchange_timestamp).toISOString() : last?.received_at, last?.source || 'live_alpha_features');
     }
   } catch {
     /* feature store is optional until the first ingest */

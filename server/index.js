@@ -347,6 +347,12 @@ function reg(path, handler) {
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
 reg('/api/market/live-alpha/status', (_req, res) => res.json({ ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() }));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
+reg('/api/market/live-alpha/evidence', async (_req, res) => {
+  try {
+    const { getLiveAlphaEvidence } = await import('./services/liveAlphaEvidence.js');
+    res.json(await getLiveAlphaEvidence());
+  } catch { res.status(503).json({ error: 'Recorded outcome evidence is unavailable.', research_only: true }); }
+});
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
   try {
     const { overlayHflLivePrices } = await import('./services/hflLivePriceOverlay.js');
