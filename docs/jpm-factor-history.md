@@ -26,3 +26,12 @@ Factor Definitions gives score composition but does not establish full portfolio
 ## Validation
 
 Extraction asserts unique ascending dates, finite observations, no interior missing rows and exact saved-chart reconciliation. Node tests cover compounding, date boundaries, calendar clamping, source totals and discrepancy preservation. Production build checks frontend integration.
+
+## Chart audit corrections — 4 October 2026
+
+- Numeric UTC timestamps and a time scale now preserve calendar spacing, including weekends. Straight segments avoid Excel-style smoothing overshoot; they do not create additional observations.
+- Explicit adaptive Y ticks prevent repeated integer labels in narrow ranges. All seven presets and every single-factor/comparison axis are tested for distinct labels and enclosing bounds.
+- The source conflict is visible above both charts, with the saved-chart/main-sheet reconciliation table in the methodology section. Windows that compound 14 August 2026 carry a specific note.
+- The synthetic starting reference is explicitly called out whenever included, and tooltips identify the rebasing reference. No change to source observations or compounding results.
+- Custom dates reject impossible calendar values, handle input and change events, and document close-to-close semantics.
+- The original discrepancy is still unresolved. Publication does not certify one source version as the publisher's intended result or establish investability.
