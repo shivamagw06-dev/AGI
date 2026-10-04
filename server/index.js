@@ -347,6 +347,20 @@ function reg(path, handler) {
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
 reg('/api/market/live-alpha/status', (_req, res) => res.json({ ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() }));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
+reg('/api/market/live-alpha/history', async (req,res) => {
+  try { const {readArchive,readHistorical}=await import('./services/liveAlphaArchive.js');
+    res.json(await (req.query.kind==='historical' ? readHistorical(req.query) : readArchive(req.query)));
+  } catch(error) { res.status(error.status||503).json({error:error.status ? error.message : 'Signal history temporarily unavailable.'}); }
+});
+reg('/api/market/live-alpha/history/:id', async (req,res) => {
+  try { const {archiveDetail}=await import('./services/liveAlphaArchive.js');res.json(await archiveDetail(req.params.id)); }
+  catch(error) { res.status(error.status||503).json({error:error.status ? error.message : 'Signal chart temporarily unavailable.'}); }
+});
+reg('/api/market/live-alpha/archive-status', async (_req,res) => {
+ const {publicationStatus}=await import('./services/liveAlphaPublications.js');
+ const {archiveCollectorStatus}=await import('./services/liveAlphaArchiveCollector.js');
+ res.json({publisher:publicationStatus(),collector:archiveCollectorStatus()});
+});
 reg('/api/market/live-alpha/evidence', async (_req, res) => {
   try {
     const { getLiveAlphaEvidence } = await import('./services/liveAlphaEvidence.js');
@@ -480,6 +494,7 @@ startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
 startLiveAlphaOutcomeScheduler({ loadUniverse: loadLiveAlphaUniverse });
+import('./services/liveAlphaArchiveCollector.js').then(({startArchiveCollector})=>startArchiveCollector());
 startConfluenceValidationScheduler();
 startEngineKeepWarm();
 startIntelligenceLearningWorker();

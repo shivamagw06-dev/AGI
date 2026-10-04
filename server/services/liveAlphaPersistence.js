@@ -142,6 +142,10 @@ export class LiveAlphaPersistence {
       request_mode: row.raw_factors?.request_mode || null,
     }));
   }
+  async publishSnapshot(entries, persistence) {
+    const { publishAlphaSnapshot } = await import('./liveAlphaPublications.js');
+    return publishAlphaSnapshot(entries, persistence);
+  }
   async saveAlphaRun(result, diagnostics = {}) {
     const session = new Date(new Date(result.as_of).getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
     const runs = await rest('live_alpha_runs', {

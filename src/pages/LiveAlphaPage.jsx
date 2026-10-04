@@ -3,6 +3,7 @@ import API_ORIGIN from '@/config';
 import { buildCanonicalSignals, interpretCanonicalSignal, LIVE_ALPHA_STRATEGIES } from '@/lib/liveAlphaSignalModel';
 import { ENGINE_PLAIN, filterRadarRows, plainSignalDirection } from '@/lib/liveAlphaDashboardModel';
 import './liveAlphaPage.css';
+import LiveAlphaHistory from './LiveAlphaHistory';
 
 const REFRESH_MS = 60_000;
 const date = value => value && Number.isFinite(Date.parse(value)) ? `${new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })} IST` : 'Not recorded';
@@ -119,13 +120,14 @@ export default function LiveAlphaPage() {
     {error && <p className="la-error" role="alert">{error}. Any displayed snapshot is retained history.</p>}
     <StateBanner readiness={payload.readiness} freshness={payload.freshness} runtime={runtime} requestFailed={Boolean(error)}/>
     <section className="la-metrics"><Metric label="Flagged stocks" value={count(directional.length)} sub={snapshotAvailable ? `of ${allRows.length} in stored snapshot` : 'Snapshot unavailable'}/><Metric label="Positive · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite>0).length)}/><Metric label="Negative · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite<0).length)}/><Metric label="Aligned engines" value={count(directional.filter(aligned).length)} sub="2+ same-direction components"/><Metric label="Conflicting signals" value={count(directional.filter(r=>!clean(r)).length)} sub="Opposing directions"/></section>
-    <nav className="la-tabs" aria-label="Live Alpha views">{['Signals','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
+    <nav className="la-tabs" aria-label="Live Alpha views">{['Signals','Signal history','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
     {tab==='Signals' && <><Shortlist rows={directional} onSelect={s=>{setSearch(s);setFilter('all');setPage(0);setOpen(s);}}/>
     <section className="la-panel"><div className="la-section-head"><h2>Stock signals</h2><p>Snapshot: {date(payload.freshness?.latest_successful_at)} · Expand a stock to inspect the reasoning.</p></div><div className="la-toolbar"><input aria-label="Search symbol or sector" placeholder="Search symbol or sector" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/><select aria-label="Filter signals" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}>{[['all','All signals'],['positive','Positive'],['negative','Negative'],['multi','Aligned'],['conflicting','Conflicting']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Sort signals" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}><option value="strength">Model strength</option><option value="symbol">Stock A–Z</option><option value="newest">Newest signal</option></select></div>
     <Table headers={['Stock / sector','Direction','Score ±99','Last price ₹ / time','Signal time','Evidence','Engine directions','Liquidity']}>
       {shown.slice(currentPage*25,currentPage*25+25).map(row=><SignalRow key={row.symbol} row={row} expanded={open===row.symbol} onToggle={()=>setOpen(open===row.symbol?null:row.symbol)}/>)}
       {!shown.length && <tr><td colSpan={8}>No matching signals. Try another filter or search.</td></tr>}
     </Table><Pager page={currentPage} total={shown.length} onChange={setPage}/></section></>}
+    {tab==='Signal history' && <LiveAlphaHistory latestSignalAt={payload.freshness?.latest_successful_at}/>}
     {tab==='Sector rotation' && <SectorRotation groww={payload.groww}/>}{tab==='Equity screen' && <EquityOpportunities groww={payload.groww}/>}{tab==='Evidence' && <Evidence runtime={runtime}/>}
     <details className="la-panel la-health"><summary>Engine coverage and health</summary><Table headers={['Engine','What it measures','Stored coverage','Directional signals','Status','Last evaluation']}>
       {LIVE_ALPHA_STRATEGIES.map(([key,label])=>{const h=payload.strategy_health?.[key];return <tr key={key}><td>{label}</td><td>{ENGINE_PLAIN[key]?.plain}</td><td>{h?.stored_signals ?? '—'} / {allRows.length}</td><td>{directional.filter(r=>r.active.some(s=>s.engine===key)).length}</td><td>{h?.status || 'unknown'}</td><td>{date(h?.latest_run_at)}</td></tr>;})}
