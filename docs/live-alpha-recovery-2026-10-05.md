@@ -9,4 +9,4 @@ All five engines retain their scoring rules and research-only execution policy.
 - Distinguish mapped futures awaiting usable OI history from absent futures mappings. Overall evaluation status remains degraded while any engine is unavailable, including between five-minute evaluations.
 - Old published signals are not rewritten. Earlier outputs that used previous-close seeds should not be treated as validated intraday evidence.
 
-Validation: 96 focused Live Alpha/feed tests passed, including genuine-history evaluation of all five engines, missing opening minutes, stale/gapped history, incomplete candles, OI recovery, and rate-limit stop behavior. Read-only production samples confirmed current-session NIFTY and Reliance minute candles back to 09:15 IST.
+Validation: 97 focused Live Alpha/feed tests passed, including genuine-history evaluation of all five engines, missing opening minutes, stale/gapped history, incomplete candles, OI recovery, and rate-limit stop behavior. Read-only production samples confirmed current-session NIFTY and Reliance minute candles back to 09:15 IST.

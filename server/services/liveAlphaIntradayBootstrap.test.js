@@ -22,3 +22,10 @@ test('authentication or throttling stops further bootstrap requests', async () =
   assert.equal(result.status, 'blocked');
   assert.ok(!JSON.stringify(result).includes('private provider response'));
 });
+
+test('a previous session or unfinished candle is not counted as restored', async () => {
+  const result = await bootstrapLiveAlphaIntraday({ instrumentKeys: ['A'], featureStore: new IntradayFeatureStore(), delayMs: 0, now: () => new Date('2026-10-05T07:00:00Z'), fetchCandles: async () => ({data:{candles:[['2026-10-04T06:00:00Z',100,101,99,100],['2026-10-05T07:00:00Z',100,101,99,100]]}}) });
+  assert.equal(result.restored, 0);
+  assert.equal(result.failed, 1);
+  assert.equal(result.status, 'partial');
+});

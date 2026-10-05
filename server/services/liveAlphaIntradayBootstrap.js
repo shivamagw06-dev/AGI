@@ -22,8 +22,9 @@ export async function bootstrapLiveAlphaIntraday({ instrumentKeys, featureStore,
       try {
         const payload = await fetchCandles(key, { unit: 'minutes', interval: 1, timeoutMs: 15_000 });
         if (!active()) break;
-        const bars = normalizeIntradayCandles(payload);
         const at = now();
+        const session = ms => new Date(ms + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+        const bars = normalizeIntradayCandles(payload).filter(bar => bar.timestamp + 60_000 <= at.getTime() && session(bar.timestamp) === session(at.getTime()));
         featureStore.ingestCandles(key, bars, at);
         if (bars.length) status.restored += 1;
         else throw new Error('No usable intraday candles');
