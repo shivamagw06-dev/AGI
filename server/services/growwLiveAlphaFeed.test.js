@@ -33,3 +33,15 @@ test('maps the nearest unexpired Groww future to each Live Alpha member', async 
     if (prior === undefined) delete process.env.GROWW_ACCESS_TOKEN; else process.env.GROWW_ACCESS_TOKEN = prior;
   }
 });
+
+test('Groww publishes each small batch immediately and stops outside the session', async () => {
+ const { GrowwLiveAlphaFeed } = await import('./growwLiveAlphaFeed.js');
+ const calls=[], batches=[]; let open=true;
+ const feed=new GrowwLiveAlphaFeed({universe:{benchmarkKey:'NSE_INDEX|Nifty 50',members:[1,2,3,4].map(n=>({symbol:`S${n}`,instrumentKey:`NSE_EQ|${n}`}))},
+  marketOpen:()=>open, sleep:async()=>{}, indices:async()=>[],
+  quote:async(_exchange,_segment,symbol)=>{calls.push(symbol);return {last_price:100,last_trade_time:Date.now()};},
+  onBatch:async batch=>batches.push({count:batch.snapshots.length,requested:calls.length})});
+ feed.stopped=false;await feed.poll();assert.deepEqual(batches,[{count:3,requested:3},{count:1,requested:4}]);
+ open=false;await feed.poll();assert.equal(calls.length,4);assert.equal(feed.status().status,'market_closed');
+ feed.stop();open=true;await feed.poll();assert.equal(calls.length,4);
+});

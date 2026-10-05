@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 import { resolveUpstoxAccessToken } from './upstox.js';
 
 const UPSTOX_V3_BASE = process.env.UPSTOX_API_BASE_V3 || 'https://api.upstox.com/v3';
@@ -20,9 +21,9 @@ export const UPSTOX_GLOBAL_TARGETS = Object.freeze([
 ]);
 
 async function ensureFetch() {
-  if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
+  if (typeof globalThis.fetch === 'function') return (url, options) => budgetedMarketFetch('upstox', url, options);
   const mod = await import('node-fetch');
-  return mod.default;
+  return (url, options) => budgetedMarketFetch('upstox', url, options, mod.default);
 }
 
 function finitePositive(value) {

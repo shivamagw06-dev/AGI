@@ -1,3 +1,5 @@
+import { sharedLiveQuotes } from './sharedLiveQuotes.js';
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 import { withGrowthMomentum } from './growthMomentumPortfolio.js';
 import { nseSession } from './liveAlphaSession.js';
 import { convictionView } from './convictionTracking.js';
@@ -22,24 +24,35 @@ export function session(now = new Date()) {
 }
 const stamp=v=>{const n=typeof v==='string'&&/^\d+$/.test(v)?Number(v):v;const d=new Date(n);return v!=null&&Number.isFinite(d.getTime())?d.toISOString():null;};
 export function fresh(q, now) {const age=now.getTime()-Date.parse(q?.time);return q?.price>0&&age>=0&&age<=120000;}
-export function createIndiaQuotes({master=indiaMaster, fetcher=fetch, token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token, now=()=>new Date()}={}) {
- let cache=null,pending=null;
+export function createIndiaQuotes({master=indiaMaster, fetcher=(url, options)=>budgetedMarketFetch('upstox', url, options), token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token, now=()=>new Date(), shared=sharedLiveQuotes}={}) {
+ const pending=new Map(); let cache=null;
  return async symbols=>{
-  const key=[...new Set(symbols)].sort().join(',');const time=now();
+  const unique=[...new Set(symbols)].sort(), key=unique.join(','), time=now();
   if(cache?.key===key&&time.getTime()-cache.saved<30000)return cache.value;
-  if(pending)return pending;
-  pending=(async()=>{
-   const credential=token();if(!credential)throw Error('Upstox credentials unavailable');
-   const {items}=await master();const resolved=symbols.map(symbol=>items.find(x=>x.symbol===symbol)).filter(Boolean);
+  if(pending.has(key))return pending.get(key);
+  const task=(async()=>{
+   const {items}=await master();const resolved=unique.map(symbol=>items.find(x=>x.symbol===symbol)).filter(Boolean);
    if(!resolved.length)throw Error('No NSE instruments resolved');
-   const response=await fetcher('https://api.upstox.com/v3/market-quote/quotes?instrument_key='+encodeURIComponent(resolved.map(x=>x.instrumentKey).join(',')),{headers:{Accept:'application/json',Authorization:`Bearer ${credential}`},redirect:'error',signal:AbortSignal.timeout(20000)});
-   if(!response.ok)throw Error(`Upstox quotes HTTP ${response.status}`);
-   const body=await response.json();if(body.status!=='success'||!body.data)throw Error('Invalid Upstox response');
-   const quotes={};for(const item of resolved){const raw=body.data[`NSE_EQ:${item.symbol}`]||body.data[item.instrumentKey]||body.data[item.instrumentKey.replace('|',':')];if(!raw)continue;
-    // Last-trade time is required: a newly generated snapshot may contain stale LTP.
-    const price=Number(raw.last_price);quotes[item.symbol]={price:Number.isFinite(price)&&price>0?price:null,time:stamp(raw.last_trade_time),instrumentKey:item.instrumentKey};}
-   const value={quotes,fetchedAt:time.toISOString(),source:'Upstox'};cache={key,saved:time.getTime(),value};return value;
-  })();try{return await pending;}finally{pending=null;}
+   const quotes={}, missing=[];
+   for(const item of resolved){
+    const live=shared.get(item.instrumentKey,time.getTime());
+    if(live)quotes[item.symbol]=live;else missing.push(item);
+   }
+   if(missing.length){
+    const credential=token();if(!credential)throw Error('Upstox credentials unavailable');
+    for(let offset=0;offset<missing.length;offset+=500){
+     const batch=missing.slice(offset,offset+500);
+     const response=await fetcher('https://api.upstox.com/v3/market-quote/quotes?instrument_key='+encodeURIComponent(batch.map(x=>x.instrumentKey).join(',')),{headers:{Accept:'application/json',Authorization:`Bearer ${credential}`},redirect:'error',signal:AbortSignal.timeout(20000)});
+     if(!response.ok)throw Error(`Upstox quotes HTTP ${response.status}`);
+     const body=await response.json();if(body.status!=='success'||!body.data)throw Error('Invalid Upstox response');
+     for(const item of batch){const raw=body.data[`NSE_EQ:${item.symbol}`]||body.data[item.instrumentKey]||body.data[item.instrumentKey.replace('|',':')];if(!raw)continue;
+      const price=Number(raw.last_price);quotes[item.symbol]={price:Number.isFinite(price)&&price>0?price:null,time:stamp(raw.last_trade_time),instrumentKey:item.instrumentKey};
+     }
+    }
+   }
+   const value={quotes,fetchedAt:time.toISOString(),source:missing.length===resolved.length?'Upstox':missing.length?'shared_live_stream+Upstox':'shared_live_stream'};
+   cache={key,saved:time.getTime(),value};return value;
+  })();pending.set(key,task);try{return await task;}finally{pending.delete(key);}
  };
 }
 export function makeBaseline(p,quotes,now=new Date()) {

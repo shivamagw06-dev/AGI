@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 import { loadUpstoxNseIsinMap } from './companyIsinBackfill.js';
 import { getResearchUniverse } from './nifty500ResearchService.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
@@ -55,7 +56,7 @@ export function normalizeQuote(raw) {
 async function fetchQuoteBatch(batch, token) {
   const keys = batch.map((item) => item.instrumentKey);
   const url = `https://api.upstox.com/v3/market-quote/quotes?instrument_key=${encodeURIComponent(keys.join(','))}`;
-  const response = await fetch(url, {
+  const response = await budgetedMarketFetch('upstox', url, {
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(20_000),
   });

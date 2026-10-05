@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 /** Read-only broker probes. No order, account, or position endpoints are called. */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -39,7 +40,7 @@ async function up(pathname,params={}) {
  if (!token) throw new Error('AUTH_NOT_CONFIGURED');
  const url=new URL(`https://api.upstox.com/v2${pathname}`);
  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
- const res=await fetch(url,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},signal:AbortSignal.timeout(15000),redirect:'error'});
+ const res=await budgetedMarketFetch('upstox',url,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},signal:AbortSignal.timeout(15000),redirect:'error'});
  if (!res.ok) throw new Error(`HTTP_${res.status}`);
  const body=await res.json();
  if(body.status!=='success')throw new Error('PROVIDER_REJECTED');

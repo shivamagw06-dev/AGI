@@ -1,3 +1,6 @@
+import { sharedLiveQuotes } from './sharedLiveQuotes.js';
+import { marketDataBudget } from '../lib/marketDataBudget.js';
+import { liveAlphaHistoryRouter } from './liveAlphaHistoryRouter.js';
 import { bootstrapLiveAlphaIntraday } from './liveAlphaIntradayBootstrap.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -221,6 +224,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
     const processBatch = async (batch) => {
       store.ingest(batch);
+      sharedLiveQuotes.ingest(batch.snapshots);
       // Outside the session the feed only replays the last traded prices.
       // Feeding them to the engines stored Friday's prices as a weekend
       // shortlist, so collection and evaluation follow the NSE session. A
@@ -340,7 +344,9 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       const minutes = now.getUTCHours() * 60 + now.getUTCMinutes() - 225;
       if (runtime !== owner || recovering || !session.open || minutes < 17 || now.getTime() < nextRecovery) return;
       if (recoveredSession !== date) { recoveredSession = date; attempts = 0; }
-      if (attempts >= 3 || owner.bootstrap.intraday?.status === 'ready' && owner.bootstrap.intraday?.session === date) return;
+      if (owner.bootstrap.intraday?.status === 'ready' && owner.bootstrap.intraday?.session === date) return;
+      // A morning quota/auth interruption must not disable recovery all day.
+      if (attempts >= 3) { attempts = 0; nextRecovery = now.getTime() + 30 * 60_000; return; }
       recovering = true;
       attempts += 1;
       try {
@@ -474,6 +480,9 @@ export function getLiveAlphaRuntimeStatus() {
       coalesced_messages: runtime.batchQueue.coalesced_messages,
       max_pending_snapshots: runtime.batchQueue.max_pending_snapshots,
     } : null,
+    shared_quotes: sharedLiveQuotes.status(),
+    data_budget: marketDataBudget.status(),
+    history_routing: liveAlphaHistoryRouter.status(),
     provider_policy: {
       primary: String(process.env.LIVE_ALPHA_PROVIDER || 'upstox').trim().toLowerCase(),
       fallback: 'groww',

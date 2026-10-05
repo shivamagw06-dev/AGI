@@ -1,4 +1,4 @@
-import { getIntradayCandles } from '../providers/upstox.js';
+import { liveAlphaHistoryRouter } from './liveAlphaHistoryRouter.js';
 
 export function normalizeIntradayCandles(payload) {
   return (payload?.data?.candles || []).flatMap(row => {
@@ -11,7 +11,7 @@ export function normalizeIntradayCandles(payload) {
 
 // Bounded, read-only recovery. Keep candle timestamps and do not fabricate volume
 // or publish retrospective signals. Live ticks still supply the current quote.
-export async function bootstrapLiveAlphaIntraday({ instrumentKeys, featureStore, fetchCandles = getIntradayCandles, now = () => new Date(), active = () => true, delayMs = 250, onProgress = () => {} }) {
+export async function bootstrapLiveAlphaIntraday({ instrumentKeys, featureStore, fetchCandles = liveAlphaHistoryRouter.intraday, now = () => new Date(), active = () => true, delayMs = 250, onProgress = () => {} }) {
   const keys = [...new Set(instrumentKeys.filter(Boolean))];
   const status = { status: 'running', requested: keys.length, completed: 0, restored: 0, failed: 0, opening_ranges: 0, failures: [] };
   let cursor = 0;

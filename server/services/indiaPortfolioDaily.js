@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 import { nseSession, istDateKey } from './liveAlphaSession.js';
 
@@ -11,7 +12,7 @@ export function validDailyCandle(candle,date) {
  return [o,h,l,c].every(x=>typeof x==='number'&&Number.isFinite(x)&&x>0)&&h>=Math.max(o,c)&&l<=Math.min(o,c)&&h>=l;
 }
 // At most four provider calls per second; successful prices are persisted and not fetched again.
-export function createIndiaDailyReader({fetcher=fetch,token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms))}={}) {
+export function createIndiaDailyReader({fetcher=(url, options)=>budgetedMarketFetch('upstox', url, options),token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms))}={}) {
  return async(date,instruments)=>{
   const credential=token();if(!credential)throw Error('Upstox credentials unavailable');
   const quotes={};
