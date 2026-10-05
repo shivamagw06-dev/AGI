@@ -16,3 +16,6 @@
 
 .la-price {font-variant-numeric:tabular-nums;min-width:160px}
 .la-current-price {background:#f0f7fa;border-left:1px solid #dce8ee}
+
+.la-sector-explainer{margin:0 22px 20px;padding:16px 18px;background:#eef5f8;border:1px solid #dbe7ee;border-radius:10px;font-size:13px;line-height:1.6}
+.la-sector-explainer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.la-sector-explainer h3{margin:0;font-size:15px}.la-sector-explainer p{margin:8px 0}.la-sector-definitions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.la-sector-definitions strong{display:block}.la-sector-reading{border-top:1px solid #dbe7ee;padding-top:10px}.la-sector-explainer small{color:#637d8e}@media(max-width:800px){.la-sector-definitions{grid-template-columns:repeat(2,minmax(0,1fr))}.la-sector-explainer{margin:0 12px 16px}}
