@@ -13,7 +13,7 @@ test('builds median minute baselines using prior sessions only', () => {
   assert.equal(baseline[0].sample_sessions, 6);
 });
 
-test('seeds 15m and 60m returns from previous close on the first tick', () => {
+test('does not invent intraday history from previous close', () => {
   const store = new IntradayFeatureStore();
   store.ingest({ snapshots: [{
     instrument_key: 'NSE_INDEX|Nifty 50',
@@ -22,13 +22,11 @@ test('seeds 15m and 60m returns from previous close on the first tick', () => {
     previous_close: 24219.0,
   }] });
   const result = store.returns('NSE_INDEX|Nifty 50', Date.parse('2026-08-25T06:00:00Z'));
-  assert.ok(result.return15m !== null);
-  assert.ok(result.return60m !== null);
-  assert.equal(Number(result.return15m.toFixed(4)), Number((((24178.85 / 24219.0) - 1) * 100).toFixed(4)));
-  assert.equal(Number(result.return60m.toFixed(4)), Number((((24178.85 / 24219.0) - 1) * 100).toFixed(4)));
+  assert.equal(result.return15m, null);
+  assert.equal(result.return60m, null);
 });
 
-test('still seeds 60m lookback when a same-minute OHLC bar already exists', () => {
+test('incomplete current candle cannot replace missing lookback history', () => {
   const store = new IntradayFeatureStore();
   const at = Date.parse('2026-08-25T09:00:00Z');
   store.ingest({ snapshots: [{
@@ -39,8 +37,8 @@ test('still seeds 60m lookback when a same-minute OHLC bar already exists', () =
     ohlc: [{ interval: 'I1', close: 24178.85, high: 24180, low: 24170, timestamp: at }],
   }] });
   const result = store.returns('NSE_INDEX|Nifty 50', at);
-  assert.ok(result.return15m !== null);
-  assert.ok(result.return60m !== null);
+  assert.equal(result.return15m, null);
+  assert.equal(result.return60m, null);
 });
 
 test('retains rolling observations and calculates returns', () => {
@@ -90,7 +88,7 @@ test('restores opening range and 15m returns from Upstox 1m OHLC after reconnect
   assert.equal(Number(range.high.toFixed(2)), 102.4);
   assert.equal(range.low, 99.5);
   const returns = store.returns('NSE_EQ|TEST', Date.parse('2026-08-11T05:00:00Z'));
-  assert.ok(returns.return15m !== null);
+  assert.equal(returns.return15m, null); // opening bars are too old for this horizon
   assert.ok(returns.return60m !== null);
 });
 
@@ -102,7 +100,7 @@ test('runs momentum in shadow mode once a bucket has complete features', async (
   const openingSaved = [];
   const meanReversionSaved = [];
   const pipeline = new MomentumShadowPipeline({ universe, benchmarkKey: 'INDEX|NIFTY', baselineIndex: baselines, repository: { saveMomentumRun: async (run) => saved.push(run), saveVolumeAnomalyRun: async (run) => volumeSaved.push(run), saveOpeningRangeRun: async (run) => openingSaved.push(run), saveMeanReversionRun: async (run) => meanReversionSaved.push(run) } });
-  for (const time of ['2026-08-10T03:45:00Z', '2026-08-10T04:45:00Z', '2026-08-10T05:30:00Z', '2026-08-10T05:45:00Z']) {
+  for (const time of [...Array.from({ length: 15 }, (_, i) => new Date(Date.parse('2026-08-10T03:45:00Z') + i * 60_000).toISOString()), '2026-08-10T04:45:00Z', '2026-08-10T05:30:00Z', '2026-08-10T05:45:00Z']) {
     const step = time.endsWith('04:45:00Z') ? 0 : time.endsWith('05:30:00Z') ? 1 : 2;
     pipeline.ingest({ snapshots: [
       { instrument_key: 'INDEX|NIFTY', received_at: time, ltp: 100 + step },
@@ -143,4 +141,54 @@ test('one engine storage failure does not block the remaining engines', async ()
   assert.deepEqual(statuses.map((row) => row.status), ['stored', 'failed', 'stored', 'unavailable']);
   assert.equal(statuses[1].error, 'opening write failed');
   assert.equal(statuses[3].reason, 'derivative_instruments_not_configured');
+});
+
+test('recovers a complete opening range older than rolling retention, rejects gaps and other sessions', () => {
+  const store = new IntradayFeatureStore();
+  const now = new Date('2026-10-05T07:00:00Z');
+  const start = Date.parse('2026-10-05T03:45:00Z');
+  const bars = Array.from({ length: 15 }, (_, i) => ({ interval: 'I1', timestamp: start + i * 60_000, high: 110, low: 90, close: 100 }));
+  store.ingestCandles('A', bars.slice(1), now);
+  assert.equal(store.openingRange('A', now), null);
+  store.ingestCandles('A', bars.slice(0, 1), now);
+  assert.equal(store.openingRange('A', now).high, 110);
+  assert.equal(store.latest('A'), null);
+  store.ingestCandles('B', bars.map(b => ({ ...b, timestamp: b.timestamp - 86400000 })), now);
+  assert.equal(store.openingRange('B', now), null);
+});
+
+test('completed historical futures candles recover actual OI changes without using future candles', () => {
+  const store = new IntradayFeatureStore();
+  const now = new Date('2026-10-05T07:00:00Z');
+  store.ingestCandles('F', [
+    { interval: 'I1', timestamp: Date.parse('2026-10-05T06:44:00Z'), close: 100, open_interest: 1000 },
+    { interval: 'I1', timestamp: Date.parse('2026-10-05T07:00:00Z'), close: 999, open_interest: 9000 },
+  ], now);
+  store.ingest({ snapshots: [{ instrument_key: 'F', received_at: now.toISOString(), ltp: 101, open_interest: 1100 }] });
+  const result = store.derivatives('F', now.getTime());
+  assert.ok(Math.abs(result.priceReturn15m - 1) < 1e-9);
+  assert.ok(Math.abs(result.oiChange15m - 10) < 1e-9);
+  assert.equal(store.returns('F', now.getTime()).return60m, null);
+  assert.equal(store.returns('F', now.getTime() + 180000), null);
+});
+
+test('all five engines evaluate genuine history; mapped futures with missing OI report warmup', async () => {
+  const now = new Date('2026-10-05T05:45:00Z');
+  const universe = Array.from({ length: 10 }, (_, i) => ({ symbol: `S${i}`, sector: 'BANK', instrumentKey: `EQ|${i}`, sectorInstrumentKey: 'INDEX', derivativeInstrumentKey: `FUT|${i}` }));
+  const repository = Object.fromEntries(['saveMomentumRun','saveVolumeAnomalyRun','saveOpeningRangeRun','saveMeanReversionRun','saveDerivativesRun'].map(k => [k, async r => ({signals:r.signals.length})]));
+  const store = new IntradayFeatureStore();
+  const baselineIndex = new VolumeBaselineIndex(universe.map(m => ({ instrument_key: m.instrumentKey, minute_of_session: 120, expected_cumulative_volume: 1000 })));
+  const pipeline = new MomentumShadowPipeline({ universe, benchmarkKey: 'INDEX', featureStore: store, baselineIndex, repository });
+  for (let minute = 0; minute <= 120; minute++) {
+    const received_at = new Date(now.getTime() - (120 - minute) * 60000).toISOString();
+    store.ingest({ snapshots: ['INDEX', ...universe.map(m=>m.instrumentKey)].map((instrument_key,i)=>({instrument_key,received_at,ltp:100 + minute*(i+1)/100, cumulative_volume:1500,spread_bps:5})) });
+  }
+  const warmup = await pipeline.evaluate(now);
+  assert.equal(warmup.derivatives_status, 'derivative_history_warming_or_incomplete:0/10');
+  for (const minute of [15,0]) store.ingest({snapshots:universe.map(m=>({instrument_key:m.derivativeInstrumentKey,received_at:new Date(now.getTime()-minute*60000).toISOString(),ltp:minute?100:102,open_interest:minute?1000:1100,spread_bps:5}))});
+  const independentPipeline = new MomentumShadowPipeline({ universe, benchmarkKey:'INDEX', featureStore:store, baselineIndex, repository });
+  const result = await independentPipeline.evaluate(now);
+  assert.equal(result.persistence.length,5);
+  assert.ok(result.persistence.every(p=>p.status==='stored'));
+  assert.equal(result.execution_enabled,false);
 });

@@ -49,6 +49,7 @@ test('separates a connected feed from evaluation readiness', () => {
   assert.equal(classifyEvaluationStatus({ skipped: true, reason: 'already_evaluated_bucket' }), 'live');
   assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'stored' }] }), 'live');
   assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'failed' }] }), 'degraded');
+  assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'stored' }, { status: 'unavailable' }] }), 'degraded');
 });
 
 test('only activates Groww fallback for a failed Upstox primary with explicit permission', () => {

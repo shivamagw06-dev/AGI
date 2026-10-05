@@ -213,7 +213,7 @@ export async function getHistoricalCandles(instrumentKey, { unit = 'months', int
 }
 
 /** Current-session OHLCV; kept separate from end-of-day factor history. */
-export async function getIntradayCandles(instrumentKey, { unit = 'minutes', interval = 15 } = {}) {
+export async function getIntradayCandles(instrumentKey, { unit = 'minutes', interval = 15, timeoutMs = 15_000 } = {}) {
   const key = String(instrumentKey || '').trim();
   if (!key.includes('|')) throw new Error(`Invalid instrument_key: ${instrumentKey}`);
   const { token } = resolveUpstoxAccessToken();
@@ -222,6 +222,7 @@ export async function getIntradayCandles(instrumentKey, { unit = 'minutes', inte
   const path = `/historical-candle/intraday/${encodeURIComponent(key)}/${unit}/${interval}`;
   const fetchFn = await ensureFetch();
   const resp = await fetchFn(`${base}${path}`, {
+    signal: AbortSignal.timeout(timeoutMs),
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
   });
   const json = await resp.json().catch(() => ({}));
