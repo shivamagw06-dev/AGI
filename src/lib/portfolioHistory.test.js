@@ -11,3 +11,8 @@ test('missing internal sessions and missing starting history blocked',()=>{const
 test('rounding only within tolerance; dates clamp to calendar month',()=>{assert.equal(monthBoundary('2026-03-31',1),'2026-02-28');assert.equal(monthBoundary('2024-03-31',1),'2024-02-29');const r=portfolioReturn(data,{holdings:[{name:'A',weight:99.99}]},1);assert.equal(r.roundingNormalised,true);assert.ok(Math.abs(r.returnPct-10)<1e-10);assert.ok(portfolioReturn(data,{holdings:[{name:'A',weight:99}]},1).reason);});
 test('editing ticker cannot reuse a different reviewed instrument',()=>assert.ok(resolveHolding(data,{name:'A',symbol:'B'}).reason));
 test('zero-weight unavailable candidate does not block funded positions',()=>assert.ok(!portfolioReturn(data,{holdings:[{name:'A',weight:100},{name:'Unknown',weight:0}]},1).reason));
+test('fixed September start uses exact common date, not a monthly boundary',()=>{
+ const d=structuredClone(data);d.calendar=['2026-09-15','2026-10-01'];d.securities.A.bars=[['2026-09-15',100],['2026-10-01',110]];d.securities.B.bars=[['2026-09-15',100],['2026-10-01',90]];
+ const r=portfolioReturn(d,p,'since');assert.equal(r.start,'2026-09-15');assert.ok(Math.abs(r.returnPct-2)<1e-8);
+ d.calendar=['2026-09-14','2026-10-01'];assert.ok(portfolioReturn(d,p,'since').reason);
+});

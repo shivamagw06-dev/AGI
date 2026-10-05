@@ -1,6 +1,6 @@
 {
-  "asOf": "2026-10-01",
-  "generatedAt": "2026-10-02T12:47:41.597106+00:00",
+  "asOf": "2026-10-02",
+  "generatedAt": "2026-10-05T11:35:17.701006+00:00",
   "method": "Current weights, adjusted-close buy-and-hold simulation; not fund track record",
   "portfolios": [
     {
@@ -12,10 +12,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -6.233330645125113,
-          "maxDrawdownPct": 6.871247454806695,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.717532834942974,
+          "maxDrawdownPct": 6.868617488689321,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -23,10 +23,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 0.8832596454247943,
-          "maxDrawdownPct": 8.126788515280737,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -2.435086676383369,
+          "maxDrawdownPct": 8.109897606286209,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -34,10 +34,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 6.591295286366039,
-          "maxDrawdownPct": 7.562334950367555,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 7.1288264296341275,
+          "maxDrawdownPct": 7.547798663783656,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -45,10 +45,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 17.703938218882076,
-          "maxDrawdownPct": 9.81666475108729,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 18.757359684633457,
+          "maxDrawdownPct": 9.750524474358645,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -64,10 +64,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -2.1558575402073066,
-          "maxDrawdownPct": 3.3701248554402596,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -2.458910568606121,
+          "maxDrawdownPct": 3.3680614615268945,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -75,10 +75,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -0.9298148186484445,
-          "maxDrawdownPct": 3.571887176591104,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.096424062121193,
+          "maxDrawdownPct": 3.5645597242839444,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -86,10 +86,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 1.9993642103791176,
-          "maxDrawdownPct": 3.4602970577277126,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 1.6433896984984875,
+          "maxDrawdownPct": 3.478794622793069,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -97,10 +97,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 5.491194554633294,
-          "maxDrawdownPct": 4.602513981179013,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 5.4321776125981325,
+          "maxDrawdownPct": 4.591675234131209,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -116,10 +116,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.2347732454063953,
-          "maxDrawdownPct": 4.976412645421114,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.251748223469351,
+          "maxDrawdownPct": 4.938188692558154,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -127,10 +127,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -2.3640383500245665,
-          "maxDrawdownPct": 10.893795708675768,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.540122853815984,
+          "maxDrawdownPct": 11.181357103932744,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -138,10 +138,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 23.066964474583163,
-          "maxDrawdownPct": 22.02989893230427,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 21.97617751816443,
+          "maxDrawdownPct": 21.4742224946738,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -149,8 +149,8 @@
         {
           "months": 12,
           "isNew": true,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
+          "start": "2025-10-02",
+          "end": "2026-10-02",
           "returnPct": null,
           "maxDrawdownPct": null,
           "coveredWeight": 97.25,
@@ -181,10 +181,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 9.908273303315385,
-          "maxDrawdownPct": 2.5945345712506063,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 12.340122717774538,
+          "maxDrawdownPct": 2.4522000155056234,
           "coveredWeight": 99.99999999999997,
           "reason": null,
           "missing": []
@@ -192,10 +192,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 9.6387608242811,
-          "maxDrawdownPct": 12.62356063105563,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 13.475661148456354,
+          "maxDrawdownPct": 12.908005353649054,
           "coveredWeight": 99.99999999999997,
           "reason": null,
           "missing": []
@@ -203,10 +203,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 72.09804768795911,
-          "maxDrawdownPct": 20.923107472051107,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 72.48670058675599,
+          "maxDrawdownPct": 20.827929559544934,
           "coveredWeight": 99.99999999999997,
           "reason": null,
           "missing": []
@@ -214,10 +214,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 84.21021893045864,
-          "maxDrawdownPct": 23.03937957843751,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 82.84804218316208,
+          "maxDrawdownPct": 22.914022694003965,
           "coveredWeight": 99.99999999999997,
           "reason": null,
           "missing": []
@@ -233,10 +233,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -3.5314864555891057,
-          "maxDrawdownPct": 4.689833284463029,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -3.8951148483737374,
+          "maxDrawdownPct": 4.665365213302786,
           "coveredWeight": 100.00000000000003,
           "reason": null,
           "missing": []
@@ -244,10 +244,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 2.7616476261141054,
-          "maxDrawdownPct": 4.548259544263278,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 0.34921421982547773,
+          "maxDrawdownPct": 4.595983521719149,
           "coveredWeight": 100.00000000000003,
           "reason": null,
           "missing": []
@@ -255,10 +255,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 12.084687547445316,
-          "maxDrawdownPct": 5.173289153759486,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 12.066835861788272,
+          "maxDrawdownPct": 5.206183882043924,
           "coveredWeight": 100.00000000000003,
           "reason": null,
           "missing": []
@@ -266,10 +266,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 18.559861442796468,
-          "maxDrawdownPct": 6.127675629762042,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 19.505581363661626,
+          "maxDrawdownPct": 5.9237246524610265,
           "coveredWeight": 100.00000000000003,
           "reason": null,
           "missing": []
@@ -285,10 +285,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 10.129251906692538,
-          "maxDrawdownPct": 3.183148446225381,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 11.020977623235195,
+          "maxDrawdownPct": 3.1769711220046903,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -296,10 +296,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 6.241394506556719,
-          "maxDrawdownPct": 10.826106215730757,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 10.06849840175581,
+          "maxDrawdownPct": 11.171880025677282,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -307,10 +307,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 57.36698090383281,
-          "maxDrawdownPct": 17.993021412907805,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 58.44891141763664,
+          "maxDrawdownPct": 17.944785565950582,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -318,10 +318,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 94.33854908415135,
-          "maxDrawdownPct": 22.285582814542014,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 93.39075375983722,
+          "maxDrawdownPct": 22.142520863865258,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -337,10 +337,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -0.15742214181865277,
-          "maxDrawdownPct": 2.9417865231502582,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.5811023997940312,
+          "maxDrawdownPct": 2.9369701585301944,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -348,10 +348,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 1.6349895921463187,
-          "maxDrawdownPct": 3.266818573381247,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.2761177283729506,
+          "maxDrawdownPct": 3.2736443977091634,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -359,10 +359,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 23.779303756680847,
-          "maxDrawdownPct": 4.5146379696725525,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 23.450260553636504,
+          "maxDrawdownPct": 4.517402732656606,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -370,10 +370,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 32.400325112026884,
-          "maxDrawdownPct": 7.555716670281532,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 32.4689895812627,
+          "maxDrawdownPct": 7.553388851738796,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -389,10 +389,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 5.334053810705797,
-          "maxDrawdownPct": 13.765964767417316,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 3.7110515787137643,
+          "maxDrawdownPct": 13.69933712640885,
           "coveredWeight": 100.01000000000002,
           "reason": null,
           "missing": []
@@ -400,10 +400,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 3.7024971191254474,
-          "maxDrawdownPct": 16.18538260714246,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 6.364859196652506,
+          "maxDrawdownPct": 16.61884943210108,
           "coveredWeight": 100.01000000000002,
           "reason": null,
           "missing": []
@@ -411,10 +411,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 24.600951686572703,
-          "maxDrawdownPct": 32.9711201170805,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 23.71916742182694,
+          "maxDrawdownPct": 32.86253580636639,
           "coveredWeight": 100.01000000000002,
           "reason": null,
           "missing": []
@@ -422,10 +422,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": -15.14873456494863,
-          "maxDrawdownPct": 48.3625284606477,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -18.124732463404058,
+          "maxDrawdownPct": 48.253399124198616,
           "coveredWeight": 100.01000000000002,
           "reason": null,
           "missing": []
@@ -441,10 +441,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -0.6162074893211522,
-          "maxDrawdownPct": 8.064391107071433,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 1.4465373793654868,
+          "maxDrawdownPct": 8.031290837948646,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -452,10 +452,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -14.122565470201875,
-          "maxDrawdownPct": 19.076974350689714,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -8.264796259229978,
+          "maxDrawdownPct": 19.386111015621942,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -463,10 +463,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 6.493944651886396,
-          "maxDrawdownPct": 34.43967614558305,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 9.54551093509326,
+          "maxDrawdownPct": 34.40934069419601,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -474,10 +474,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 33.31099736128116,
-          "maxDrawdownPct": 34.16423476673115,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 37.32416646890493,
+          "maxDrawdownPct": 33.96353258514135,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -493,10 +493,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 7.703359227696671,
-          "maxDrawdownPct": 3.324887297288237,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 10.350801540699273,
+          "maxDrawdownPct": 3.317138719951629,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -504,10 +504,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 26.80291077089676,
-          "maxDrawdownPct": 7.173289124837357,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 26.59725554149457,
+          "maxDrawdownPct": 7.148608015336677,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -515,10 +515,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 65.24398122870778,
-          "maxDrawdownPct": 21.107767189338055,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 62.38940504151398,
+          "maxDrawdownPct": 21.15371717475214,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -526,10 +526,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 47.30292826723499,
-          "maxDrawdownPct": 29.25674160027557,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 42.911563753149615,
+          "maxDrawdownPct": 29.64715067812961,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -545,10 +545,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -10.133962206577396,
-          "maxDrawdownPct": 12.596512933704208,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -9.352702826501492,
+          "maxDrawdownPct": 12.592765197712573,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -556,10 +556,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -2.371495889426656,
-          "maxDrawdownPct": 16.066991231221962,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -0.0008036344053552469,
+          "maxDrawdownPct": 16.136775900300748,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -567,10 +567,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": -4.321031436444612,
-          "maxDrawdownPct": 28.440746808736893,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -2.572147913080336,
+          "maxDrawdownPct": 28.203666282038633,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -578,10 +578,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 36.37035086676128,
-          "maxDrawdownPct": 27.187900157764698,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 38.52559397242934,
+          "maxDrawdownPct": 27.011399020945102,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -597,10 +597,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 13.726940443772051,
-          "maxDrawdownPct": 5.385693543822445,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 18.195530025853767,
+          "maxDrawdownPct": 5.391917546630076,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -608,10 +608,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 20.980909013192893,
-          "maxDrawdownPct": 13.026809759506131,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 21.86869907487903,
+          "maxDrawdownPct": 13.040670660368592,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -619,10 +619,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 100.52346174603768,
-          "maxDrawdownPct": 13.82442449182072,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 98.81129232747345,
+          "maxDrawdownPct": 13.793910422955813,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -630,10 +630,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 52.20245466241653,
-          "maxDrawdownPct": 30.635781458454424,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 51.6615376887585,
+          "maxDrawdownPct": 30.626641201196502,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -649,10 +649,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -7.248554079302161,
-          "maxDrawdownPct": 8.02776059921565,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.426009675639044,
+          "maxDrawdownPct": 8.043331057287595,
           "coveredWeight": 99.96999999999998,
           "reason": null,
           "missing": []
@@ -660,10 +660,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -13.78586509176346,
-          "maxDrawdownPct": 17.958478786093778,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -15.70203184582769,
+          "maxDrawdownPct": 17.980982888474106,
           "coveredWeight": 99.96999999999998,
           "reason": null,
           "missing": []
@@ -671,10 +671,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": -5.761592395798099,
-          "maxDrawdownPct": 18.189713037192224,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -4.932070430161984,
+          "maxDrawdownPct": 18.217256967722296,
           "coveredWeight": 99.96999999999998,
           "reason": null,
           "missing": []
@@ -682,10 +682,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 9.552705890174806,
-          "maxDrawdownPct": 17.965961564725998,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 9.585481472488166,
+          "maxDrawdownPct": 17.99801972693316,
           "coveredWeight": 99.96999999999998,
           "reason": null,
           "missing": []
@@ -701,10 +701,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -0.028888859746711848,
-          "maxDrawdownPct": 4.310990934175674,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 0.5963855039062382,
+          "maxDrawdownPct": 4.2805479868588066,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -712,10 +712,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -7.1859624795992065,
-          "maxDrawdownPct": 12.55700306847194,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -6.091612657586665,
+          "maxDrawdownPct": 12.575009504772172,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -723,10 +723,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 4.464059003873144,
-          "maxDrawdownPct": 12.638369260889693,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 6.3881436343729,
+          "maxDrawdownPct": 12.650512063160168,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -734,10 +734,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 32.914294844580816,
-          "maxDrawdownPct": 12.907280317701487,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 33.83567720922764,
+          "maxDrawdownPct": 12.915706362197243,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -753,10 +753,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -4.36215916084286,
-          "maxDrawdownPct": 10.122429676349597,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.954843559373969,
+          "maxDrawdownPct": 10.152981719924071,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -764,10 +764,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 2.1046901505465065,
-          "maxDrawdownPct": 10.379483630374686,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.08691669065768,
+          "maxDrawdownPct": 10.463624316534936,
           "coveredWeight": 99.99,
           "reason": null,
           "missing": []
@@ -775,8 +775,8 @@
         {
           "months": 6,
           "isNew": true,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
+          "start": "2026-04-02",
+          "end": "2026-10-02",
           "returnPct": null,
           "maxDrawdownPct": null,
           "coveredWeight": 95.36,
@@ -793,8 +793,8 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
+          "start": "2025-10-02",
+          "end": "2026-10-02",
           "returnPct": null,
           "maxDrawdownPct": null,
           "coveredWeight": 90.62,
@@ -825,10 +825,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -4.931725044711643,
-          "maxDrawdownPct": 7.352957085775613,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -4.844509254662521,
+          "maxDrawdownPct": 7.339072261598134,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -836,10 +836,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -20.080641789017793,
-          "maxDrawdownPct": 20.998571889573668,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -17.33590583296073,
+          "maxDrawdownPct": 21.056736589070212,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -847,10 +847,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": -8.493350117561228,
-          "maxDrawdownPct": 28.667656907676907,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -6.339673345283203,
+          "maxDrawdownPct": 28.588564630836377,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -858,10 +858,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": -8.996669810805658,
-          "maxDrawdownPct": 28.99308839597512,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -7.179694957854322,
+          "maxDrawdownPct": 28.73934565056684,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -877,10 +877,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -4.771429481445755,
-          "maxDrawdownPct": 5.894286073271459,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -4.126218223130351,
+          "maxDrawdownPct": 5.898501464514705,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -888,10 +888,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -1.6797208140647446,
-          "maxDrawdownPct": 6.80999592556274,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1394996457447792,
+          "maxDrawdownPct": 6.738759509387526,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -899,10 +899,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": -0.6504211858285647,
-          "maxDrawdownPct": 6.800160142667289,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 0.24830010686922588,
+          "maxDrawdownPct": 6.929878421188862,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -910,10 +910,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 20.691027609749945,
-          "maxDrawdownPct": 8.169123778082776,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 21.915326540087232,
+          "maxDrawdownPct": 8.06653929241261,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -929,10 +929,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 17.078767652740122,
-          "maxDrawdownPct": 4.244273325405223,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 17.58178051438284,
+          "maxDrawdownPct": 4.245483015962048,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -940,10 +940,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 49.70611568516197,
-          "maxDrawdownPct": 8.293875607992153,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 49.07550873208319,
+          "maxDrawdownPct": 8.242694640660043,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -951,10 +951,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 131.90914812247473,
-          "maxDrawdownPct": 8.661132041403064,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 131.92154509251614,
+          "maxDrawdownPct": 8.693748540221025,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -962,10 +962,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 215.70602237832705,
-          "maxDrawdownPct": 17.230550645764797,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 214.2080918361232,
+          "maxDrawdownPct": 17.358455621662095,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -981,10 +981,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -0.8985466713397061,
-          "maxDrawdownPct": 2.2115095201494683,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.6971942005473797,
+          "maxDrawdownPct": 2.208370480582267,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -992,10 +992,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 2.151218621930018,
-          "maxDrawdownPct": 2.5479285300202603,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.539076955202213,
+          "maxDrawdownPct": 2.562219802226573,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1003,10 +1003,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 10.728485547035183,
-          "maxDrawdownPct": 4.328556677591633,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 11.631312680215643,
+          "maxDrawdownPct": 4.3384773046596825,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1014,10 +1014,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 15.491640321602397,
-          "maxDrawdownPct": 7.749070943963055,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 16.170175489967132,
+          "maxDrawdownPct": 7.73395840933091,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1033,10 +1033,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.8013479237339536,
-          "maxDrawdownPct": 2.6995350261004414,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -2.0114286093377176,
+          "maxDrawdownPct": 2.6941346793820764,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1044,10 +1044,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -0.9567899916497091,
-          "maxDrawdownPct": 3.3777272530315816,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1801415191743603,
+          "maxDrawdownPct": 3.360655775788479,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1055,10 +1055,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 1.2046463156201392,
-          "maxDrawdownPct": 3.179931004717651,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 1.3455499956195993,
+          "maxDrawdownPct": 3.194623485326986,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1066,10 +1066,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 3.7541363108562376,
-          "maxDrawdownPct": 5.112882011330477,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 3.804956016775307,
+          "maxDrawdownPct": 5.116471102445786,
           "coveredWeight": 99.99999999999999,
           "reason": null,
           "missing": []
@@ -1085,10 +1085,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.203500672726654,
-          "maxDrawdownPct": 2.293881340726056,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1233350126089725,
+          "maxDrawdownPct": 2.2908388137572455,
           "coveredWeight": 99.99000000000001,
           "reason": null,
           "missing": []
@@ -1096,10 +1096,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 1.4331718056781684,
-          "maxDrawdownPct": 2.2758707823115065,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 1.5776084409675484,
+          "maxDrawdownPct": 2.266787236459755,
           "coveredWeight": 99.99000000000001,
           "reason": null,
           "missing": []
@@ -1107,10 +1107,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 7.646426496326408,
-          "maxDrawdownPct": 3.436182999010884,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 8.199700872612414,
+          "maxDrawdownPct": 3.445613639272127,
           "coveredWeight": 99.99000000000001,
           "reason": null,
           "missing": []
@@ -1118,10 +1118,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 12.070965754622943,
-          "maxDrawdownPct": 6.193784974738037,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 12.550278562153716,
+          "maxDrawdownPct": 6.180250564590873,
           "coveredWeight": 99.99000000000001,
           "reason": null,
           "missing": []
@@ -1137,10 +1137,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": 2.004437617936139,
-          "maxDrawdownPct": 2.10179158493099,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 2.3926289261091416,
+          "maxDrawdownPct": 2.1200348425467364,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1148,10 +1148,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 2.4476105224794154,
-          "maxDrawdownPct": 3.990437275609826,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 3.026678664645832,
+          "maxDrawdownPct": 4.137658145353685,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1159,10 +1159,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 19.93335020437248,
-          "maxDrawdownPct": 4.95226595061784,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 21.174226737906075,
+          "maxDrawdownPct": 4.995116395308596,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1170,10 +1170,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 26.738492765402878,
-          "maxDrawdownPct": 10.52642241268692,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 27.334796105221358,
+          "maxDrawdownPct": 10.48335396933141,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1189,10 +1189,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -12.210508481657612,
-          "maxDrawdownPct": 17.729046562976837,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -12.734822693764336,
+          "maxDrawdownPct": 17.703056779511904,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -1200,10 +1200,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -14.475513408422158,
-          "maxDrawdownPct": 19.45888451507135,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -14.70084247708552,
+          "maxDrawdownPct": 19.444961201458177,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -1211,10 +1211,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": -23.19633637561742,
-          "maxDrawdownPct": 33.65609871992301,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -23.451655078150345,
+          "maxDrawdownPct": 33.61799040391954,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -1222,10 +1222,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": -26.73492838439587,
-          "maxDrawdownPct": 38.82223426164968,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -27.533157843816834,
+          "maxDrawdownPct": 37.94129804468395,
           "coveredWeight": 100.00999999999999,
           "reason": null,
           "missing": []
@@ -1241,10 +1241,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.623271288511019,
-          "maxDrawdownPct": 3.8100915729436857,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.05424068377132274,
+          "maxDrawdownPct": 3.8070165747658313,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -1252,10 +1252,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -9.277141335629924,
-          "maxDrawdownPct": 11.708919553312613,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -10.224982777108915,
+          "maxDrawdownPct": 11.70549175874761,
           "coveredWeight": 99.99000000000002,
           "reason": null,
           "missing": []
@@ -1263,8 +1263,8 @@
         {
           "months": 6,
           "isNew": true,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
+          "start": "2026-04-02",
+          "end": "2026-10-02",
           "returnPct": null,
           "maxDrawdownPct": null,
           "coveredWeight": 83.19000000000001,
@@ -1287,8 +1287,8 @@
         {
           "months": 12,
           "isNew": true,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
+          "start": "2025-10-02",
+          "end": "2026-10-02",
           "returnPct": null,
           "maxDrawdownPct": null,
           "coveredWeight": 83.19000000000001,
@@ -1319,10 +1319,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.8658694969405532,
-          "maxDrawdownPct": 2.8610395497476238,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.5234179035550688,
+          "maxDrawdownPct": 2.8665780002939734,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -1330,10 +1330,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": -0.6923563791740417,
-          "maxDrawdownPct": 3.4243633673846086,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -0.3866220680549315,
+          "maxDrawdownPct": 3.4122515853218127,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -1341,10 +1341,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 8.457411341920107,
-          "maxDrawdownPct": 3.4078153010175916,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 8.96801069923303,
+          "maxDrawdownPct": 3.3981898803972843,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -1352,10 +1352,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 9.70993130404727,
-          "maxDrawdownPct": 7.495922093804664,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 10.356518363454015,
+          "maxDrawdownPct": 7.493348880590334,
           "coveredWeight": 100.00000000000001,
           "reason": null,
           "missing": []
@@ -1371,10 +1371,10 @@
         {
           "months": 1,
           "isNew": false,
-          "start": "2026-09-01",
-          "end": "2026-10-01",
-          "returnPct": -1.2927811615209617,
-          "maxDrawdownPct": 2.801256865353352,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1647649482559475,
+          "maxDrawdownPct": 2.8022037530531674,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1382,10 +1382,10 @@
         {
           "months": 3,
           "isNew": false,
-          "start": "2026-07-01",
-          "end": "2026-10-01",
-          "returnPct": 3.3293006716135,
-          "maxDrawdownPct": 4.599979820247602,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.6694792344012175,
+          "maxDrawdownPct": 4.614731287415729,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1393,10 +1393,10 @@
         {
           "months": 6,
           "isNew": false,
-          "start": "2026-04-01",
-          "end": "2026-10-01",
-          "returnPct": 16.10449517742878,
-          "maxDrawdownPct": 4.731829554128786,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 16.88921731442441,
+          "maxDrawdownPct": 4.78900198587473,
           "coveredWeight": 100,
           "reason": null,
           "missing": []
@@ -1404,10 +1404,10 @@
         {
           "months": 12,
           "isNew": false,
-          "start": "2025-10-01",
-          "end": "2026-10-01",
-          "returnPct": 11.840180099319152,
-          "maxDrawdownPct": 13.148744170062832,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 12.625073824743914,
+          "maxDrawdownPct": 13.15361176751516,
           "coveredWeight": 100,
           "reason": null,
           "missing": []

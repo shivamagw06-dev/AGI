@@ -1,3 +1,4 @@
+import { usaHistory } from '../services/usaPortfolioHistory.js';
 import { growthMomentumPortfolio, GROWTH_MOMENTUM_ID } from '../services/growthMomentumPortfolio.js';
 import { readIndiaTracking } from '../services/indiaPortfolioTracking.js';
 import { Router } from 'express';
@@ -17,6 +18,10 @@ export default function createPortfolioRouter({ store, admin = requireStrategyLa
   router.get('/', async (_req,res) => {
     try { res.set('Cache-Control', 'no-store').json({ portfolios: publicRows(await repository().list()) }); }
     catch { res.status(503).json({ error: 'Portfolios are temporarily unavailable. Please try again.' }); }
+  });
+  router.get('/usa-history', async (_req,res) => {
+    try { res.set('Cache-Control','no-store').json(await usaHistory.read()); }
+    catch { res.status(503).json({error:'USA price history temporarily unavailable.'}); }
   });
   router.get('/india-tracking', async (_req,res) => {
     try { res.set('Cache-Control','no-store').json(await readTracking(publicRows(await repository().list()))); }

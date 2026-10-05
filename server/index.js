@@ -1,3 +1,4 @@
+import { startUSHistoryScheduler } from './services/usaPortfolioHistory.js';
 import { startIndiaPortfolioScheduler } from './services/indiaPortfolioTracking.js';
 import createPortfolioRouter from './routes/portfolioCatalog.js';
 // server/index.js
@@ -480,6 +481,7 @@ startTradingCalendarService();
 // Global Intelligence event and document collectors are paused.
 startCioMorningScheduler();
 startIndiaPortfolioScheduler();
+startUSHistoryScheduler();
 startContinuousGatherLearnScheduler();
 startInstitutionalFlowScheduler();
 startValuationRatiosScheduler();
