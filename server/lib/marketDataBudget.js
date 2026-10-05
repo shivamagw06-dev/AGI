@@ -46,6 +46,11 @@ export class MarketDataBudget {
     const cached = this.cache.get(key);
     if (cached && cached.until > this.now()) { state.cache_hits++; return cached.response.clone(); }
     if (this.pending.has(key)) { state.shared++; const response = await this.pending.get(key); return response.clone ? response.clone() : response; }
+    if (this.pending.size >= 128) {
+      state.deferred++;
+      const error = new Error('Market-data queue is full; retry next cycle');
+      error.status = 429; error.isRateLimit = true; throw error;
+    }
     const task = (async () => {
       await this.reserve(provider, options.signal);
       const response = await fetchImpl(url, { ...options, signal: options.signal || AbortSignal.timeout(30_000) });

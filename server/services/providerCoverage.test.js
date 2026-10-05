@@ -40,7 +40,8 @@ test('audit coalesces jobs, stores bounded samples and leaves streaming unverifi
  try {
   const {startCoverageAudit,coverageStatus}=await import('./providerCoverage.js');
   assert.equal(startCoverageAudit().started,true);assert.equal(startCoverageAudit().started,false);
-  let status;for(let i=0;i<200;i++){status=await coverageStatus();if(!status.running)break;await new Promise(r=>setTimeout(r,5));}
+  // Requests now share the production pacing budget; allow the bounded audit to finish.
+  let status;for(let i=0;i<2000;i++){status=await coverageStatus();if(!status.running)break;await new Promise(r=>setTimeout(r,5));}
   assert.equal(status.running,false);assert.ok(status.report.finished_at);
   assert.equal(status.report.providers.groww.spot_quote.recorded,true);
   assert.equal(status.report.providers.groww.stream.status,'not_tested');
