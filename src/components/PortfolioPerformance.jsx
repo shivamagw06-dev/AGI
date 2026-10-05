@@ -1,3 +1,4 @@
+import {usaHistoryURL} from './USPortfolioTracking';
 import CompanyLogo from '@/components/CompanyLogo';
 import { useEffect, useMemo, useState } from 'react';
 import { HORIZONS, holdingReturn, portfolioReturn } from '@/lib/portfolioHistory';
@@ -5,7 +6,7 @@ const format = value => `${value>=0?'+':''}${value.toFixed(2)}%`;
 const label = m => m===12?'1 year':`${m} month${m===1?'':'s'}`;
 export default function PortfolioPerformance({portfolio}) {
   const [data,setData]=useState(null),[error,setError]=useState(''),[period,setPeriod]=useState(12);
-  useEffect(()=>{const c=new AbortController();fetch('/data/portfolio-history.json',{signal:c.signal,cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('History snapshot is unavailable');return r.json();}).then(d=>{if(d.schemaVersion!==1)throw Error('Unsupported history snapshot');setData(d);}).catch(e=>{if(e.name!=='AbortError')setError(e.message);});return()=>c.abort();},[]);
+  useEffect(()=>{const c=new AbortController();fetch(usaHistoryURL,{signal:c.signal,cache:'no-cache'}).then(r=>{if(!r.ok)throw Error('History snapshot is unavailable');return r.json();}).then(d=>{if(d.schemaVersion!==1)throw Error('Unsupported history snapshot');setData(d);}).catch(e=>{if(e.name!=='AbortError')setError(e.message);});return()=>c.abort();},[]);
   const results=useMemo(()=>data?HORIZONS.map(m=>portfolioReturn(data,portfolio,m)):[],[data,portfolio]);
   if(portfolio.market!=='usa')return null;
   if(error)return <section className="pf-performance"><h3>Historical simulation</h3><p role="alert">{error}. No return is estimated.</p></section>;
@@ -16,7 +17,7 @@ export default function PortfolioPerformance({portfolio}) {
     <span className="pf-eyebrow">YAHOO FINANCE · DAILY ADJUSTED CLOSE · USD</span>
     <h2 id="pf-performance-title">What if you had invested earlier?</h2>
     <p>These backtested returns show what would have happened if you had invested in the current stocks, at their current weights, 1, 3, 6 or 12 months ago and held them without rebalancing. <strong>Changing the allocation recalculates these historical comparisons.</strong> They are separate from performance since launch.</p>
-    <p className="pf-footnote">Prices through {data.asOf} · allocation dated {portfolio.asOf} · generated {data.generatedAt.slice(0,10)}. Dividend/split adjustments are supplied by Yahoo; no trading fees, investor taxes, management fees or INR currency conversion. Snapshot refresh is manual.</p>
+    <p className="pf-footnote">Prices through {data.asOf} · allocation dated {portfolio.asOf} · generated {data.generatedAt.slice(0,10)}. Dividend/split adjustments are supplied by Yahoo; no trading fees, investor taxes, management fees or INR currency conversion. Prices refresh daily after the US close.</p>
     {stale&&<p className="pf-warning">This price snapshot is more than seven days old. Results end on {data.asOf}, not today.</p>}
     <div className="pf-return-grid">{results.map(r=><button key={r.months} aria-pressed={period===r.months} className={`pf-return-card ${period===r.months?'active':''}`} onClick={()=>setPeriod(r.months)}><span>{label(r.months)}</span><strong>{r.reason?(r.isNew?'New':'Unavailable'):format(r.returnPct)}</strong><small>{r.start||'—'} → {r.end||'—'}</small><small>{r.covered.toFixed(2)}% weight has complete history</small></button>)}</div>
     {active.reason?<div className="pf-warning"><strong>{active.isNew?'New listing: more history is needed for this period':active.reason}.</strong><p>Missing securities are not treated as cash and known holdings are not scaled up. Individual returns below remain available where supported.</p></div>:<>

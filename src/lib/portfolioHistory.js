@@ -1,4 +1,5 @@
 // Current-allocation retrospective simulation, never an actual fund track record.
+export const USA_START = '2026-09-15';
 export const HORIZONS = [1, 3, 6, 12];
 export function monthBoundary(date, months) {
   const [y,m,d] = date.split('-').map(Number);
@@ -7,8 +8,9 @@ export function monthBoundary(date, months) {
 }
 export function periodDates(data, months) {
   if (!data?.asOf || !data.calendar?.length) return null;
-  const boundary = monthBoundary(data.asOf, months);
-  const start = data.calendar.filter(d=>d<=boundary).at(-1);
+  const boundary = months === 'since' ? USA_START : monthBoundary(data.asOf, months);
+  if (boundary > data.asOf) return null;
+  const start = months === 'since' ? data.calendar.find(d=>d===boundary) : data.calendar.filter(d=>d<=boundary).at(-1);
   return start ? {start,end:data.asOf,dates:data.calendar.filter(d=>d>=start&&d<=data.asOf)} : null;
 }
 export function resolveHolding(data, holding) {
