@@ -123,3 +123,25 @@ test('chunks large snapshot batches for Nifty 200 persistence', async () => {
     if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
   }
 });
+
+test('persists original quote time and cash instrument with signal price', async () => {
+  const priorUrl=process.env.SUPABASE_URL, priorKey=process.env.SUPABASE_SERVICE_ROLE_KEY, priorFetch=globalThis.fetch;
+  process.env.SUPABASE_URL='https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY='test';
+  let saved;
+  globalThis.fetch=async(url,options)=>{
+    if(url.includes('/live_alpha_runs'))return {ok:true,text:async()=>JSON.stringify([{id:'run'}])};
+    saved=JSON.parse(options.body);
+    return {ok:true,text:async()=>JSON.stringify(saved.map(s=>({...s,id:'signal'})))};
+  };
+  try{
+    await new LiveAlphaPersistence().saveAlphaRun({engine:'test',as_of:'2026-10-05T06:30:00Z',universe_size:1,signals:[{symbol:'TEST',instrument_key:'NSE_FO|TEST',signal_quality:{score:0},empirical_confidence:{score:null,comparable_observations:0},price_at_signal:100,price_quote_at:'2026-10-05T06:29:59Z',cash_instrument_key:'NSE_EQ|TEST'}]});
+    assert.equal(saved[0].price_at_signal,100);
+    assert.equal(saved[0].factor_values.price_quote_at,'2026-10-05T06:29:59Z');
+    assert.equal(saved[0].factor_values.cash_instrument_key,'NSE_EQ|TEST');
+  }finally{
+    globalThis.fetch=priorFetch;
+    if(priorUrl===undefined)delete process.env.SUPABASE_URL;else process.env.SUPABASE_URL=priorUrl;
+    if(priorKey===undefined)delete process.env.SUPABASE_SERVICE_ROLE_KEY;else process.env.SUPABASE_SERVICE_ROLE_KEY=priorKey;
+  }
+});

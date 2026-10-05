@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import API_ORIGIN from '@/config';
-import { buildCanonicalSignals, interpretCanonicalSignal, LIVE_ALPHA_STRATEGIES } from '@/lib/liveAlphaSignalModel';
+import { buildCanonicalSignals, interpretCanonicalSignal, LIVE_ALPHA_STRATEGIES, LIVE_ALPHA_REFRESH_MS } from '@/lib/liveAlphaSignalModel';
 import { ENGINE_PLAIN, filterRadarRows, plainSignalDirection } from '@/lib/liveAlphaDashboardModel';
 import './liveAlphaPage.css';
 import LiveAlphaHistory from './LiveAlphaHistory';
 
-const REFRESH_MS = 60_000;
-const date = value => value && Number.isFinite(Date.parse(value)) ? `${new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })} IST` : 'Not recorded';
+const REFRESH_MS = LIVE_ALPHA_REFRESH_MS;
+const date = value => value && Number.isFinite(Date.parse(value)) ? `${new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })} IST` : 'Not recorded';
 const number = (v, digits = 2) => v !== null && v !== undefined && Number.isFinite(Number(v)) ? Number(v).toLocaleString('en-IN', { maximumFractionDigits: digits }) : '—';
 const signed = v => v === null || v === undefined ? '—' : `${Number(v) > 0 ? '+' : ''}${number(v)}`;
 const clean = row => row.signal_structure !== 'CONFLICTING';
@@ -17,6 +17,8 @@ async function readJson(response, label) {
 }
 function Badge({ children, tone = 'muted' }) { return <span className={`la-tag la-tag--${tone}`}>{children}</span>; }
 function Table({ headers, children }) { return <div className="la-tablewrap"><table className="la-table"><thead><tr>{headers.map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>{children}</tbody></table></div>; }
+function SignalPrice({ row }) { return <td className="la-price"><strong>{number(row.price_at_signal)}</strong><small>{row.signal_price_as_of ? `Quote: ${date(row.signal_price_as_of)}` : 'Quote time not recorded'}</small><small>Fixed for this signal</small></td>; }
+function CurrentPrice({ row }) { return <td className="la-price la-current-price"><strong>{number(row.live_price)}</strong><small>{date(row.price_as_of)}</small><small>Refreshes every 4 minutes</small></td>; }
 function Metric({ label, value, sub }) { return <div className="la-metric"><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>; }
 export function StateBanner({ readiness, freshness, runtime, requestFailed = false }) {
   const feed = runtime?.feed || {};
@@ -44,9 +46,9 @@ export function SectorRotation({ groww }) {
 export function Shortlist({ rows, onSelect }) {
   const top = rows.filter(aligned).sort((a,b) => b.active.length-a.active.length || Math.abs(b.composite)-Math.abs(a.composite)).slice(0,12);
   return <section className="la-panel"><div className="la-section-head"><h2>Aligned signals</h2><p>Two or more engines pointing the same way in the same evaluation. Shared price and volume inputs mean these are not independent confirmations.</p></div>
-    <Table headers={['Stock', 'Direction', 'Model score', 'Aligned engines', 'Signal time']}>
-      {top.map(r => <tr key={r.symbol}><td><button className="la-stock-button" onClick={() => onSelect?.(r.symbol)}>{r.symbol}</button></td><td><Badge tone={r.composite > 0 ? 'positive' : 'negative'}>{plainSignalDirection(r).label}</Badge></td><td>{signed(r.composite)}</td><td>{r.active.map(s => ENGINE_PLAIN[s.engine]?.label || s.engine).join(' · ')}</td><td>{date(r.timestamp)}</td></tr>)}
-      {!top.length && <tr><td colSpan={5}>No aligned multi-engine signals in this snapshot.</td></tr>}
+    <Table headers={['Stock', 'Direction', 'Model score', 'Aligned engines', 'Signal time', 'Price at signal ₹', 'Current price ₹']}>
+      {top.map(r => <tr key={r.symbol}><td><button className="la-stock-button" onClick={() => onSelect?.(r.symbol)}>{r.symbol}</button></td><td><Badge tone={r.composite > 0 ? 'positive' : 'negative'}>{plainSignalDirection(r).label}</Badge></td><td>{signed(r.composite)}</td><td>{r.active.map(s => ENGINE_PLAIN[s.engine]?.label || s.engine).join(' · ')}</td><td>{date(r.timestamp)}</td><SignalPrice row={r}/><CurrentPrice row={r}/></tr>)}
+      {!top.length && <tr><td colSpan={7}>No aligned multi-engine signals in this snapshot.</td></tr>}
     </Table></section>;
 }
 export function EquityOpportunities({ groww }) {
@@ -69,11 +71,11 @@ export function SignalRow({ row, expanded, onToggle }) {
   return <><tr className={expanded ? 'la-selected' : ''}>
     <td><button className="la-stock-button" aria-expanded={expanded} onClick={onToggle}>{expanded ? '−' : '+'} {row.symbol}</button><small>{row.sector}</small></td>
     <td><Badge tone={direction.key}>{direction.label}</Badge></td><td>{signed(row.composite)}</td>
-    <td>{number(row.live_price)}<small>{date(row.price_as_of)}</small></td><td>{date(row.timestamp)}{row.excluded_components?.length > 0 && <small>{row.excluded_components.length} older components excluded</small>}</td>
+    <SignalPrice row={row}/><td>{date(row.timestamp)}{row.excluded_components?.length > 0 && <small>{row.excluded_components.length} older components excluded</small>}</td>
     <td>{row.samples ? `${row.samples} minimum comparables` : 'Model only'}<small>Not validated</small></td>
     <td>{row.active.map(s => <span className="la-component" key={s.engine}>{ENGINE_PLAIN[s.engine]?.label}: {s.direction === 'positive' ? '↑' : '↓'}</span>)}</td>
-    <td><Badge tone={unverified ? 'warning' : 'muted'}>{unverified ? `${unverified} unverified` : 'Spread checked'}</Badge></td>
-  </tr>{expanded && <tr className="la-detail"><td colSpan={8}><div className="la-detail-grid"><div><h3>What the model sees</h3><p>{view.summary}</p><p>Price at signal: ₹{number(row.active[0]?.price_at_signal)}. Latest displayed price is a separate observation.</p></div><div><h3>Evidence and limitations</h3><p>{row.confidence_basis}</p><p>Model score is not a probability. Missing spread measurements remain unverified. Historical readings do not become fresh when this page refreshes.</p></div></div></td></tr>}</>;
+    <td><Badge tone={unverified ? 'warning' : 'muted'}>{unverified ? `${unverified} unverified` : 'Spread checked'}</Badge></td><CurrentPrice row={row}/>
+  </tr>{expanded && <tr className="la-detail"><td colSpan={9}><div className="la-detail-grid"><div><h3>What the model sees</h3><p>{view.summary}</p><p>Price at signal: ₹{number(row.price_at_signal)}. Latest displayed price is a separate observation.</p></div><div><h3>Evidence and limitations</h3><p>{row.confidence_basis}</p><p>Model score is not a probability. Missing spread measurements remain unverified. Historical readings do not become fresh when this page refreshes.</p></div></div></td></tr>}</>;
 }
 function Pager({ page, total, onChange }) { return <div className="la-pager"><span>{total ? `${page*25+1}–${Math.min(total,page*25+25)} of ${total}` : '0 results'}</span><button disabled={page === 0} onClick={() => onChange(page-1)}>Previous</button><button disabled={(page+1)*25 >= total} onClick={() => onChange(page+1)}>Next</button></div>; }
 function Evidence({ runtime }) {
@@ -122,16 +124,16 @@ export default function LiveAlphaPage() {
     <section className="la-metrics"><Metric label="Flagged stocks" value={count(directional.length)} sub={snapshotAvailable ? `of ${allRows.length} in stored snapshot` : 'Snapshot unavailable'}/><Metric label="Positive · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite>0).length)}/><Metric label="Negative · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite<0).length)}/><Metric label="Aligned engines" value={count(directional.filter(aligned).length)} sub="2+ same-direction components"/><Metric label="Conflicting signals" value={count(directional.filter(r=>!clean(r)).length)} sub="Opposing directions"/></section>
     <nav className="la-tabs" aria-label="Live Alpha views">{['Signals','Signal history','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
     {tab==='Signals' && <><Shortlist rows={directional} onSelect={s=>{setSearch(s);setFilter('all');setPage(0);setOpen(s);}}/>
-    <section className="la-panel"><div className="la-section-head"><h2>Stock signals</h2><p>Snapshot: {date(payload.freshness?.latest_successful_at)} · Expand a stock to inspect the reasoning.</p></div><div className="la-toolbar"><input aria-label="Search symbol or sector" placeholder="Search symbol or sector" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/><select aria-label="Filter signals" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}>{[['all','All signals'],['positive','Positive'],['negative','Negative'],['multi','Aligned'],['conflicting','Conflicting']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Sort signals" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}><option value="strength">Model strength</option><option value="symbol">Stock A–Z</option><option value="newest">Newest signal</option></select></div>
-    <Table headers={['Stock / sector','Direction','Score ±99','Last price ₹ / time','Signal time','Evidence','Engine directions','Liquidity']}>
+    <section className="la-panel"><div className="la-section-head"><h2>Stock signals</h2><p>Snapshot: {date(payload.freshness?.latest_successful_at)} · Signal price is the saved last-traded price available at evaluation. Current price refreshes every 4 minutes. Earlier signals remain in Signal history.</p></div><div className="la-toolbar"><input aria-label="Search symbol or sector" placeholder="Search symbol or sector" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/><select aria-label="Filter signals" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}>{[['all','All signals'],['positive','Positive'],['negative','Negative'],['multi','Aligned'],['conflicting','Conflicting']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Sort signals" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}><option value="strength">Model strength</option><option value="symbol">Stock A–Z</option><option value="newest">Newest signal</option></select></div>
+    <Table headers={['Stock / sector','Direction','Score ±99','Price at signal ₹','Signal time','Evidence','Engine directions','Liquidity','Current price ₹']}>
       {shown.slice(currentPage*25,currentPage*25+25).map(row=><SignalRow key={row.symbol} row={row} expanded={open===row.symbol} onToggle={()=>setOpen(open===row.symbol?null:row.symbol)}/>)}
-      {!shown.length && <tr><td colSpan={8}>No matching signals. Try another filter or search.</td></tr>}
+      {!shown.length && <tr><td colSpan={9}>No matching signals. Try another filter or search.</td></tr>}
     </Table><Pager page={currentPage} total={shown.length} onChange={setPage}/></section></>}
     {tab==='Signal history' && <LiveAlphaHistory latestSignalAt={payload.freshness?.latest_successful_at}/>}
     {tab==='Sector rotation' && <SectorRotation groww={payload.groww}/>}{tab==='Equity screen' && <EquityOpportunities groww={payload.groww}/>}{tab==='Evidence' && <Evidence runtime={runtime}/>}
     <details className="la-panel la-health"><summary>Engine coverage and health</summary><Table headers={['Engine','What it measures','Stored coverage','Directional signals','Status','Last evaluation']}>
       {LIVE_ALPHA_STRATEGIES.map(([key,label])=>{const h=payload.strategy_health?.[key];return <tr key={key}><td>{label}</td><td>{ENGINE_PLAIN[key]?.plain}</td><td>{h?.stored_signals ?? '—'} / {allRows.length}</td><td>{directional.filter(r=>r.active.some(s=>s.engine===key)).length}</td><td>{h?.status || 'unknown'}</td><td>{date(h?.latest_run_at)}</td></tr>;})}
     </Table><p className="la-note">Positioning covers only stocks with resolved derivative instruments. Missing coverage is not a neutral signal.</p></details>
-    <footer className="la-foot">Research only · No orders or portfolio changes · Automatic page refresh every minute · All timestamps IST. Model scores are not expected returns or probabilities.</footer>
+    <footer className="la-foot">Research only · No orders or portfolio changes · Prices and signals refresh every 4 minutes · All timestamps IST. Model scores are not expected returns or probabilities.</footer>
   </main>;
 }

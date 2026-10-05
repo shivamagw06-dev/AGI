@@ -109,7 +109,8 @@ async function loadPriceMap() {
 }
 
 function overlayRow(row, prices, now) {
-  const key = String(row.instrument_key || '').trim();
+  const cashKey = row.factor_values?.cash_instrument_key;
+  const key = String(cashKey || row.instrument_key || '').trim();
   const symbol = String(row.ticker || row.symbol || '').trim().toUpperCase();
   const pack = (key && prices.get(key)) || (symbol && prices.get(symbol));
   if (!pack) return;

@@ -99,3 +99,15 @@ test('old, future and closed-session prices are never labelled live', () => {
   assert.equal(priceFreshness('2026-10-03T07:00:00Z', new Date('2026-10-04T07:00:00Z')), 'MARKET_CLOSED');
   assert.equal(priceFreshness('2026-10-01T08:00:00Z', new Date('2026-10-01T07:00:00Z')), 'UNKNOWN');
 });
+
+test('positioning overlays use the stock quote and preserve its signal anchor', () => {
+  const original={signals:[{symbol:'TEST',instrument_key:'NSE_FO|TEST',price_at_signal:100,factor_values:{cash_instrument_key:'NSE_EQ|TEST',price_quote_at:'2026-10-05T06:30:00Z'}}]};
+  const result=overlayPayloadWithPrices(original,new Map([
+    ['NSE_FO|TEST',{ltp:125,observed_at:'2026-10-05T06:34:00Z'}],
+    ['NSE_EQ|TEST',{ltp:105,observed_at:'2026-10-05T06:34:00Z'}],
+  ]));
+  assert.equal(result.signals[0].live_price,105);
+  assert.equal(result.signals[0].price_at_signal,100);
+  assert.equal(result.signals[0].factor_values.price_quote_at,'2026-10-05T06:30:00Z');
+  assert.equal(original.signals[0].live_price,undefined);
+});
