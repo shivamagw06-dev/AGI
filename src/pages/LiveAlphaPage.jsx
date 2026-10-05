@@ -4,6 +4,7 @@ import { buildCanonicalSignals, interpretCanonicalSignal, LIVE_ALPHA_STRATEGIES,
 import { ENGINE_PLAIN, filterRadarRows, plainSignalDirection } from '@/lib/liveAlphaDashboardModel';
 import './liveAlphaPage.css';
 import LiveAlphaHistory from './LiveAlphaHistory';
+import { sectorRotationSummary } from '@/lib/sectorRotationSummary';
 
 const REFRESH_MS = LIVE_ALPHA_REFRESH_MS;
 const date = value => value && Number.isFinite(Date.parse(value)) ? `${new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })} IST` : 'Not recorded';
@@ -36,8 +37,24 @@ export function StateBanner({ readiness, freshness, runtime, requestFailed = fal
 }
 export function SectorRotation({ groww }) {
   const rows = groww?.sectors || [];
+  const [schedule, setSchedule] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => fetch(`${API_ORIGIN}/api/market/groww-sector-rotation/status`)
+      .then(r => readJson(r, 'Sector schedule')).then(data => { if (!cancelled) setSchedule(data); })
+      .catch(() => { if (!cancelled) setSchedule(null); });
+    load(); const timer = setInterval(load, 60 * 60_000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, []);
   const run = groww?.runs?.find(r => r.strategy === 'agi_sector_rotation_v1');
   return <section className="la-panel"><div className="la-section-head"><h2>Sector rotation</h2><p>Scheduled daily-data model · Run: {date(run?.as_of)}. Relative change is versus Nifty, in percentage points.</p></div>
+    <aside className="la-sector-explainer" aria-label="Understanding sector rotation">
+      <div className="la-sector-explainer-head"><h3>How to read sector rotation</h3><Badge tone={schedule?.enabled ? 'positive' : 'warning'}>{schedule?.enabled ? 'Hourly sector refresh' : 'Refresh schedule unconfirmed'}</Badge></div>
+      <p>Shows which sectors are strengthening or weakening versus Nifty over <strong>20 and 60 trading days</strong>. Relative figures are percentage-point differences, not money flows. Score / 100 is a model ranking, not a probability of profit.</p>
+      <div className="la-sector-definitions"><span><strong>Leading</strong> Ahead over both periods</span><span><strong>Improving</strong> Ahead over 20 days, behind over 60</span><span><strong>Weakening</strong> Behind over 20 days, ahead over 60</span><span><strong>Lagging</strong> Behind over both periods</span></div>
+      <p className="la-sector-reading"><strong>Latest reading: </strong>{sectorRotationSummary(rows)}</p>
+      <small>Last data update: {date(run?.as_of)}. {schedule?.enabled ? `Scheduled runs (IST): ${schedule.scheduleIst}.` : 'Hourly schedule could not be confirmed.'} Daily-history inputs can leave readings unchanged between hourly runs. A leading sector can still lose value.</small>
+    </aside>
     <Table headers={['Rank', 'Sector', 'Score / 100', '20d return %', '20d relative pp', '60d relative pp', 'Rotation', 'Risk']}>
       {rows.map(r => <tr key={r.sector}><td>{r.rank}</td><td><strong>{r.sector}</strong></td><td>{number(r.score, 1)}</td><td>{signed(r.return_20d)}</td><td>{signed(r.relative_20d)}</td><td>{signed(r.relative_60d)}</td><td><Badge>{r.rotation}</Badge></td><td>{r.risk || '—'}</td></tr>)}
       {!rows.length && <tr><td colSpan={8}>No sector results available.</td></tr>}
