@@ -22,6 +22,8 @@ a partial run still leaves the most useful history in place.
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import urllib.error
 import urllib.parse
@@ -118,7 +120,7 @@ def parse_candles(payload: dict[str, Any], *, symbol: str) -> list[dict[str, Any
 def _http_get(url: str, *, timeout: int = 45) -> dict[str, Any]:
     request = urllib.request.Request(
         url, headers={"Accept": "application/json", "User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+    with budgeted_urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
 
 

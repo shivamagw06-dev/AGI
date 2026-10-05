@@ -5,6 +5,8 @@ WebSocket authorization. Timestamps and market status gate every simulated fill.
 """
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import asyncio
 import gzip
 import fcntl
@@ -39,7 +41,7 @@ def authorize(token):
     request = urllib.request.Request(
         'https://api.upstox.com/v3/feed/market-data-feed/authorize',
         headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'})
-    with urllib.request.urlopen(request, timeout=15) as response:
+    with budgeted_urlopen(request, timeout=15) as response:
         result = json.load(response)
     uri = result.get('data', {}).get('authorized_redirect_uri', '')
     if result.get('status') != 'success' or not uri.startswith('wss://'):
@@ -83,7 +85,7 @@ def discover(now):
 
 def discover_futures(now):
     url='https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz'
-    with urllib.request.urlopen(url,timeout=15) as response:
+    with budgeted_urlopen(url,timeout=15) as response:
         blob=response.read(32*1024*1024+1)
     if len(blob)>32*1024*1024:raise ValueError('Instrument master too large')
     master=json.loads(gzip.decompress(blob))

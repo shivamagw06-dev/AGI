@@ -21,3 +21,9 @@ Tests cover concurrent budget enforcement, independent provider allocations, ded
 Recovery retries use a 30-minute rest after three failed attempts and then resume during the session, rather than permanently giving up for that date. This does not override an expired credential or fabricate missing history. Public Groww master audit on 5 October 2026 matched all 500 Nifty 500 ISINs unambiguously.
 
 Background requests have lower sub-budgets (Upstox 2/second, 80/minute, 550/30 minutes; Groww 1/second, 60/minute) within the overall allocations. This reserves HTTP capacity for current quotes. At most 96 background requests may be pending within a total 128-request cap. WebSocket processing remains independent of either queue.
+
+## Separate Python engine
+
+Python's Upstox HTTP consumers use a disk-backed SQLite allowance shared across worker processes and restarts on the same Render disk. Its allocation is another 4/second, 120/minute, 800/30 minutes, with background sublimits of 2/second, 80/minute, 550/30 minutes. Combined with Node's allocation, this leaves room below the documented standard Upstox ceilings; outside clients/other hosts remain unaccounted for. Covered clients include option chains, expired history and minute-history downloads, streaming authorization, fundamentals, valuation ratios, warehouse history, institutional flows, news and founder-portfolio quotes. Read-only HTTP only; WebSocket messages and strategy rules are unchanged.
+
+Groww requests from the Python historical collector already use the authenticated Node bridge, so they consume the Node Groww allowance rather than a second allocation. SQLite stores timestamps and a cooldown only, never tokens, positions or market prices. Python tests isolate this store per test so simulated errors cannot contaminate other tests.

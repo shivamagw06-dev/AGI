@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 import httpx
+import asyncio
+from shared_market_budget import budget
 from app.market_data.providers.yahoo import YahooFinanceProvider
 
 @dataclass(frozen=True)
@@ -42,7 +44,9 @@ class FounderPriceResolver:
         return blended, returns
     async def _upstox_quote(self, holding, instrument_key):
         headers = {"Accept": "application/json", "Authorization": f"Bearer {self.upstox_token}"}
+        await asyncio.to_thread(budget.reserve, "https://api.upstox.com/v2/market-quote/ltp")
         async with httpx.AsyncClient(timeout=20.0) as client: response = await client.get("https://api.upstox.com/v2/market-quote/ltp", params={"instrument_key": instrument_key}, headers=headers)
+        await asyncio.to_thread(budget.observe, response.status_code, response.headers)
         response.raise_for_status(); row = next(iter((response.json().get("data") or {}).values()), None); price = float((row or {}).get("last_price") or 0)
         if price <= 0: raise ValueError(f"Upstox returned no valid price for {holding.get('symbol')}")
         return PricePoint(str(holding.get("symbol")), price, None, "INR", "upstox_ltp", datetime.now(timezone.utc).isoformat())

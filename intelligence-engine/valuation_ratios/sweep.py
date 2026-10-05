@@ -24,6 +24,8 @@ The rules it works to, all learned from something that went wrong here:
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import os
 import time
@@ -152,7 +154,7 @@ def fetch_ratios(isin: str, *, timeout: float = 20.0) -> dict[str, Any]:
                  "User-Agent": USER_AGENT,
                  "Authorization": f"Bearer {token}"})
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with budgeted_urlopen(request, timeout=timeout) as response:
             return {"ok": True, "payload": json.loads(response.read().decode("utf-8"))}
     except urllib.error.HTTPError as exc:
         # The status alone does not say whether the token expired, the plan does

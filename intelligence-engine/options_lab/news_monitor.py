@@ -4,6 +4,7 @@ Rule matches are research labels, not verified event/impact assertions. HTTP run
 on a separate task/thread. Publication AND first-seen times prevent backdating.
 """
 from __future__ import annotations
+from shared_market_budget import budgeted_requests_get
 import asyncio
 import csv
 import hashlib
@@ -50,7 +51,7 @@ def read_json(url, token):
     # Use the same requests transport verified against Upstox from Render.
     # Redirects remain disabled so credentials never reach another host.
     import requests
-    with requests.get(url,headers={'Authorization':f'Bearer {token}','Accept':'application/json'},
+    with budgeted_requests_get(url,headers={'Authorization':f'Bearer {token}','Accept':'application/json'},
                       timeout=8,allow_redirects=False,stream=True) as response:
         response.raise_for_status()
         if response.status_code!=200: raise ValueError('Unexpected news status')

@@ -17,6 +17,8 @@ period stays as it was.
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import urllib.error
 import urllib.request
@@ -49,7 +51,7 @@ def fetch_dataset(isin: str, dataset: str, *, timeout: float = 25.0,
         headers={"Accept": "application/json", "Api-Version": "2.0",
                  "User-Agent": USER_AGENT, "Authorization": f"Bearer {token}"})
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with budgeted_urlopen(request, timeout=timeout) as response:
             return {"ok": True, "dataset": dataset,
                     "payload": json.loads(response.read().decode("utf-8"))}
     except urllib.error.HTTPError as exc:
