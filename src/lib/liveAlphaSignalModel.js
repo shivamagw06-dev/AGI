@@ -1,3 +1,5 @@
+export const LIVE_ALPHA_REFRESH_MS = 4 * 60_000;
+
 export const LIVE_ALPHA_STRATEGIES = Object.freeze([
   ['cross_sectional_momentum_v1', 'Leadership', 'Cross-Sectional Momentum'],
   ['volume_liquidity_anomaly_v1', 'Activity', 'Volume & Liquidity Anomaly'],
@@ -107,8 +109,26 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
     const composite = Math.max(-99, Math.min(99, scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / Math.sqrt(scores.length)) : 0));
     const quality = active.length ? Math.round(active.reduce((sum, signal) => sum + Number(signal.empirical_confidence_score ?? signal.signal_quality_score ?? 0), 0) / active.length) : 0;
     const samples = active.length ? Math.min(...active.map((signal) => Math.max(0, Number(signal.comparable_observations) || 0))) : 0;
+    // Only use the saved cash-price anchor from this exact evaluation. Live
+    // overlays and older engine runs must never replace the signal reference.
+    const candidates = Object.values(row.strategies)
+      .filter(s => Date.parse(s.as_of) === Date.parse(row.timestamp) && Number(s.price_at_signal) > 0)
+      .sort((a, b) => Number(String(b.instrument_key).startsWith('NSE_EQ|')) - Number(String(a.instrument_key).startsWith('NSE_EQ|')) || String(a.engine).localeCompare(String(b.engine)));
+    const cashLive = Object.values(row.strategies)
+      .filter(s => String(s.instrument_key).startsWith('NSE_EQ|') && Number(s.live_price) > 0)
+      .sort((a,b) => (Date.parse(b.price_as_of) || 0) - (Date.parse(a.price_as_of) || 0))[0];
+    if (cashLive) {
+      row.live_price = cashLive.live_price;
+      row.price_as_of = cashLive.price_as_of;
+      row.price_source = cashLive.price_source;
+    }
+    const anchor = candidates[0];
+    const quoteAt = anchor?.price_quote_at || anchor?.factor_values?.price_quote_at;
+    const quoteMs = Date.parse(quoteAt);
     const canonical = {
-      ...row, newest: row.timestamp, input_timestamp: row.timestamp, data_cutoff: row.timestamp,
+      ...row, price_at_signal: anchor ? Number(anchor.price_at_signal) : null,
+      signal_price_as_of: Number.isFinite(quoteMs) && quoteMs <= Date.parse(row.timestamp) ? quoteAt : null,
+      newest: row.timestamp, input_timestamp: row.timestamp, data_cutoff: row.timestamp,
       signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples),
       confidence_basis: confidenceBasis(samples), active, excluded_components,
       validation_status: samples >= 100 ? 'SAMPLE THRESHOLD MET' : 'EVIDENCE BUILDING', strategy_status: 'RESEARCH ONLY',

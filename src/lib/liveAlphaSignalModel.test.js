@@ -34,3 +34,31 @@ test('mixed timestamps cannot create false agreement or borrow another component
   assert.equal(r.active.length,1);
   assert.equal(r.excluded_components.length,1);
 });
+
+test('signal reference remains fixed when the live quote advances', () => {
+  const signal = {symbol:'TEST', engine:'cross_sectional_momentum_v1', direction:'positive', as_of:'2026-10-05T06:30:00Z', instrument_key:'NSE_EQ|TEST', price_at_signal:100, factor_values:{price_quote_at:'2026-10-05T06:29:59Z'}, live_price:101, price_as_of:'2026-10-05T06:31:00Z'};
+  const [before] = buildCanonicalSignals([signal]);
+  const [after] = buildCanonicalSignals([{...signal,live_price:105,price_as_of:'2026-10-05T06:35:00Z'}]);
+  assert.equal(before.price_at_signal,100);
+  assert.equal(after.price_at_signal,100);
+  assert.equal(after.signal_price_as_of,'2026-10-05T06:29:59Z');
+  assert.equal(after.live_price,105);
+});
+
+test('missing anchors cannot borrow older signals or current prices', () => {
+  const base={symbol:'TEST',direction:'positive',engine:'cross_sectional_momentum_v1',as_of:'2026-10-05T06:30:00Z',live_price:110};
+  const [row]=buildCanonicalSignals([base,{...base,engine:'volume_liquidity_anomaly_v1',as_of:'2026-10-05T06:25:00Z',price_at_signal:99}]);
+  assert.equal(row.price_at_signal,null);
+  assert.equal(row.signal_price_as_of,null);
+});
+
+test('cash anchor wins deterministically and future quote timestamps are not claimed', () => {
+  const base={symbol:'TEST',direction:'positive',as_of:'2026-10-05T06:30:00Z'};
+  const cash={...base,engine:'cross_sectional_momentum_v1',instrument_key:'NSE_EQ|TEST',price_at_signal:100,price_quote_at:'2026-10-05T06:31:00Z'};
+  const derivative={...base,engine:'derivatives_positioning_v1',instrument_key:'NSE_FO|TEST',price_at_signal:102};
+  for(const list of [[cash,derivative],[derivative,cash]]){
+    const [row]=buildCanonicalSignals(list);
+    assert.equal(row.price_at_signal,100);
+    assert.equal(row.signal_price_as_of,null);
+  }
+});
