@@ -53,3 +53,12 @@ test('portfolio reuses live quotes and only fetches missing instruments',async()
  assert.match(url,/NSE_EQ\|b/);assert.doesNotMatch(url,/NSE_EQ\|a/);
  assert.equal(result.quotes.A.time,new Date(at).toISOString());
 });
+
+test('background downloads cannot consume the live quote reserve',async()=>{
+ const budget=new MarketDataBudget({now:()=>100000,budgets:{upstox:[[60000,2]]},backgroundBudgets:{upstox:[[60000,1]]}});
+ let calls=0;const fetcher=async()=>{calls++;return new Response('{}');};
+ await budget.fetch('upstox','https://test/history/1',{},fetcher);
+ await assert.rejects(budget.fetch('upstox','https://test/history/2',{},fetcher),e=>e.status===429);
+ const quote=await budget.fetch('upstox','https://test/market-quote/quotes',{},fetcher);
+ assert.equal(quote.status,200);assert.equal(calls,2);
+});

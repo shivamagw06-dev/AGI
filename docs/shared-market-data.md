@@ -19,3 +19,5 @@ India portfolio prices reuse Live Alpha trade observations only if no older than
 Tests cover concurrent budget enforcement, independent provider allocations, deduplication, 429 cooldown, credential isolation, read-only enforcement, stale/future quote rejection, portfolio quote reuse, exact history mapping/fallback, malformed history and Groww polling lifecycle.
 
 Recovery retries use a 30-minute rest after three failed attempts and then resume during the session, rather than permanently giving up for that date. This does not override an expired credential or fabricate missing history. Public Groww master audit on 5 October 2026 matched all 500 Nifty 500 ISINs unambiguously.
+
+Background requests have lower sub-budgets (Upstox 2/second, 80/minute, 550/30 minutes; Groww 1/second, 60/minute) within the overall allocations. This reserves HTTP capacity for current quotes. At most 96 background requests may be pending within a total 128-request cap. WebSocket processing remains independent of either queue.

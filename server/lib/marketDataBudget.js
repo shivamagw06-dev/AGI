@@ -7,27 +7,35 @@ export const MARKET_DATA_BUDGETS = Object.freeze({
   groww: [[1000, 2], [60_000, 100]],
 });
 
+export const BACKGROUND_DATA_BUDGETS = Object.freeze({
+  upstox: [[1000, 2], [60_000, 80], [1_800_000, 550]],
+  groww: [[1000, 1], [60_000, 60]],
+});
+
 export class MarketDataBudget {
-  constructor({ now = Date.now, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), budgets = MARKET_DATA_BUDGETS } = {}) {
-    this.now = now; this.sleep = sleep; this.budgets = budgets;
+  constructor({ now = Date.now, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), budgets = MARKET_DATA_BUDGETS, backgroundBudgets = budgets === MARKET_DATA_BUDGETS ? BACKGROUND_DATA_BUDGETS : {} } = {}) {
+    this.now = now; this.sleep = sleep; this.budgets = budgets; this.backgroundBudgets = backgroundBudgets;
     this.states = new Map(); this.pending = new Map(); this.cache = new Map();
   }
   state(provider) {
-    if (!this.states.has(provider)) this.states.set(provider, { starts: [], cooldown: 0, requests: 0, rate_limits: 0, shared: 0, cache_hits: 0, deferred: 0 });
+    if (!this.states.has(provider)) this.states.set(provider, { starts: [], backgroundStarts: [], cooldown: 0, requests: 0, rate_limits: 0, shared: 0, cache_hits: 0, deferred: 0 });
     return this.states.get(provider);
   }
-  async reserve(provider, signal) {
+  async reserve(provider, signal, background = false) {
     const state = this.state(provider), windows = this.budgets[provider], began = this.now();
     while (true) {
       signal?.throwIfAborted();
       const now = this.now();
       state.starts = state.starts.filter(at => at > now - Math.max(...windows.map(([ms]) => ms)));
       let delay = Math.max(0, state.cooldown - now);
-      for (const [ms, limit] of windows) {
-        const recent = state.starts.filter(at => at > now - ms);
+      state.backgroundStarts = state.backgroundStarts.filter(at => at > now - 1_800_000);
+      const checks = [...windows.map(([ms, limit]) => [ms, limit, state.starts]),
+        ...(background ? (this.backgroundBudgets[provider] || []).map(([ms, limit]) => [ms, limit, state.backgroundStarts]) : [])];
+      for (const [ms, limit, starts] of checks) {
+        const recent = starts.filter(at => at > now - ms);
         if (recent.length >= limit) delay = Math.max(delay, recent[recent.length - limit] + ms - now);
       }
-      if (!delay) { state.starts.push(now); state.requests++; return; }
+      if (!delay) { state.starts.push(now); if (background) state.backgroundStarts.push(now); state.requests++; return; }
       // Never hold an API request or live evaluation behind a lengthy backlog.
       if (now - began + delay > 20_000) {
         state.deferred++;
@@ -46,13 +54,14 @@ export class MarketDataBudget {
     const cached = this.cache.get(key);
     if (cached && cached.until > this.now()) { state.cache_hits++; return cached.response.clone(); }
     if (this.pending.has(key)) { state.shared++; const response = await this.pending.get(key); return response.clone ? response.clone() : response; }
-    if (this.pending.size >= 128) {
+    const background = !/(?:market-quote|live-data)\//.test(String(url));
+    if (this.pending.size >= (background ? 96 : 128)) {
       state.deferred++;
       const error = new Error('Market-data queue is full; retry next cycle');
       error.status = 429; error.isRateLimit = true; throw error;
     }
     const task = (async () => {
-      await this.reserve(provider, options.signal);
+      await this.reserve(provider, options.signal, background);
       const response = await fetchImpl(url, { ...options, signal: options.signal || AbortSignal.timeout(30_000) });
       if (response.status === 429) {
         state.rate_limits++;
@@ -75,7 +84,7 @@ export class MarketDataBudget {
     finally { this.pending.delete(key); }
   }
   status() {
-    return { scope: 'node_process', account_wide: false, budgets: this.budgets,
+    return { scope: 'node_process', account_wide: false, budgets: this.budgets, background_budgets: this.backgroundBudgets,
       providers: Object.fromEntries([...this.states].map(([name, state]) => [name, {
         requests: state.requests, rate_limits: state.rate_limits, shared_requests: state.shared,
         cache_hits: state.cache_hits, deferred: state.deferred,
