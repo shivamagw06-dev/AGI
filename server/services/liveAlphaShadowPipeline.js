@@ -1,6 +1,8 @@
 import { evaluateCrossSectionalMomentum, evaluateDerivativesPositioning, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 import { minuteOfSession } from './minuteVolumeBaseline.js';
 
+const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+
 function change(current, previous) {
   return previous?.ltp > 0 ? ((current.ltp / previous.ltp) - 1) * 100 : null;
 }
@@ -40,13 +42,14 @@ export class IntradayFeatureStore {
     this.openingRanges = new Map();
   }
 
-  #touchOpeningRange(instrumentKey, session, high, low) {
+  #touchOpeningRange(instrumentKey, session, high, low, minute) {
     if (!(high > 0) || !(low > 0)) return;
     const rangeKey = `${session}|${instrumentKey}`;
-    const range = this.openingRanges.get(rangeKey) || { high, low, observations: 0 };
+    const range = this.openingRanges.get(rangeKey) || { high, low, observations: 0, minutes: new Set() };
     range.high = Math.max(range.high, high);
     range.low = Math.min(range.low, low);
     range.observations += 1;
+    range.minutes.add(minute);
     this.openingRanges.set(rangeKey, range);
   }
 
@@ -61,7 +64,7 @@ export class IntradayFeatureStore {
     for (const bar of ohlcRows) {
       if (!isOneMinuteInterval(bar.interval)) continue;
       const barMs = Number(bar.timestamp);
-      if (!Number.isFinite(barMs) || barMs < cutoff || !(bar.close > 0)) continue;
+      if (!Number.isFinite(barMs) || barMs + 60_000 > receivedAtMs || sessionDateIst(barMs) !== sessionDateIst(receivedAtMs) || !(bar.close > 0)) continue;
       const minute = minuteOfSession(new Date(barMs).toISOString());
       if (minute >= 0 && minute < 15) {
         this.#touchOpeningRange(
@@ -69,18 +72,20 @@ export class IntradayFeatureStore {
           sessionDateIst(barMs),
           bar.high ?? bar.close,
           bar.low ?? bar.close,
+          minute,
         );
       }
+      if (barMs + 60_000 < cutoff) continue;
       this.#upsertPoint(instrumentKey, {
         instrument_key: instrumentKey,
-        received_at: new Date(barMs).toISOString(),
+        received_at: new Date(barMs + 60_000).toISOString(),
         ltp: bar.close,
         cumulative_volume: null,
-        open_interest: null,
+        open_interest: bar.open_interest > 0 ? bar.open_interest : null,
         spread_bps: null,
         implied_volatility: null,
         source: 'upstox_ohlc_1m',
-      }, barMs);
+      }, barMs + 60_000);
     }
   }
 
@@ -107,20 +112,9 @@ export class IntradayFeatureStore {
     this.series.set(instrumentKey, values);
   }
 
-  #seedLookback(instrumentKey, row, at) {
-    const previous = Number(row.previous_close);
-    if (!(previous > 0)) return;
-    const existing = this.series.get(instrumentKey) || [];
-    const hourAgo = at - 60 * 60_000;
-    if (existing.some((point) => Date.parse(point.received_at) <= hourAgo)) return;
-    const seed = {
-      instrument_key: instrumentKey,
-      ltp: previous,
-      cumulative_volume: null,
-      source: 'previous_close_seed',
-    };
-    this.#upsertPoint(instrumentKey, seed, at - 60 * 60_000);
-    this.#upsertPoint(instrumentKey, seed, at - 15 * 60_000);
+  // Historical candles retain their actual close time; they are never live ticks.
+  ingestCandles(instrumentKey, bars, now = new Date()) {
+    this.#ingestOhlc(instrumentKey, bars, now.getTime());
   }
 
   ingest(batch) {
@@ -128,11 +122,11 @@ export class IntradayFeatureStore {
       const at = Date.parse(row.received_at);
       if (!Number.isFinite(at) || !(row.ltp > 0)) continue;
       this.#ingestOhlc(row.instrument_key, row.ohlc, at);
-      this.#seedLookback(row.instrument_key, row, at);
+      if (row.source === 'previous_close_seed') continue;
       this.#upsertPoint(row.instrument_key, row, at);
       const minute = minuteOfSession(row.received_at);
       if (minute >= 0 && minute < 15) {
-        this.#touchOpeningRange(row.instrument_key, sessionDateIst(at), row.ltp, row.ltp);
+        this.#touchOpeningRange(row.instrument_key, sessionDateIst(at), row.ltp, row.ltp, minute);
       }
     }
   }
@@ -150,17 +144,22 @@ export class IntradayFeatureStore {
     for (let index = rows.length - 1; index >= 0; index -= 1) if (Date.parse(rows[index].received_at) <= timestamp) return rows[index];
     return null;
   }
+  recentAt(key, timestamp) {
+    const point = this.atOrBefore(key, timestamp);
+    if (!point || timestamp - Date.parse(point.received_at) > 2 * 60_000 || sessionDateIst(timestamp) !== sessionDateIst(Date.parse(point.received_at))) return null;
+    return point;
+  }
   returns(key, nowMs) {
-    const current = this.latest(key);
-    return current ? { current, return15m: change(current, this.atOrBefore(key, nowMs - 15 * 60_000)), return60m: change(current, this.atOrBefore(key, nowMs - 60 * 60_000)) } : null;
+    const current = this.recentAt(key, nowMs);
+    return current ? { current, return15m: change(current, this.recentAt(key, nowMs - 15 * 60_000)), return60m: change(current, this.recentAt(key, nowMs - 60 * 60_000)) } : null;
   }
   openingRange(key, now = new Date()) {
-    const session = new Date(now.getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
-    return this.openingRanges.get(`${session}|${key}`) || null;
+    const range = this.openingRanges.get(`${sessionDateIst(now.getTime())}|${key}`);
+    return range?.minutes.size === 15 ? range : null;
   }
   derivatives(key, nowMs) {
-    const current = this.latest(key);
-    const previous = this.atOrBefore(key, nowMs - 15 * 60_000);
+    const current = this.recentAt(key, nowMs);
+    const previous = this.recentAt(key, nowMs - 15 * 60_000);
     if (!(current?.ltp > 0) || !(previous?.ltp > 0) || !(current?.open_interest > 0) || !(previous?.open_interest > 0)) return null;
     return { current, priceReturn15m: ((current.ltp / previous.ltp) - 1) * 100, oiChange15m: ((current.open_interest / previous.open_interest) - 1) * 100 };
   }
@@ -211,16 +210,16 @@ export class MomentumShadowPipeline {
     for (const member of this.universe) {
       const stock = this.featureStore.returns(member.instrumentKey, now.getTime());
       const sector = this.featureStore.returns(member.sectorInstrumentKey, now.getTime());
-      const sectorReady = sector && Number.isFinite(Number(sector.return15m)) && Number.isFinite(Number(sector.return60m));
+      const sectorReady = sector && finite(sector.return15m) && finite(sector.return60m);
       const effectiveSector = sectorReady ? sector : benchmark;
       const expected = this.baselineIndex?.get(member.instrumentKey, minute);
       const volumePoint = this.featureStore.latestWithFinite(member.instrumentKey, 'cumulative_volume');
-      if (stock && Number.isFinite(Number(stock.return15m)) && Number.isFinite(Number(stock.return60m))) coverageDiagnostics.stock_history += 1;
+      if (stock && finite(stock.return15m) && finite(stock.return60m)) coverageDiagnostics.stock_history += 1;
       if (sectorReady) coverageDiagnostics.sector_history += 1;
       else coverageDiagnostics.sector_proxy += 1;
       if (volumePoint) coverageDiagnostics.volume_tick += 1;
       if (Number.isFinite(Number(expected)) && expected > 0) coverageDiagnostics.volume_baseline += 1;
-      if (!stock || [stock.return15m, stock.return60m, effectiveSector.return15m, effectiveSector.return60m, expected, volumePoint?.cumulative_volume].every((value) => Number.isFinite(Number(value))) === false || expected <= 0) continue;
+      if (!stock || [stock.return15m, stock.return60m, effectiveSector.return15m, effectiveSector.return60m, expected, volumePoint?.cumulative_volume].every(finite) === false || expected <= 0) continue;
       coverageDiagnostics.complete += 1;
       snapshots.push({
         symbol: member.symbol, sector: member.sector, instrumentKey: member.instrumentKey,
@@ -242,6 +241,8 @@ export class MomentumShadowPipeline {
       const derivative = this.featureStore.derivatives(member.derivativeInstrumentKey, now.getTime());
       return derivative ? { symbol: member.symbol, sector: member.sector, instrumentKey: member.derivativeInstrumentKey, priceReturn15m: derivative.priceReturn15m, oiChange15m: derivative.oiChange15m, openInterest: derivative.current.open_interest, impliedVolatility: derivative.current.implied_volatility, spreadBps: derivative.current.spread_bps, minimumLiquidity: member.minimumLiquidity !== false } : null;
     }).filter(Boolean);
+    const mappedDerivatives = this.universe.filter(member => member.derivativeInstrumentKey).length;
+    const derivativeReason = mappedDerivatives ? `derivative_history_warming_or_incomplete:${derivativeSnapshots.length}/${mappedDerivatives}` : 'derivative_instruments_not_configured';
     const derivativesResult = derivativeSnapshots.length >= 10 ? evaluateDerivativesPositioning(derivativeSnapshots, { asOf: now.toISOString() }) : null;
     const openingSnapshots = snapshots.map((snapshot) => {
       const range = this.featureStore.openingRange(snapshot.instrumentKey, now);
@@ -314,7 +315,7 @@ export class MomentumShadowPipeline {
       { engine: volumeResult.engine, method: 'saveVolumeAnomalyRun', result: volumeResult },
       { engine: 'opening_range_expansion_v1', method: 'saveOpeningRangeRun', result: openingResult, reason: openingRangeReason },
       { engine: meanReversionResult.engine, method: 'saveMeanReversionRun', result: meanReversionResult },
-      { engine: 'derivatives_positioning_v1', method: 'saveDerivativesRun', result: derivativesResult, reason: derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured' },
+      { engine: 'derivatives_positioning_v1', method: 'saveDerivativesRun', result: derivativesResult, reason: derivativeReason },
     ], diagnostics);
     return {
       ...result,
@@ -322,7 +323,7 @@ export class MomentumShadowPipeline {
       persistence,
       coverage_diagnostics: coverageDiagnostics,
       opening_range_status: openingResult ? 'running' : openingRangeReason,
-      derivatives_status: derivativesResult ? 'running' : derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured',
+      derivatives_status: derivativesResult ? 'running' : derivativeReason,
     };
   }
 }

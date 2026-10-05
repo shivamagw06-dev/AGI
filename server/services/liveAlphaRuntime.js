@@ -1,3 +1,4 @@
+import { bootstrapLiveAlphaIntraday } from './liveAlphaIntradayBootstrap.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -83,7 +84,7 @@ export function classifyEvaluationStatus(evaluation) {
     if (evaluation.reason === 'already_evaluated_bucket') return 'live';
     return 'blocked';
   }
-  return (evaluation.persistence || []).some((row) => row.status === 'failed') ? 'degraded' : 'live';
+  return (evaluation.persistence || []).some((row) => row.status === 'failed' || row.status === 'unavailable') ? 'degraded' : 'live';
 }
 
 export function shouldUseGrowwFallback({ provider, feedStatus, reconnects = 0, lastError = '', allowFallback, growwConfigured }) {
@@ -241,7 +242,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
           persistence: evaluation.persistence || [],
         };
         state.last_evaluation = currentEvaluation;
-        state.evaluation_status = classifyEvaluationStatus(currentEvaluation);
+        state.evaluation_status = classifyEvaluationStatus(currentEvaluation.reason === 'already_evaluated_bucket' ? state.last_successful_evaluation : currentEvaluation);
         if (!currentEvaluation.skipped) state.last_successful_evaluation = currentEvaluation;
       }
     };
@@ -327,6 +328,32 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       runtime.fallbackMonitor = fallbackMonitor;
     }
     runtime.supervisor = startFeedSupervisor();
+    const owner = runtime;
+    let recovering = false;
+    let recoveredSession = null;
+    let attempts = 0;
+    let nextRecovery = 0;
+    const recoverIntraday = async () => {
+      const now = new Date();
+      const session = sessionState(now);
+      const date = new Date(now.getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+      const minutes = now.getUTCHours() * 60 + now.getUTCMinutes() - 225;
+      if (runtime !== owner || recovering || !session.open || minutes < 17 || now.getTime() < nextRecovery) return;
+      if (recoveredSession !== date) { recoveredSession = date; attempts = 0; }
+      if (attempts >= 3 || owner.bootstrap.intraday?.status === 'ready' && owner.bootstrap.intraday?.session === date) return;
+      recovering = true;
+      attempts += 1;
+      try {
+        await bootstrapLiveAlphaIntraday({ instrumentKeys, featureStore: pipeline.featureStore,
+          active: () => runtime === owner,
+          onProgress: progress => { owner.bootstrap.intraday = { ...progress, session: date, attempt: attempts }; },
+        });
+      } finally { recovering = false; nextRecovery = Date.now() + 5 * 60_000; }
+    };
+    runtime.intradayRecoveryTimer = setInterval(() => { void recoverIntraday(); }, 60_000);
+    runtime.intradayRecoveryTimer.unref?.();
+    void recoverIntraday();
+
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: missingBaselineMembers.length, failures: [] };
@@ -414,6 +441,7 @@ export function stopLiveAlphaRuntime() {
   if (runtime?.fallbackMonitor) clearInterval(runtime.fallbackMonitor);
   if (runtime?.supervisor) clearInterval(runtime.supervisor);
   runtime?.feed.stop();
+  if (runtime?.intradayRecoveryTimer) clearInterval(runtime.intradayRecoveryTimer);
   runtime = null;
   state.status = 'stopped';
   state.evaluation_status = 'stopped';
