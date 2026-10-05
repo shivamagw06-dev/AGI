@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
-const root=fileURLToPath(new URL('../../',import.meta.url));
+const seedPath=fileURLToPath(new URL('../data/usaPortfolioHistory.json',import.meta.url));
 export function completedUSDate(now=new Date()) {
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(now).map(p=>[p.type,p.value]));
  const day=`${parts.year}-${parts.month}-${parts.day}`;
@@ -25,7 +25,7 @@ export function parseYahoo(symbol,payload,cutoff){
  if(!bars.length||new Set(bars.map(b=>b[0])).size!==bars.length)throw Error('Missing or duplicate daily prices');
  return {status:'ok',source:`https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/history/`,name:m.longName||m.shortName,currency:m.currency,exchange:m.exchangeName,instrumentType:m.instrumentType,bars,events:d.events||{},firstDate:bars[0][0],lastDate:bars.at(-1)[0]};
 }
-export function createUSHistory({fetcher=fetch,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms)),readSeed=()=>fs.readFile(path.join(root,'public/data/portfolio-history.json'),'utf8')}={}){
+export function createUSHistory({fetcher=fetch,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms)),readSeed=()=>fs.readFile(seedPath,'utf8')}={}){
  let snapshot=null,inflight=null,lastAttempt=0,lastError=null;
  async function read(){if(!snapshot)snapshot=JSON.parse(await readSeed());return {...snapshot,refresh:{mode:'daily-after-us-close',lastAttempt:lastAttempt?new Date(lastAttempt).toISOString():null,error:lastError}};}
  async function refresh(){
@@ -57,7 +57,7 @@ export function createUSHistory({fetcher=fetch,now=()=>new Date(),pause=ms=>new 
 }
 const cachePath=path.join(process.env.DATA_DIR||os.tmpdir(),'agi-usa-portfolio-history.json');
 async function readStoredSeed(){
- const seed=JSON.parse(await fs.readFile(path.join(root,'public/data/portfolio-history.json'),'utf8'));
+ const seed=JSON.parse(await fs.readFile(seedPath,'utf8'));
  try{const cached=JSON.parse(await fs.readFile(cachePath,'utf8'));if(cached.schemaVersion===1&&cached.asOf>=seed.asOf&&cached.calendar?.length&&cached.securities?.SPY?.status==='ok')return JSON.stringify({...cached,mappings:seed.mappings});}catch{/* Rebuild the public price cache from the committed snapshot. */}
  return JSON.stringify(seed);
 }
