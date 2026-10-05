@@ -15,6 +15,8 @@ instead, which does not depend on any process staying up.
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import urllib.error
 import urllib.parse
@@ -83,7 +85,7 @@ def _get(path: str, params: list[tuple[str, str]], *, timeout: float = 30.0) -> 
         "Authorization": f"Bearer {token}",
     })
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with budgeted_urlopen(request, timeout=timeout) as response:
             return {"ok": True, "payload": json.loads(response.read().decode("utf-8"))}
     except urllib.error.HTTPError as exc:
         detail = ""

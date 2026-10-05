@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import math
 import os
@@ -96,7 +98,7 @@ class UpstoxClient:
         )
         for attempt in range(3):
             try:
-                with urllib.request.urlopen(request, timeout=self._timeout) as response:
+                with budgeted_urlopen(request, timeout=self._timeout) as response:
                     payload = json.loads(response.read().decode("utf-8"))
                 if payload.get("status") != "success":
                     raise UpstoxLiveError(

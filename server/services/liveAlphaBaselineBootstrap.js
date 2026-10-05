@@ -1,4 +1,4 @@
-import { getHistoricalCandles } from '../providers/upstox.js';
+import { liveAlphaHistoryRouter } from './liveAlphaHistoryRouter.js';
 import { buildMinuteVolumeBaselines } from './minuteVolumeBaseline.js';
 
 const IST_OFFSET_MS = 5.5 * 60 * 60_000;
@@ -10,7 +10,7 @@ async function historicalCandlesWithBackoff(instrumentKey, range) {
   let lastError;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      return await getHistoricalCandles(instrumentKey, range);
+      return await liveAlphaHistoryRouter.historical(instrumentKey, range);
     } catch (error) {
       lastError = error;
       if (error?.status !== 429 || attempt === 2) throw error;

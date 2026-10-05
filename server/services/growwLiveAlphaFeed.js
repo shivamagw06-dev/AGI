@@ -1,3 +1,4 @@
+import { sessionState } from './liveAlphaSession.js';
 import { parse } from 'csv-parse/sync';
 import { getQuote, isGrowwConfigured } from '../providers/groww.js';
 import { pollGrowwIndexSnapshots, growwQuotePreviousClose } from './sectorIndexGrowwFallback.js';
@@ -83,7 +84,8 @@ export async function attachGrowwDerivatives(universe, options = {}) {
 }
 
 export class GrowwLiveAlphaFeed {
-  constructor({ universe, onBatch = async () => {}, pollMs = Number(process.env.LIVE_ALPHA_GROWW_POLL_MS || 180_000) } = {}) {
+  constructor({ universe, onBatch = async () => {}, pollMs = Number(process.env.LIVE_ALPHA_GROWW_POLL_MS || 180_000), marketOpen = () => sessionState().open, quote = getQuote, indices = pollGrowwIndexSnapshots, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
+    this.marketOpen = marketOpen; this.quote = quote; this.indices = indices; this.sleep = sleep;
     this.universe = universe;
     this.onBatch = onBatch;
     this.pollMs = Math.max(60_000, pollMs);
@@ -102,8 +104,10 @@ export class GrowwLiveAlphaFeed {
 
   async poll() {
     if (this.stopped || this.inFlight) return;
+    if (!this.marketOpen()) { this.state.status = 'market_closed'; return; }
     this.inFlight = true;
     try {
+      let published = 0;
       const snapshots = [];
       const quoteJobs = this.universe.members.flatMap((member) => [
         { key: member.instrumentKey, segment: 'CASH', symbol: member.symbol },
@@ -113,19 +117,26 @@ export class GrowwLiveAlphaFeed {
       // Three requests per second leaves capacity for dashboards and scheduled
       // research while a complete cash + futures cycle finishes in ~2m10s.
       for (let index = 0; index < quoteJobs.length; index += 3) {
+        if (this.stopped || !this.marketOpen()) break;
         const group = quoteJobs.slice(index, index + 3);
-        const settled = await Promise.allSettled(group.map((job) => getQuote('NSE', job.segment, job.symbol)));
+        const settled = await Promise.allSettled(group.map((job) => this.quote('NSE', job.segment, job.symbol)));
         settled.forEach((result, offset) => {
           if (result.status === 'fulfilled') {
             const snapshot = normalizeQuote(group[offset].key, result.value, new Date().toISOString());
             if (snapshot) snapshots.push(snapshot);
           } else this.state.decode_errors += 1;
         });
-        if (index + 3 < quoteJobs.length) await new Promise((resolve) => setTimeout(resolve, 1_050));
+        if (snapshots.length && !this.stopped) {
+          const batch = snapshots.splice(0); published += batch.length;
+          await this.onBatch({ type: 'groww_live_alpha', snapshots: batch });
+          this.state.last_message_at = new Date().toISOString();
+        }
+        if (index + 3 < quoteJobs.length) await this.sleep(1_050);
       }
+      if (this.stopped || !this.marketOpen()) return;
       const indexKeys = [...new Set([this.universe.benchmarkKey, ...this.universe.members.map((row) => row.sectorInstrumentKey)])];
       try {
-        snapshots.push(...await pollGrowwIndexSnapshots(indexKeys));
+        snapshots.push(...await this.indices(indexKeys));
         this.state.last_index_error = null;
       } catch (error) {
         // Preserve valid equity and futures observations when an individual
@@ -135,6 +146,9 @@ export class GrowwLiveAlphaFeed {
       }
       if (snapshots.length) {
         await this.onBatch({ type: 'groww_live_alpha', snapshots });
+        published += snapshots.length;
+      }
+      if (published) {
         this.state.status = 'connected'; this.state.messages += 1; this.state.last_message_at = new Date().toISOString(); this.state.last_error = null;
       } else throw new Error('Groww returned no usable Live Alpha snapshots.');
     } catch (error) {

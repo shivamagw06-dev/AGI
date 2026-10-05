@@ -22,6 +22,8 @@ Two limits worth stating plainly, because they bound what this can ever do:
 
 from __future__ import annotations
 
+from shared_market_budget import budgeted_urlopen
+
 import json
 import time
 import urllib.error
@@ -77,7 +79,7 @@ def _request(url: str, token: str, timeout: int = 30) -> Any:
     )
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
+            with budgeted_urlopen(request, timeout=timeout) as response:
                 payload = json.loads(response.read().decode("utf-8"))
             if payload.get("status") != "success":
                 raise UpstoxLiveError(f"status={payload.get('status')!r}")

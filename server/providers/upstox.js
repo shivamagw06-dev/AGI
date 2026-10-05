@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 /**
  * Upstox Developer API — fundamentals / corporate actions.
  * Docs: https://upstox.com/developer/api-documentation/get-corporate-actions/
@@ -9,9 +10,9 @@
 const UPSTOX_BASE = process.env.UPSTOX_API_BASE || 'https://api.upstox.com/v2';
 
 async function ensureFetch() {
-  if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
+  if (typeof globalThis.fetch === 'function') return (url, options) => budgetedMarketFetch('upstox', url, options);
   const mod = await import('node-fetch');
-  return mod.default;
+  return (url, options) => budgetedMarketFetch('upstox', url, options, mod.default);
 }
 
 function firstEnv(...keys) {

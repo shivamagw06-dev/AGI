@@ -1,3 +1,4 @@
+import { budgetedMarketFetch } from '../lib/marketDataBudget.js';
 /**
  * Groww Trading API provider — primary market data source.
  * Docs: https://groww.in/trade-api/docs/curl
@@ -96,7 +97,7 @@ export async function growwRequest(path, params = {}) {
   });
 
   const fetchFn = await ensureFetch();
-  const resp = await fetchFn(url.toString(), {
+  const resp = await budgetedMarketFetch('groww', url.toString(), {
     method: 'GET',
     signal: AbortSignal.timeout(15_000),
     redirect: 'error',
@@ -105,7 +106,7 @@ export async function growwRequest(path, params = {}) {
       Accept: 'application/json',
       'X-API-VERSION': '1.0',
     },
-  });
+  }, fetchFn);
 
   const json = await resp.json().catch(() => ({}));
   if (json?.status === 'SUCCESS') return json.payload;
