@@ -9,3 +9,11 @@ Each portfolio and holding has a daily chart; tables show adjusted starting/end 
 Cache is written atomically under DATA_DIR if set, otherwise the OS temporary directory. The committed snapshot is the restart fallback. This is a rebuildable adjusted-price cache, not a durable trade/accounting ledger. Yahoo can revise adjustments. UI explicitly shows the final price date and stale/error warnings.
 
 Verified seed: 305/305 securities downloaded, through 2 October 2026, from Yahoo. USA portfolios contain 266 distinct funded securities. Exact-date and common-session validation checks all 26 allocations against this seed.
+
+## 6 October refresh recovery
+
+Verified saved pre-deployment snapshots and the deployed response ended on 2 October. Yahoo chart responses from query1 and query2 supplied a 5 October timestamp but null close and adjusted-close values for SPY; AAPL also had a null close. The collector incorrectly treated the attempted cutoff as completed and suppressed same-day retries.
+
+The collector now records completion only when the observed session has valid prices, retries pending collection every 15 minutes, and retains existing symbol history on individual failures. A missing benchmark close stops the expensive full-universe download early. Public USA pages expose the pending status. New York's 5 pm cutoff remains unchanged.
+
+Verified snapshots persist in service-role-only `agi_usa_history_snapshot`, with database protection against an older as-of date replacing a newer one. Startup selects the newest durable/local/seed snapshot; a database read failure does not silently downgrade to a deployment seed. Portfolio ledgers retain their immutable historical marks. Missing prices are never replaced with live quotes or invented closes.
