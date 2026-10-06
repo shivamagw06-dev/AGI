@@ -1,12 +1,12 @@
+import { yahooRequest } from './yahooRequest.js';
 /**
  * Yahoo Finance quotes for Market Snapshot / pre-market fallbacks.
  * Covers Indian cash indices, US cash indices, and key commodities.
  */
 
 async function ensureFetch() {
-  if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
-  const mod = await import('node-fetch');
-  return mod.default;
+  return yahooRequest;
+
 }
 
 /** Snapshot labels used by the Investment Office Market Snapshot. */

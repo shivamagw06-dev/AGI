@@ -1,3 +1,4 @@
+import { yahooRequest } from '../providers/yahooRequest.js';
 // Read-only Yahoo daily data. No broker calls or portfolio allocation mutations.
 import fs from 'node:fs/promises';
 import {createSupabaseAdmin} from '../lib/supabaseAdmin.js';
@@ -28,7 +29,7 @@ export function parseYahoo(symbol,payload,cutoff){
  if(!bars.length||new Set(bars.map(b=>b[0])).size!==bars.length)throw Error('Missing or duplicate daily prices');
  return {status:'ok',pendingDates,expectedDate,source:`https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/history/`,name:m.longName||m.shortName,currency:m.currency,exchange:m.exchangeName,instrumentType:m.instrumentType,bars,events:d.events||{},firstDate:bars[0][0],lastDate:bars.at(-1)[0]};
 }
-export function createUSHistory({fetcher=fetch,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms)),readSeed=()=>fs.readFile(seedPath,'utf8'),persist=async()=>{}}={}){
+export function createUSHistory({fetcher=yahooRequest,now=()=>new Date(),pause=ms=>new Promise(r=>setTimeout(r,ms)),readSeed=()=>fs.readFile(seedPath,'utf8'),persist=async()=>{}}={}){
  let snapshot=null,inflight=null,lastAttempt=0,lastError=null;
  async function read(){if(!snapshot)snapshot=JSON.parse(await readSeed());return {...snapshot,refresh:{mode:'daily-after-us-close',lastAttempt:lastAttempt?new Date(lastAttempt).toISOString():null,error:lastError,inProgress:!!inflight,nextRetryAt:lastError&&lastAttempt?new Date(lastAttempt+RETRY_MS).toISOString():null}};}
  async function refresh(){

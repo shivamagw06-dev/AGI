@@ -1,3 +1,4 @@
+import { yahooRequest } from './yahooRequest.js';
 /**
  * Daily price history from Yahoo's chart endpoint.
  *
@@ -16,9 +17,8 @@ import { barsFromChart } from '../services/dailyBars.js';
 const BASE = 'https://query1.finance.yahoo.com/v8/finance/chart';
 
 async function ensureFetch() {
-  if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
-  const mod = await import('node-fetch');
-  return mod.default;
+  return yahooRequest;
+
 }
 
 /**

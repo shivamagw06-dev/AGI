@@ -1,3 +1,4 @@
+import { yahooRequest } from '../providers/yahooRequest.js';
 /**
  * World stocks board — delayed Yahoo cash/futures reference for AGI /markets/stocks.
  * Not an exchange feed and not a Bloomberg redistribution.
@@ -250,9 +251,8 @@ function unavailableRow(instrument, reason) {
 }
 
 async function ensureFetch() {
-  if (typeof globalThis.fetch === 'function') return globalThis.fetch.bind(globalThis);
-  const mod = await import('node-fetch');
-  return mod.default;
+  return yahooRequest;
+
 }
 
 async function fetchChart(yahoo, fetchFn) {
