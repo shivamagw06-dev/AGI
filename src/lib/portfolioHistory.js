@@ -36,6 +36,13 @@ export function holdingReturn(data, holding, months) {
   return {symbol:resolved.symbol,...period,returnPct:(end/initial-1)*100,startPrice:initial,endPrice:end,values:period.dates.map(date=>({date,value:prices.get(date)/initial}))};
 }
 export function portfolioReturn(data, portfolio, months) {
+  if(months==='since'&&data.ledgers){
+    const ledger=data.ledgers.find(l=>l.id===portfolio.id);
+    if(!ledger?.history?.length)return {reason:'Continuous ledger is awaiting a verified baseline',rows:[],covered:0,total:100};
+    const curve=ledger.history.map(h=>({date:h.date,value:h.nav/100}));let peak=1,maxDrawdownPct=0;for(const p of curve){peak=Math.max(peak,p.value);maxDrawdownPct=Math.max(maxDrawdownPct,(1-p.value/peak)*100);}
+    return {curve,returnPct:ledger.returnPct,maxDrawdownPct,rows:[],covered:100,total:100,start:ledger.history[0].date,end:ledger.priceDate,months,ledger:true};
+  }
+
   const positive=portfolio.holdings.filter(h=>h.weight>0);
   const total=portfolio.holdings.reduce((s,h)=>s+h.weight,0);
   const rows=portfolio.holdings.map(h=>({...h,...holdingReturn(data,h,months)}));

@@ -1,6 +1,6 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 
-export function validatePortfolio(input) {
+export function validatePortfolio(input, {preserveWeightPrecision = false} = {}) {
   const text = (v, max) => typeof v === 'string' ? v.trim().slice(0, max) : '';
   const name = text(input?.name, 120);
   if (!name || !['india', 'usa'].includes(input?.market)) throw new Error('Name and market are required.');
@@ -15,7 +15,7 @@ export function validatePortfolio(input) {
     const key = name.toLowerCase();
     if (seen.has(key) || (symbol && seen.has(`symbol:${symbol}`))) throw new Error('Duplicate holdings are not allowed.');
     seen.add(key); if (symbol) seen.add(`symbol:${symbol}`);
-    return { name, symbol, weight: Math.round(weight * 100) / 100 };
+    return { name, symbol, weight: preserveWeightPrecision ? weight : Math.round(weight * 100) / 100 };
   });
   const cashWeight = Number(input.cashWeight ?? 0);
   if (!Number.isFinite(cashWeight) || cashWeight < 0 || cashWeight >= 100) throw new Error('Cash weight must be between 0 and 100%.');
@@ -29,11 +29,14 @@ export const publicDocument = row => ({ ...row.document, id: row.id, revision: r
 export function createPortfolioStore(client = createSupabaseAdmin()) {
   const db = () => { if (!client) throw new Error('Portfolio storage unavailable'); return client.from('agi_portfolio_catalog'); };
   return {
-    async list() { const { data, error } = await db().select('id,document,revision,updated_at').order('id'); if (error) throw error; return data.map(publicDocument); },
+    async list() { const { data, error } = await db().select('id,document,revision,updated_at').order('id'); if (error) throw error; const {data:ledgers,error:le}=await client.from('agi_portfolio_ledger').select('portfolio_id,document');if(le)throw le;return data.map(row=>{const p=publicDocument(row),l=ledgers.find(x=>x.portfolio_id===p.id);return l?{...p,...l.document.portfolio,revision:p.revision,id:p.id,hasLedger:true}:p;}); },
     async save(id, input, actorId) {
       if (['in-conviction-long','in-conviction-short','in-growth-momentum-private'].includes(id)) {
         const e = new Error('This portfolio uses linked source allocations. Change it through a dated category rebalance, not the flat holdings editor.'); e.status=409; throw e;
       }
+      const {data:ledger,error:ledgerError}=await client.from('agi_portfolio_ledger').select('portfolio_id').eq('portfolio_id',id).maybeSingle();
+      if(ledgerError)throw ledgerError;
+      if(ledger){const e=new Error('Use Schedule rebalance to change this tracked portfolio. Its existing record is protected.');e.status=409;throw e;}
       const clean = validatePortfolio(input);
       if (id.startsWith('in-')) {
         const {data:tracking,error}=await client.from('agi_india_portfolio_tracking').select('portfolio_id').eq('portfolio_id',id).maybeSingle();
