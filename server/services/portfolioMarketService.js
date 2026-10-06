@@ -1,3 +1,4 @@
+import { yahooRequest } from '../providers/yahooRequest.js';
 import { getHistoricalCandles, getQuote } from '../providers/groww.js';
 import { getCorporateActions } from '../providers/upstox.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
@@ -39,7 +40,7 @@ function growwPrices(candles) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
+  const response = await yahooRequest(url, {
     headers: { Accept: 'application/json', 'User-Agent': 'AGI-Portfolio-Intelligence/1.0' },
     signal: AbortSignal.timeout(8_000),
   });

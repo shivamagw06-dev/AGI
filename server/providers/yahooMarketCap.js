@@ -1,3 +1,4 @@
+import { yahooRequest } from './yahooRequest.js';
 /**
  * Market capitalisation from Yahoo, for cross-checking a derived figure.
  *
@@ -62,7 +63,7 @@ export function marketCapFromQuote(row) {
  * is present with a reason, because a short map would silently become a
  * screen that skipped companies rather than one that could not check them.
  */
-export async function fetchMarketCaps(symbols, { fetchImpl = globalThis.fetch, timeoutMs = 8_000 } = {}) {
+export async function fetchMarketCaps(symbols, { fetchImpl = yahooRequest, timeoutMs = 8_000 } = {}) {
   const wanted = [...new Set((symbols || []).map((one) => String(one || '').trim().toUpperCase()).filter(Boolean))];
   const bySymbol = {};
   for (const symbol of wanted) bySymbol[symbol] = { crore: null, currency: null, reason: 'NOT_RETURNED' };
