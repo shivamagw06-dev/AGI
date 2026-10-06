@@ -28,5 +28,5 @@ test('category overlap totals reconcile after rebalance with costs',()=>{
  const prices=q(100,20),ca=allocate(target('A'),100,prices),cb=allocate(target('B'),100,prices);
  const combined={holdings:[{name:'A',symbol:'A',weight:50},{name:'B',symbol:'B',weight:50}]};
  const s={account:allocate(combined,100,prices),portfolio:combined,history:[],events:[],lastDate:'2026-10-05',direction:'long',categories:[{name:'X',weight:50,account:ca,history:[]},{name:'Y',weight:50,account:cb,history:[]}],pending:{target:{...target('B'),categories:[{name:'X',holdings:target('B').holdings},{name:'Y',holdings:target('B').holdings}]},effectiveDate:'2026-10-06',feeBps:10}};
- const r=advanceLedger(s,'2026-10-06',q(110,18),'now');near(valueAccount(r.account,q(110,18)),r.history[0].nav);near(r.categories.reduce((sum,c)=>sum+c.weight/100*c.history.at(-1).nav,0),r.history[0].nav);
+ const r=advanceLedger(s,'2026-10-06',q(110,18),'now');near(r.account.holdings.reduce((sum,h)=>sum+h.weight,0),100);near(valueAccount(r.account,q(110,18)),r.history[0].nav);near(r.categories.reduce((sum,c)=>sum+c.weight/100*c.history.at(-1).nav,0),r.history[0].nav);
 });

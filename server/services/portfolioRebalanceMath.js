@@ -50,7 +50,7 @@ export function advanceLedger(input,date,prices,recordedAt) {
    // Rebalance within each fixed category sleeve; no hidden transfers between sleeves.
    const holdings=new Map();let cash=0,totalCost=0,totalTurnover=0;
    for(const c of s.categories){const weight=c.weight/100;cash+=c.account.cash*weight;const cr=categoryChanges.find(x=>x.name===c.name);totalCost+=cr.cost*weight;totalTurnover+=cr.traded*weight;for(const h of c.account.holdings){const old=holdings.get(h.symbol);holdings.set(h.symbol,{...h,units:(old?.units||0)+h.units*weight});}}
-   r={...r,account:{cash,holdings:[...holdings.values()]},cost:totalCost,traded:totalTurnover,postNav:nav-totalCost};
+   r={...r,account:{cash,holdings:[...holdings.values()].map(h=>({...h,weight:s.pending.target.holdings.find(t=>t.symbol===h.symbol).weight}))},cost:totalCost,traded:totalTurnover,postNav:nav-totalCost};
    r.trades=[...new Set([...s.account.holdings,...r.account.holdings].map(h=>h.symbol))].map(symbol=>({symbol,price:prices[symbol].price,units:(r.account.holdings.find(h=>h.symbol===symbol)?.units||0)-(s.account.holdings.find(h=>h.symbol===symbol)?.units||0)}));
   }
   s.events.push({...s.pending,type:'rebalance',recordedAt,prices:clone(prices),...r,categoryChanges});
