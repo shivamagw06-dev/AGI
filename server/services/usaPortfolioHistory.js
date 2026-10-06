@@ -98,4 +98,4 @@ async function readStoredSeed(){
  return JSON.stringify(selected);
 }
 export const usaHistory=createUSHistory({readSeed:readStoredSeed,persist:persistStored});
-export function startUSHistoryScheduler(){usaHistory.refresh().catch(()=>{});const timer=setInterval(()=>usaHistory.refresh().catch(()=>{}),RETRY_MS);timer.unref();return timer;}
+export function startUSHistoryScheduler(){usaHistory.refresh().catch(()=>{});const timer=setInterval(()=>usaHistory.refresh().catch(()=>{}),60000);timer.unref();return timer;}
