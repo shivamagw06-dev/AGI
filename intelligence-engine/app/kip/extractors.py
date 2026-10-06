@@ -202,7 +202,14 @@ def looks_like_equity_ticker(tok: str) -> bool:
 
 
 def sanitize_tickers(tickers: list[str] | None) -> list[str]:
-    """Keep only plausible equity tickers; drop research prose tokens."""
+    """Validate explicitly supplied symbols without limiting them to a static list.
+
+    Automatic prose extraction remains deliberately conservative in
+    ``looks_like_equity_ticker``.  Explicit tickers originate from trusted
+    ingestion adapters (for example the CMS matched against company_master),
+    so accepting a well-formed non-stopword symbol lets KIP cover the complete
+    NSE universe instead of a small hard-coded subset.
+    """
     out: list[str] = []
     seen: set[str] = set()
     for raw in tickers or []:
@@ -212,9 +219,10 @@ def sanitize_tickers(tickers: list[str] | None) -> list[str]:
             continue
         if len(tok) < 2 or len(tok) > 12:
             continue
-        if looks_like_equity_ticker(tok):
-            out.append(tok)
-            seen.add(tok)
+        if tok in TICKER_STOPWORDS or not re.fullmatch(r"[A-Z0-9]{2,12}", tok):
+            continue
+        out.append(tok)
+        seen.add(tok)
     return out
 
 THEME_KEYWORDS = {
