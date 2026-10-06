@@ -53,7 +53,16 @@ export function createUSHistory({fetcher=fetch,now=()=>new Date(),pause=ms=>new 
    return read();
   })().catch(e=>{lastError=e.message;return read();}).finally(()=>{inflight=null;});return inflight;
  }
- return {read,refresh};
+ async function ensureSymbol(symbol){
+  if(!/^[A-Z0-9][A-Z0-9.\-^]{0,19}$/.test(symbol))throw Error('Invalid Yahoo symbol');
+  if(inflight)await inflight;
+  const old=await read();if(old.securities[symbol]?.status==='ok')return old.securities[symbol];
+  const cutoff=completedUSDate(now()),url=new URL(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`);
+  url.search=new URLSearchParams({interval:'1d',period1:String(Math.floor(Date.parse('2026-09-15T00:00:00Z')/1000)),period2:String(Date.parse(cutoff+'T00:00:00Z')/1000+86400),events:'div,splits',includeAdjustedClose:'true'});
+  const res=await fetcher(url,{headers:{'User-Agent':'Mozilla/5.0',Accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!res.ok)throw Error('Yahoo instrument verification unavailable');
+  const series=parseYahoo(symbol,await res.json(),cutoff);snapshot={...snapshot,securities:{...snapshot.securities,[symbol]:series}};return series;
+ }
+ return {read,refresh,ensureSymbol};
 }
 const cachePath=path.join(process.env.DATA_DIR||os.tmpdir(),'agi-usa-portfolio-history.json');
 async function readStoredSeed(){

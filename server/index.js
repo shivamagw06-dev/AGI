@@ -1,3 +1,4 @@
+import {startPortfolioLedgerScheduler} from './services/portfolioRebalanceLedger.js';
 import { startUSHistoryScheduler } from './services/usaPortfolioHistory.js';
 import { startIndiaPortfolioScheduler } from './services/indiaPortfolioTracking.js';
 import createPortfolioRouter from './routes/portfolioCatalog.js';
@@ -482,6 +483,7 @@ startTradingCalendarService();
 startCioMorningScheduler();
 startIndiaPortfolioScheduler();
 startUSHistoryScheduler();
+startPortfolioLedgerScheduler();
 startContinuousGatherLearnScheduler();
 startInstitutionalFlowScheduler();
 startValuationRatiosScheduler();
