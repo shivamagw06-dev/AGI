@@ -1,3 +1,4 @@
+import { indstocks, isIndstocksConfigured } from '../providers/indstocks.js';
 import { parse } from 'csv-parse/sync';
 import { getHistoricalCandleRange, isGrowwConfigured } from '../providers/groww.js';
 import { getHistoricalCandles, getIntradayCandles } from '../providers/upstox.js';
@@ -39,20 +40,24 @@ export function validHistoryPayload(payload) {
 // Upstox keys. ISIN equality is mandatory before requesting Groww history.
 export function createLiveAlphaHistoryRouter({ growwConfigured = isGrowwConfigured, master = growwCashMaster,
   growwHistory = getHistoricalCandleRange, upstoxHistory = getHistoricalCandles,
-  upstoxIntraday = getIntradayCandles, now = () => new Date() } = {}) {
-  const counters = { groww: 0, upstox: 0, fallbacks: 0, failures: 0 };
-  const preferred = key => key.startsWith('NSE_EQ|') && [...key].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 2 === 0 && growwConfigured() ? 'groww' : 'upstox';
+  upstoxIntraday = getIntradayCandles, indConfigured = isIndstocksConfigured, indHistory = indstocks.history, indStatus = indstocks.status, now = () => new Date() } = {}) {
+  const counters = { groww: 0, upstox: 0, indstocks: 0, fallbacks: 0, failures: 0 };
   async function load(key, options, intraday) {
-    const primary = preferred(key);
-    // Only eligible cash instruments have an alternative; never guess an index
-    // or futures mapping, and never substitute daily data for intraday history.
-    const providers = key.startsWith('NSE_EQ|') && growwConfigured()
-      ? [primary, primary === 'groww' ? 'upstox' : 'groww'] : ['upstox'];
+    const eligible = ['upstox'];
+    if (key.startsWith('NSE_EQ|')) {
+      if (growwConfigured()) eligible.push('groww');
+      if (indConfigured()) eligible.push('indstocks');
+    }
+    const hash = [...key].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    // Keep the existing two-provider assignment; spread new requests across three when configured.
+    const offset = eligible.length === 2 ? (hash % 2 === 0 ? 1 : 0) : hash % eligible.length;
+    const providers = [...eligible.slice(offset), ...eligible.slice(0,offset)];
     let lastError;
     for (const [index, provider] of providers.entries()) {
       try {
         let payload;
         if (provider === 'upstox') payload = await (intraday ? upstoxIntraday : upstoxHistory)(key, options);
+        else if (provider === 'indstocks') payload = await indHistory(key, options, intraday);
         else {
           const symbol = (await master()).get(key);
           if (!symbol) throw new Error('No unambiguous Groww ISIN match');
@@ -71,6 +76,6 @@ export function createLiveAlphaHistoryRouter({ growwConfigured = isGrowwConfigur
     throw lastError;
   }
   return { historical: (key, options) => load(key, options, false), intraday: (key, options) => load(key, options, true),
-    status: () => ({ ...counters, policy: 'split_cash_history_by_isin', live_stream: 'upstox', candle_series_spliced: false }) };
+    status: () => ({ ...counters, policy: 'split_cash_history_by_isin', indstocks: counters.indstocks, indstocks_health: indStatus(), live_stream: 'upstox', candle_series_spliced: false }) };
 }
 export const liveAlphaHistoryRouter = createLiveAlphaHistoryRouter();
