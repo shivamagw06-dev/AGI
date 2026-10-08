@@ -13,18 +13,18 @@ test('validates unique stock and sector mappings', () => {
   assert.throws(() => validateLiveAlphaUniverse(invalidDerivative), /derivative instrument/);
 });
 
-test('loads the complete Nifty 500 default with unique equity keys', async () => {
+test('loads the complete AGI NSE 1000 default with unique equity keys', async () => {
   const priorPreset = process.env.LIVE_ALPHA_UNIVERSE_PRESET;
   const priorPath = process.env.LIVE_ALPHA_UNIVERSE_PATH;
   delete process.env.LIVE_ALPHA_UNIVERSE_PRESET;
   delete process.env.LIVE_ALPHA_UNIVERSE_PATH;
   try {
     const universe = await loadLiveAlphaUniverse();
-    assert.equal(universe.name, 'nifty500');
-    assert.equal(universe.expectedMembers, 500);
-    assert.equal(universe.members.length, 500);
-    assert.equal(new Set(universe.members.map((row) => row.symbol)).size, 500);
-    assert.equal(new Set(universe.members.map((row) => row.instrumentKey)).size, 500);
+    assert.equal(universe.name, 'agi_nse1000');
+    assert.equal(universe.expectedMembers, 1000);
+    assert.equal(universe.members.length, 1000);
+    assert.equal(new Set(universe.members.map((row) => row.symbol)).size, 1000);
+    assert.equal(new Set(universe.members.map((row) => row.instrumentKey)).size, 1000);
     assert.ok(universe.members.every((row) => row.instrumentKey.startsWith('NSE_EQ|INE')));
     assert.ok(universe.members.every((row) => row.sectorInstrumentKey.startsWith('NSE_INDEX|')));
   } finally {
@@ -127,4 +127,14 @@ test('repeated 503 failures and exhausted primary permit configured fallback', (
   assert.equal(shouldUseGrowwFallback({...options,feedStatus:'reconnecting',reconnects:3,lastError:'Unexpected server response: 503'}),true);
   assert.equal(shouldUseGrowwFallback({...options,feedStatus:'reconnecting',reconnects:1,lastError:'503'}),false);
   assert.equal(shouldUseGrowwFallback({...options,allowFallback:false,feedStatus:'exhausted'}),false);
+});
+
+test('NSE 1000 keeps all existing members and explicitly marks new sector proxies', async () => {
+ const prior=process.env.LIVE_ALPHA_UNIVERSE_PRESET;
+ try {
+  process.env.LIVE_ALPHA_UNIVERSE_PRESET='nifty500'; const core=await loadLiveAlphaUniverse();
+  process.env.LIVE_ALPHA_UNIVERSE_PRESET='nse1000'; const expanded=await loadLiveAlphaUniverse();
+  assert.deepEqual(expanded.members.slice(0,500),core.members);
+  assert.ok(expanded.members.slice(500).every(x=>x.sector==='MARKET_PROXY'&&x.sectorInstrumentKey===expanded.benchmarkKey));
+ } finally {if(prior===undefined)delete process.env.LIVE_ALPHA_UNIVERSE_PRESET;else process.env.LIVE_ALPHA_UNIVERSE_PRESET=prior;}
 });
