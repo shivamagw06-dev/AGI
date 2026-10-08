@@ -108,3 +108,10 @@ test('a daily close goes ahead of queued minute requests', async () => {
   assert.equal(order[0], 'NSE_EQ|A');
   assert.equal(order[1], 'daily:NSE_EQ|D');
 });
+
+test('an empty minute response expires so later real candles can recover',async()=>{
+ let time=Date.parse('2026-10-08T06:00:00Z'),calls=0;
+ const book=new CandlePriceBook({clock:()=>time,sleep:async()=>{},fetchCandles:async()=>{calls++;return {data:{candles:calls===1?[]:[['2026-10-06T09:15:00+05:30',100,100,100,100,1]]}};}});
+ assert.equal((await book.priceAt('NSE_EQ|TEST','2026-10-06T09:16:00+05:30')).price,null);
+ time+=61000;assert.equal((await book.priceAt('NSE_EQ|TEST','2026-10-06T09:16:00+05:30')).price,100);assert.equal(calls,2);
+});

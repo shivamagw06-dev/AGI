@@ -31,7 +31,7 @@ export function publicationRows(signals, now=new Date()) {
  return [...rows.values()].map(row=>{
   const active=row.components.filter(s=>['positive','negative'].includes(s.direction));
   const scores=active.map(s=>(s.direction==='negative'?-1:1)*Math.min(99,Math.round(Math.abs(Number(s.alpha_z)||0)*28+(Number(s.signal_quality_score??s.signal_quality?.score)||0)*.35)));
-  const score=Math.max(-99,Math.min(99,scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/Math.sqrt(scores.length)):0));
+  const score=Math.max(-99,Math.min(99,scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0));
   const dirs=new Set(active.map(s=>s.direction));
   const anchor=row.components.find(s=>s.cash_instrument_key)||row.components.find(s=>String(s.instrument_key).startsWith('NSE_EQ|'))||row.components[0];
   const quoteAt=anchor?.price_quote_at||null;
@@ -40,7 +40,7 @@ export function publicationRows(signals, now=new Date()) {
    direction:dirs.size>1?'conflicting':dirs.size?[...dirs][0]:null,score,
    instrument_key:anchor?.cash_instrument_key||anchor?.instrument_key,
    reference_price:positive(anchor?.price_at_signal),benchmark_price:positive(anchor?.nifty_at_signal),quote_at:quoteAt,
-   quality:{quote_fresh:age>=0&&age<=60000,quote_age_ms:Number.isFinite(age)?age:null,liquidity_verified:active.length>0&&active.every(s=>s.liquidity_verified===true&&s.liquidity_ok===true)},
+   quality:{score_model:'signal-composite-v2-mean',quote_fresh:age>=0&&age<=60000,quote_age_ms:Number.isFinite(age)?age:null,liquidity_verified:active.length>0&&active.every(s=>s.liquidity_verified===true&&s.liquidity_ok===true)},
    components:active.map(s=>({engine:s.engine,direction:s.direction,classification:s.classification,alpha_z:s.alpha_z,quality:s.signal_quality_score??s.signal_quality?.score,liquidity_verified:s.liquidity_verified===true,run_id:s.run_id||null})),
    component_keys:active.map(s=>`${s.engine}:${s.direction}`).sort(),schedule_base:now.toISOString(),
    schedule:sessionState(now).open?PUBLICATION_HORIZONS.map(horizon=>({horizon,due_at:publicationDueAt(now.toISOString(),horizon)})):[]

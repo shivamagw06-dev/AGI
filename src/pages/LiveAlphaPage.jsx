@@ -23,7 +23,7 @@ function CurrentPrice({ row }) { return <td className="la-price la-current-price
 function Metric({ label, value, sub }) { return <div className="la-metric"><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>; }
 export function StateBanner({ readiness, freshness, runtime, requestFailed = false }) {
   const feed = runtime?.feed || {};
-  const failed = ['exhausted', 'auth_failed', 'failed'].includes(feed.status);
+  const failed = ['exhausted', 'auth_failed', 'failed', 'degraded'].includes(feed.status);
   const closed = runtime?.evaluation_status === 'market_closed';
   const live = !requestFailed && !closed && !failed && feed.status === 'connected' && freshness?.stale === false && readiness?.status === 'ready';
   return <div className={`la-banner ${failed || requestFailed ? 'la-banner--bad' : ''}`}>
@@ -103,6 +103,8 @@ function Evidence({ runtime }) {
     <p className="la-note">Settlement: {settlement?.status || 'unknown'} · Last check: {date(settlement?.last_run)}. {settlement?.last_error ? 'Latest settlement reported an error.' : ''}</p>
     {error && <p role="alert" className="la-error">{error}</p>}
     {data && <><p className="la-note">{data.scope} {data.truncated ? 'Sample limit reached; this is a partial history.' : ''} Refreshed: {date(data.generated_at)}.</p>
+      {data.missing_reasons&&<p className="la-note">Missing measurements: {Object.entries(data.missing_reasons).map(([reason,n])=>`${reason}: ${n}`).join(' · ')}. Missing observations are not losses.</p>}
+      {data.completed_sample&&<p className="la-note">Separate completed-only sample: {data.completed_sample.sampled_rows} observations. {data.completed_sample.scope}</p>}
       <Table headers={['Engine', 'Horizon', 'Completed', 'Pending', 'Missed / invalid', 'Sessions', 'Mean directional return % after stored costs', 'Positive outcomes %', 'Stored costs bps']}>
         {data.rows.map(r => <tr key={`${r.engine}-${r.horizon}`}><td>{ENGINE_PLAIN[r.engine]?.label || r.engine}</td><td>{r.horizon}</td><td>{r.completed}</td><td>{r.pending}</td><td>{r.missed + r.invalid}</td><td>{r.sessions}</td><td>{signed(r.mean_net_directional_return_pct)}</td><td>{number(r.positive_outcome_pct)}</td><td>{r.minimum_cost_bps === null ? '—' : `${number(r.minimum_cost_bps)}–${number(r.maximum_cost_bps)}`}{r.minimum_cost_bps === 0 && <small>Includes zero-cost observations</small>}</td></tr>)}
         {!data.rows.length && <tr><td colSpan={9}>No recorded outcomes in this window. Performance is unverified.</td></tr>}
@@ -131,7 +133,8 @@ export default function LiveAlphaPage() {
   const allRows=useMemo(()=>buildCanonicalSignals(payload.signals || [],payload.strategy_health || {}),[payload]);
   const snapshotAvailable=Array.isArray(payload.signals);
   const count=value=>snapshotAvailable ? value : '—';
-  const directional=allRows.filter(r=>r.active.length);
+  const staleSnapshot=Boolean(error)||payload.freshness?.stale!==false;
+  const directional=staleSnapshot?[]:allRows.filter(r=>r.active.length);
   const shown=filterRadarRows(directional,filter,{search}).sort((a,b)=>sort==='symbol' ? a.symbol.localeCompare(b.symbol) : sort==='newest' ? Date.parse(b.timestamp)-Date.parse(a.timestamp) : Math.abs(b.composite)-Math.abs(a.composite));
   const currentPage=Math.min(page,Math.max(0,Math.ceil(shown.length/25)-1));
   if (loading) return <div className="la-page">Loading Live Alpha…</div>;
@@ -140,9 +143,9 @@ export default function LiveAlphaPage() {
     <StateBanner readiness={payload.readiness} freshness={payload.freshness} runtime={runtime} requestFailed={Boolean(error)}/>
     <section className="la-metrics"><Metric label="Flagged stocks" value={count(directional.length)} sub={snapshotAvailable ? `of ${allRows.length} in stored snapshot` : 'Snapshot unavailable'}/><Metric label="Positive · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite>0).length)}/><Metric label="Negative · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite<0).length)}/><Metric label="Aligned engines" value={count(directional.filter(aligned).length)} sub="2+ same-direction components"/><Metric label="Conflicting signals" value={count(directional.filter(r=>!clean(r)).length)} sub="Opposing directions"/></section>
     <nav className="la-tabs" aria-label="Live Alpha views">{['Signals','Signal history','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
-    {tab==='Signals' && <><Shortlist rows={directional} onSelect={s=>{setSearch(s);setFilter('all');setPage(0);setOpen(s);}}/>
+    {tab==='Signals' && <>{staleSnapshot&&<p className="la-error" role="alert">Current signals withheld: the last evaluation is stale or unavailable. Open Signal history for previously published readings.</p>}<p className="la-note">Scores measure observed model strength, not the chance of profit. Relative leaders can still fall. Aligned engines share inputs; their scores are averaged without an agreement bonus.</p><Shortlist rows={directional} onSelect={s=>{setSearch(s);setFilter('all');setPage(0);setOpen(s);}}/>
     <section className="la-panel"><div className="la-section-head"><h2>Stock signals</h2><p>Snapshot: {date(payload.freshness?.latest_successful_at)} · Signal price is the saved last-traded price available at evaluation. Current price refreshes every 4 minutes. Earlier signals remain in Signal history.</p></div><div className="la-toolbar"><input aria-label="Search symbol or sector" placeholder="Search symbol or sector" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/><select aria-label="Filter signals" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}>{[['all','All signals'],['positive','Positive'],['negative','Negative'],['multi','Aligned'],['conflicting','Conflicting']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Sort signals" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}><option value="strength">Model strength</option><option value="symbol">Stock A–Z</option><option value="newest">Newest signal</option></select></div>
-    <Table headers={['Stock / sector','Direction','Score ±99','Price at signal ₹','Signal time','Evidence','Engine directions','Liquidity','Current price ₹']}>
+    <Table headers={['Stock / sector','Direction','Model strength ±99','Price at signal ₹','Signal time','Evidence','Engine directions','Liquidity','Current price ₹']}>
       {shown.slice(currentPage*25,currentPage*25+25).map(row=><SignalRow key={row.symbol} row={row} expanded={open===row.symbol} onToggle={()=>setOpen(open===row.symbol?null:row.symbol)}/>)}
       {!shown.length && <tr><td colSpan={9}>No matching signals. Try another filter or search.</td></tr>}
     </Table><Pager page={currentPage} total={shown.length} onChange={setPage}/></section></>}

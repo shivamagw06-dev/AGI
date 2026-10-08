@@ -106,7 +106,7 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
     const active = Object.values(row.strategies).filter((signal) => signal.direction && Date.parse(signal.as_of) === Date.parse(row.timestamp));
     const excluded_components = Object.values(row.strategies).filter((signal) => signal.direction && Date.parse(signal.as_of) !== Date.parse(row.timestamp));
     const scores = active.map(signedSignalScore);
-    const composite = Math.max(-99, Math.min(99, scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / Math.sqrt(scores.length)) : 0));
+    const composite = Math.max(-99, Math.min(99, scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length) : 0));
     const quality = active.length ? Math.round(active.reduce((sum, signal) => sum + Number(signal.empirical_confidence_score ?? signal.signal_quality_score ?? 0), 0) / active.length) : 0;
     const samples = active.length ? Math.min(...active.map((signal) => Math.max(0, Number(signal.comparable_observations) || 0))) : 0;
     // Only use the saved cash-price anchor from this exact evaluation. Live
@@ -132,7 +132,7 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
       signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples),
       confidence_basis: confidenceBasis(samples), active, excluded_components,
       validation_status: samples >= 100 ? 'SAMPLE THRESHOLD MET' : 'EVIDENCE BUILDING', strategy_status: 'RESEARCH ONLY',
-      strategy_version: 'live-alpha-v1', model_version: 'signal-composite-v1',
+      strategy_version: 'live-alpha-v1', model_version: 'signal-composite-v2-mean',
       input_data_status: active.length > 0 && active.every((signal) => signal.liquidity_ok && signal.liquidity_verified === true) ? 'READY' : 'REVIEW REQUIRED',
       data_fingerprint: active.map((signal) => signal.id).filter(Boolean).sort().join(':'),
       component_states: Object.fromEntries(LIVE_ALPHA_STRATEGIES.map(([key]) => [key, componentState(row.strategies[key], strategyHealth[key])])),
