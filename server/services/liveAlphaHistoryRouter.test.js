@@ -20,3 +20,13 @@ test('both providers failing does not report successful coverage',async()=>{
  assert.equal(validHistoryPayload({data:{candles:[[row[0],100,90,99,101,40]]}}),false);
  assert.equal(validHistoryPayload({data:{candles:[[row[0],100,102,99,101,null]]}}),false);
 });
+test('three configured providers split cash and leave index and futures unchanged',async()=>{
+ const router=createLiveAlphaHistoryRouter({growwConfigured:()=>true,indConfigured:()=>true,indStatus:()=>({configured:true}),master:async()=>new Map(['A','B','C'].map(x=>[`NSE_EQ|${x}`,x])),growwHistory:async()=>[[Date.parse(row[0])/1000,...row.slice(1)]],indHistory:async()=>payload,upstoxIntraday:async()=>payload});
+ for(const key of ['NSE_EQ|A','NSE_EQ|B','NSE_EQ|C','NSE_INDEX|Nifty 50','NSE_FO|123'])await router.intraday(key,{});
+ assert.equal(router.status().indstocks,1);assert.equal(router.status().groww,1);assert.equal(router.status().upstox,3);
+});
+test('failed INDstocks requests fall back to intact Upstox series',async()=>{
+ const router=createLiveAlphaHistoryRouter({growwConfigured:()=>false,indConfigured:()=>true,indStatus:()=>({}),indHistory:async()=>{throw Object.assign(new Error('auth'),{status:401});},upstoxIntraday:async()=>payload});
+ for(const key of ['NSE_EQ|A','NSE_EQ|B'])assert.deepEqual((await router.intraday(key,{})).data,payload.data);
+ assert.equal(router.status().indstocks,0);assert.equal(router.status().upstox,2);assert.equal(router.status().failures,0);
+});
