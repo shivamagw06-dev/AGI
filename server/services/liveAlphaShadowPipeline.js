@@ -210,7 +210,7 @@ export class MomentumShadowPipeline {
     for (const member of this.universe) {
       const stock = this.featureStore.returns(member.instrumentKey, now.getTime());
       const sector = this.featureStore.returns(member.sectorInstrumentKey, now.getTime());
-      const sectorReady = sector && finite(sector.return15m) && finite(sector.return60m);
+      const sectorReady = member.sectorInstrumentKey !== this.benchmarkKey && sector && finite(sector.return15m) && finite(sector.return60m);
       const effectiveSector = sectorReady ? sector : benchmark;
       const expected = this.baselineIndex?.get(member.instrumentKey, minute);
       const volumePoint = this.featureStore.latestWithFinite(member.instrumentKey, 'cumulative_volume');

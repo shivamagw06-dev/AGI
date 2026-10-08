@@ -147,8 +147,8 @@ export function validateLiveAlphaUniverse(config) {
 }
 
 export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UNIVERSE_PATH || defaultUniversePath) {
-  const preset = String(process.env.LIVE_ALPHA_UNIVERSE_PRESET || 'nifty500').trim().toLowerCase();
-  if (!process.env.LIVE_ALPHA_UNIVERSE_PATH && preset === 'nifty500') {
+  const preset = String(process.env.LIVE_ALPHA_UNIVERSE_PRESET || 'nse1000').trim().toLowerCase();
+  if (!process.env.LIVE_ALPHA_UNIVERSE_PATH && ['nifty500', 'nse1000'].includes(preset)) {
     const lines = (await fs.readFile(nifty500Path, 'utf8')).split(/\r?\n/).filter(Boolean);
     const members = lines.slice(1).map((line, index) => {
       const columns = line.split(',').map((value) => value.trim());
@@ -163,6 +163,11 @@ export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UN
         sectorInstrumentKey: SECTOR_INDEX_BY_INDUSTRY[normalizedIndustry] || 'NSE_INDEX|Nifty 50',
       };
     });
+    if (preset === 'nse1000') {
+      const expansion = JSON.parse(await fs.readFile(path.join(serverDir, '../config/live-alpha-nse1000-additions.json'), 'utf8'));
+      if (expansion.members.length !== 500) throw new Error('NSE 1000 expansion requires 500 additional stocks');
+      return validateLiveAlphaUniverse({ name: 'agi_nse1000', expectedMembers: 1000, benchmarkKey: 'NSE_INDEX|Nifty 50', members: [...members, ...expansion.members] });
+    }
     return validateLiveAlphaUniverse({ name: 'nifty500', expectedMembers: 500, benchmarkKey: 'NSE_INDEX|Nifty 50', members });
   }
   return validateLiveAlphaUniverse(JSON.parse(await fs.readFile(filePath, 'utf8')));
