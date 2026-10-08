@@ -91,7 +91,7 @@ export class GrowwLiveAlphaFeed {
     this.pollMs = Math.max(60_000, pollMs);
     this.instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.growwDerivativeInstrumentKey]).filter(Boolean)])];
     this.timer = null; this.stopped = true; this.inFlight = false;
-    this.state = { status: 'idle', connected_at: null, last_message_at: null, reconnects: 0, messages: 0, decode_errors: 0, last_error: null };
+    this.state = { status: 'idle', connected_at: null, last_message_at: null, reconnects: 0, messages: 0, decode_errors: 0, request_errors: 0, last_request_status: null, last_error: null };
   }
 
   async start() {
@@ -113,25 +113,31 @@ export class GrowwLiveAlphaFeed {
         { key: member.instrumentKey, segment: 'CASH', symbol: member.symbol },
         ...(member.growwDerivativeTradingSymbol ? [{ key: member.growwDerivativeInstrumentKey, segment: 'FNO', symbol: member.growwDerivativeTradingSymbol }] : []),
       ]);
-      // Groww's 300/minute live-data limit is shared with the rest of AGI.
-      // Three requests per second leaves capacity for dashboards and scheduled
-      // research while a complete cash + futures cycle finishes in ~2m10s.
-      for (let index = 0; index < quoteJobs.length; index += 3) {
+      // One quote per second leaves capacity inside the shared two/second budget.
+      // Stop on authentication or quota failures instead of retrying all 500 names.
+      for (let index = 0; index < quoteJobs.length; index += 1) {
         if (this.stopped || !this.marketOpen()) break;
-        const group = quoteJobs.slice(index, index + 3);
+        const group = quoteJobs.slice(index, index + 1);
         const settled = await Promise.allSettled(group.map((job) => this.quote('NSE', job.segment, job.symbol)));
+        let blockingError = null;
         settled.forEach((result, offset) => {
           if (result.status === 'fulfilled') {
             const snapshot = normalizeQuote(group[offset].key, result.value, new Date().toISOString());
-            if (snapshot) snapshots.push(snapshot);
-          } else this.state.decode_errors += 1;
+            if (snapshot) snapshots.push(snapshot); else this.state.decode_errors += 1;
+          } else {
+            this.state.request_errors += 1;
+            const error = result.reason;
+            this.state.last_request_status = Number(error?.status) || null;
+            if (error?.isRateLimit || [401,403,429].includes(Number(error?.status))) blockingError = error;
+          }
         });
         if (snapshots.length && !this.stopped) {
           const batch = snapshots.splice(0); published += batch.length;
           await this.onBatch({ type: 'groww_live_alpha', snapshots: batch });
           this.state.last_message_at = new Date().toISOString();
         }
-        if (index + 3 < quoteJobs.length) await this.sleep(1_050);
+        if (blockingError) throw blockingError;
+        if (index + 1 < quoteJobs.length) await this.sleep(1_050);
       }
       if (this.stopped || !this.marketOpen()) return;
       const indexKeys = [...new Set([this.universe.benchmarkKey, ...this.universe.members.map((row) => row.sectorInstrumentKey)])];
@@ -152,8 +158,8 @@ export class GrowwLiveAlphaFeed {
         this.state.status = 'connected'; this.state.messages += 1; this.state.last_message_at = new Date().toISOString(); this.state.last_error = null;
       } else throw new Error('Groww returned no usable Live Alpha snapshots.');
     } catch (error) {
-      this.state.last_error = error.message;
-      this.state.status = 'degraded';
+      this.state.last_error = [401,403].includes(Number(error?.status)) ? 'Groww authentication rejected. Refresh the configured credential.' : error?.isRateLimit || Number(error?.status)===429 ? 'Groww request budget unavailable; next poll will retry.' : 'Groww feed request failed; inspect provider health.';
+      this.state.status = [401,403].includes(Number(error?.status)) ? 'auth_failed' : 'degraded';
     } finally { this.inFlight = false; }
   }
 

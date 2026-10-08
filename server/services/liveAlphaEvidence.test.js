@@ -23,5 +23,5 @@ test('history query is bounded and only covers already-due outcomes',async()=>{
   const q=new URLSearchParams(opts.query);assert.match(q.get('and'),/due_at.lte/);assert.equal(q.get('limit'),'1000');
   return [];
  }});
- assert.equal(calls,1);assert.equal(result.sampled_rows,0);assert.equal(result.truncated,false);
+ assert.equal(calls,2);assert.equal(result.sampled_rows,0);assert.equal(result.truncated,false);
 });

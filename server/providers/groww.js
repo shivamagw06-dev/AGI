@@ -116,7 +116,8 @@ export async function growwRequest(path, params = {}) {
     err.isRateLimit = true;
     throw err;
   }
-  throw new Error(msg);
+  const error = new Error(msg); error.status = resp.status;
+  throw error;
 }
 
 /** Batch LTP — up to 50 symbols per call */

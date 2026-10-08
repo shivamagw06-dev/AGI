@@ -41,7 +41,15 @@ test('Groww publishes each small batch immediately and stops outside the session
   marketOpen:()=>open, sleep:async()=>{}, indices:async()=>[],
   quote:async(_exchange,_segment,symbol)=>{calls.push(symbol);return {last_price:100,last_trade_time:Date.now()};},
   onBatch:async batch=>batches.push({count:batch.snapshots.length,requested:calls.length})});
- feed.stopped=false;await feed.poll();assert.deepEqual(batches,[{count:3,requested:3},{count:1,requested:4}]);
+ feed.stopped=false;await feed.poll();assert.deepEqual(batches,[1,2,3,4].map(n=>({count:1,requested:n})));
  open=false;await feed.poll();assert.equal(calls.length,4);assert.equal(feed.status().status,'market_closed');
  feed.stop();open=true;await feed.poll();assert.equal(calls.length,4);
+});
+
+test('authentication and quota failures stop the cycle and remain diagnostic, not decode errors',async()=>{
+ const {GrowwLiveAlphaFeed}=await import('./growwLiveAlphaFeed.js');
+ for(const status of [401,429]){
+  let calls=0;const feed=new GrowwLiveAlphaFeed({universe:{members:[1,2,3].map(n=>({symbol:String(n),instrumentKey:String(n)}))},marketOpen:()=>true,sleep:async()=>{},indices:async()=>[],quote:async()=>{calls++;throw Object.assign(Error('provider refusal'),{status});}});
+  feed.stopped=false;await feed.poll();assert.equal(calls,1);assert.equal(feed.status().decode_errors,0);assert.equal(feed.status().request_errors,1);assert.equal(feed.status().last_request_status,status);assert.equal(feed.status().status,status===401?'auth_failed':'degraded');
+ }
 });

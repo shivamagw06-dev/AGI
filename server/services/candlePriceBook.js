@@ -115,8 +115,9 @@ export class CandlePriceBook {
 
   async #rows(key, date) {
     const cacheKey = `${key}|${date}`;
-    if (this.cache.has(cacheKey)) {
-      const rows = this.cache.get(cacheKey);
+    const cached = this.cache.get(cacheKey);
+    if (cached && (!cached.retry_after || this.clock() < cached.retry_after)) {
+      const rows = cached;
       this.cache.delete(cacheKey);
       this.cache.set(cacheKey, rows);
       this.stats.cache_hits += 1;
@@ -133,10 +134,10 @@ export class CandlePriceBook {
       // the key, not the service: remember it and let the caller move on.
       // Throttling, server errors and network failures still propagate.
       const status = Number(error?.status);
-      if (!(status >= 400 && status < 500 && status !== 429)) throw error;
+      if (!(status >= 400 && status < 500 && ![401,403,429].includes(status))) throw error;
       rows = { ends: new Float64Array(0), closes: new Float64Array(0), refused: /invalid instrument/i.test(error.message) ? 'invalid_instrument_key' : `upstox_${status}` };
     }
-    if (!rows.ends.length && !rows.refused) this.stats.empty += 1;
+    if (!rows.ends.length && !rows.refused) { this.stats.empty += 1; rows.retry_after = this.clock() + 60000; }
     this.cache.set(cacheKey, rows);
     while (this.cache.size > this.maxEntries) this.cache.delete(this.cache.keys().next().value);
     return rows;
@@ -171,7 +172,7 @@ export class CandlePriceBook {
       } catch (error) {
         this.stats.errors += 1;
         const status = Number(error?.status);
-        if (!(status >= 400 && status < 500 && status !== 429)) throw error;
+        if (!(status >= 400 && status < 500 && ![401,403,429].includes(status))) throw error;
         closes = new Map();
         closes.refused = /invalid instrument/i.test(error.message) ? 'invalid_instrument_key' : `upstox_${status}`;
       }

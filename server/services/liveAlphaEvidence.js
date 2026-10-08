@@ -2,7 +2,7 @@ import { rest } from './liveAlphaPersistence.js';
 
 // Bounded, on-demand sample. Never a calibration set or a portfolio backtest.
 export function summarizeAlphaEvidence(rows = [], { truncated = false } = {}) {
-  const groups = new Map();
+  const groups = new Map(); const missingReasons = {};
   for (const row of rows) {
     const engine = row.signal?.run?.engine || 'unknown';
     const key = `${engine}|${row.horizon}`;
@@ -16,12 +16,12 @@ export function summarizeAlphaEvidence(rows = [], { truncated = false } = {}) {
         if (row.signal?.run?.as_of) g.sessions.add(row.signal.run.as_of.slice(0, 10));
       } else g.invalid++;
     } else if (row.status === 'pending') g.pending++;
-    else if (row.status === 'missed') g.missed++;
+    else if (row.status === 'missed') { g.missed++; const reason=row.last_error||'not_recorded'; missingReasons[reason]=(missingReasons[reason]||0)+1; }
     groups.set(key, g);
   }
   return {
     scope: 'Most recent outcome rows due in the past 30 calendar days; at most 5,000 rows. Overlapping signals are not independent trades.',
-    truncated, sampled_rows: rows.length, research_only: true, portfolio_backtest: false,
+    missing_reasons: missingReasons, truncated, sampled_rows: rows.length, research_only: true, portfolio_backtest: false,
     rows: [...groups.values()].map(({ sum, wins, costs, sessions, ...g }) => ({ ...g,
       sessions: sessions.size,
       mean_net_directional_return_pct: g.completed ? sum / g.completed : null,
@@ -41,7 +41,7 @@ export async function getLiveAlphaEvidence({ now = new Date(), request = rest } 
     const start = new Date(now.getTime() - 30 * 86400_000).toISOString();
     for (let offset = 0; offset < 5000; offset += 1000) {
       const query = new URLSearchParams({
-        select: 'id,horizon,status,directional_return_pct,estimated_cost_bps,signal:live_alpha_signals!inner(run:live_alpha_runs!inner(engine,as_of))',
+        select: 'id,horizon,status,last_error,directional_return_pct,estimated_cost_bps,signal:live_alpha_signals!inner(run:live_alpha_runs!inner(engine,as_of))',
         due_at: `gte.${start}`, and: `(due_at.lte.${now.toISOString()})`,
         order: 'due_at.desc,id.desc', offset: String(offset), limit: '1000',
       });
@@ -49,7 +49,9 @@ export async function getLiveAlphaEvidence({ now = new Date(), request = rest } 
       rows.push(...page);
       if (page.length < 1000) break;
     }
-    const value = { ...summarizeAlphaEvidence(rows, { truncated: rows.length >= 5000 }), generated_at: now.toISOString() };
+    const completedQuery=new URLSearchParams({select:'id,horizon,status,last_error,directional_return_pct,estimated_cost_bps,signal:live_alpha_signals!inner(run:live_alpha_runs!inner(engine,as_of))',status:'eq.completed',due_at:`gte.${start}`,and:`(due_at.lte.${now.toISOString()})`,order:'due_at.desc,id.desc',limit:'1000'});
+    const completedRows=await request('live_alpha_signal_outcomes',{method:'GET',query:completedQuery.toString(),prefer:undefined})||[];
+    const value = { ...summarizeAlphaEvidence(rows, { truncated: rows.length >= 5000 }), completed_sample: {...summarizeAlphaEvidence(completedRows,{truncated:completedRows.length>=1000}),scope:'Separate sample: latest 1,000 completed outcomes in the same 30-day window. Excludes missing outcomes; not an overall success rate.'}, generated_at: now.toISOString() };
     if (request === rest) cached = { at: now.getTime(), value };
     return value;
   };

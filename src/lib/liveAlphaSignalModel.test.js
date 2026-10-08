@@ -62,3 +62,10 @@ test('cash anchor wins deterministically and future quote timestamps are not cla
     assert.equal(row.signal_price_as_of,null);
   }
 });
+
+test('aligned duplicate-strength components do not inflate the composite',()=>{
+ const base={symbol:'TEST',as_of:'2026-10-08T05:00:00Z',direction:'positive',alpha_z:1,signal_quality_score:60};
+ const one=buildCanonicalSignals([{...base,engine:'cross_sectional_momentum_v1'}])[0];
+ const two=buildCanonicalSignals([{...base,engine:'cross_sectional_momentum_v1'},{...base,engine:'volume_liquidity_anomaly_v1'}])[0];
+ assert.equal(one.composite,49);assert.equal(two.composite,49);assert.equal(two.model_version,'signal-composite-v2-mean');
+});
