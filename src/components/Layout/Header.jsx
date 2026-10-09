@@ -1,4 +1,4 @@
-import { Search, Menu, X, User, LogOut, Edit2, Shield, Briefcase, LayoutDashboard, Gauge, Activity, Bell, Bookmark, CreditCard, Settings, Newspaper, ListChecks, Library, Landmark, ChevronDown } from 'lucide-react';
+import { Home, Search, Menu, X, User, LogOut, Edit2, Shield, Briefcase, LayoutDashboard, Gauge, Activity, Bell, Bookmark, CreditCard, Settings, Newspaper, ListChecks, Library, Landmark, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,7 @@ function navItemClass(active) {
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [marketsOpen, setMarketsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, logout, logoutAllDevices } = useAuth();
   const { toast } = useToast();
@@ -92,6 +93,14 @@ export default function Header() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const close = e => { if (e.key === 'Escape') setMobileOpen(false); };
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [mobileOpen]);
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -139,7 +148,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="agi-site-header sticky top-0 z-50 bg-white shadow-sm">
       <div className="border-b border-[#dddddd]">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
           <div className="flex items-center h-[58px] gap-3 min-w-0 overflow-hidden">
@@ -313,7 +322,7 @@ export default function Header() {
                 type="button"
                 className="xl:hidden p-2"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                aria-label="Menu"
+                aria-label="Menu" aria-expanded={mobileOpen} aria-controls="mobile-site-menu"
               >
                 {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -323,7 +332,7 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="xl:hidden border-b border-[#ddd] bg-white px-4 py-2">
+        <nav id="mobile-site-menu" aria-label="All sections and account" className="mobile-menu-panel xl:hidden border-b border-[#ddd] bg-white px-4 py-2">
           {MOBILE_NAV.map((item) => (
             <button
               key={item.path}
@@ -391,7 +400,12 @@ export default function Header() {
         </nav>
       )}
 
-      <MarketOutlookStrip />
+      <button className="mobile-market-toggle" aria-expanded={marketsOpen} aria-controls="mobile-market-strip" onClick={() => setMarketsOpen(v => !v)}>Market overview <span>{marketsOpen ? 'Hide −' : 'Show +'}</span></button>
+      <div id="mobile-market-strip" className={`mobile-market-strip ${marketsOpen ? 'is-open' : ''}`}><MarketOutlookStrip /></div>
+      <nav className="mobile-bottom-nav" aria-label="Main mobile navigation">
+        {[[Home,'Home','/'],[Briefcase,'Portfolios','/portfolios'],[Activity,'Live Alpha','/live-alpha'],[Newspaper,'Research','/research']].map(([Icon,label,path]) => <button key={path} type="button" aria-current={isActive(path)?'page':undefined} onClick={() => go(path)}><Icon aria-hidden="true"/><span>{label}</span></button>)}
+        <button type="button" aria-expanded={mobileOpen} aria-controls="mobile-site-menu" onClick={() => setMobileOpen(v => !v)}><Menu aria-hidden="true"/><span>More</span></button>
+      </nav>
 
       {searchOpen && <ResearchSearch onClose={() => setSearchOpen(false)} />}
     </header>
