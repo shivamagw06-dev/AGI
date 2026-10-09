@@ -56,7 +56,7 @@ async function loadLatestRunsByEngine(fetchImpl, now = new Date()) {
 }
 
 async function loadSignalsForRuns(runs, { fetchImpl, limit }) {
-  const perRunLimit = Math.max(1, Math.min(1000, Number(limit) || 500));
+  const perRunLimit = Math.max(1, Math.min(1000, Number(limit) || 1000));
   if (!runs.length) return [];
   const batches = await Promise.all(runs.map((run) => query(
     'live_alpha_signals',
@@ -66,7 +66,7 @@ async function loadSignalsForRuns(runs, { fetchImpl, limit }) {
   return batches.flat();
 }
 
-export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 500, now = new Date() } = {}) {
+export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 1000, now = new Date() } = {}) {
   let runs;
   try {
     runs = await loadLatestRunsByEngine(fetchImpl, now);
