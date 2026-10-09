@@ -15,12 +15,17 @@ test('bootstrap restores genuine completed bars and complete opening coverage', 
   assert.equal(normalizeIntradayCandles({ data: { candles: [['bad', 100, 99, 101, 100]] } }).length, 0);
 });
 
-test('authentication or throttling stops further bootstrap requests', async () => {
-  let calls = 0;
-  const result = await bootstrapLiveAlphaIntraday({ instrumentKeys: ['A','B','C','D'], featureStore: new IntradayFeatureStore(), delayMs: 0, fetchCandles: async () => { calls++; throw Object.assign(new Error('private provider response'), { status: 429 }); } });
-  assert.ok(calls <= 2);
-  assert.equal(result.status, 'blocked');
-  assert.ok(!JSON.stringify(result).includes('private provider response'));
+test('one blocked index does not stop other instruments and retries retain progress', async () => {
+  const recoveredKeys = new Set(), calls = [];
+  const candles = [['2026-10-05T06:00:00Z',100,101,99,100,10]];
+  const args = {instrumentKeys:['INDEX','A','B','C'], featureStore:new IntradayFeatureStore(), recoveredKeys, delayMs:0, now:()=>new Date('2026-10-05T07:00:00Z'),
+    fetchCandles:async key=>{calls.push(key);if(key==='INDEX')throw Object.assign(new Error('private response'),{status:429,localBudget:true});return {data:{candles}};}};
+  const first=await bootstrapLiveAlphaIntraday(args);
+  assert.equal(first.status,'partial');assert.equal(first.restored,3);assert.equal(first.failures[0].reason,'local_budget_deferred');
+  assert.ok(!JSON.stringify(first).includes('private response'));
+  calls.length=0;
+  const second=await bootstrapLiveAlphaIntraday({...args,fetchCandles:async key=>{calls.push(key);return {data:{candles}};}});
+  assert.deepEqual(calls,['INDEX']);assert.equal(second.restored,4);assert.equal(second.status,'ready');
 });
 
 test('a previous session or unfinished candle is not counted as restored', async () => {
