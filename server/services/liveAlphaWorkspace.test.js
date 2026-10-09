@@ -98,7 +98,7 @@ test('loads signals per latest engine run so newer engines cannot crowd older on
       if (signalMatch) {
         return {
           ok: true,
-          json: async () => Array.from({ length: 500 }, (_, index) => ({
+          json: async () => Array.from({ length: 1000 }, (_, index) => ({
             id: `${signalMatch.id}-${index}`,
             run_id: signalMatch.id,
             symbol: `S${index}`,
@@ -108,16 +108,16 @@ test('loads signals per latest engine run so newer engines cannot crowd older on
       return { ok: true, json: async () => [] };
     };
     const result = await getLiveAlphaWorkspace({ fetchImpl, now: new Date('2026-08-13T07:21:00Z') });
-    assert.equal(result.signals.length, 2500);
+    assert.equal(result.signals.length, 5000);
     assert.equal(result.readiness.status, 'ready');
     assert.deepEqual(result.readiness.degraded_engines, []);
     for (const run of runs) {
       assert.equal(result.strategy_health[run.engine].status, 'ready');
-      assert.equal(result.strategy_health[run.engine].stored_signals, 500);
+      assert.equal(result.strategy_health[run.engine].stored_signals, 1000);
     }
     const signalUrls = urls.filter((url) => url.includes('live_alpha_signals'));
     assert.equal(signalUrls.length, engines.length);
-    for (const url of signalUrls) assert.match(url, /limit=500/);
+    for (const url of signalUrls) assert.match(url, /limit=1000/);
     assert.equal(signalUrls.some((url) => url.includes('run_id=in.')), false);
   });
 });
