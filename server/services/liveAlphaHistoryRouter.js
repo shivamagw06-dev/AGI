@@ -42,6 +42,7 @@ export function createLiveAlphaHistoryRouter({ growwConfigured = isGrowwConfigur
   growwHistory = getHistoricalCandleRange, upstoxHistory = getHistoricalCandles,
   upstoxIntraday = getIntradayCandles, indConfigured = isIndstocksConfigured, indHistory = indstocks.history, indStatus = indstocks.status, now = () => new Date() } = {}) {
   const counters = { groww: 0, upstox: 0, indstocks: 0, fallbacks: 0, failures: 0 };
+  const cooldowns = new Map();
   async function load(key, options, intraday) {
     const eligible = ['upstox'];
     if (key.startsWith('NSE_EQ|')) {
@@ -55,6 +56,8 @@ export function createLiveAlphaHistoryRouter({ growwConfigured = isGrowwConfigur
     let lastError;
     for (const [index, provider] of providers.entries()) {
       try {
+        const circuit = cooldowns.get(provider);
+        if (circuit && circuit.until > now().getTime()) { lastError = circuit.error; continue; }
         let payload;
         if (provider === 'upstox') payload = await (intraday ? upstoxIntraday : upstoxHistory)(key, options);
         else if (provider === 'indstocks') payload = await indHistory(key, options, intraday);
@@ -70,12 +73,18 @@ export function createLiveAlphaHistoryRouter({ growwConfigured = isGrowwConfigur
         if (!validHistoryPayload(payload)) throw new Error('Empty or invalid provider candle history');
         counters[provider]++; if (index) counters.fallbacks++;
         return { ...payload, source: provider };
-      } catch (error) { lastError = error; }
+      } catch (error) {
+        lastError = error;
+        if ([401,403,429].includes(Number(error.status)) || error.isRateLimit) {
+          const delay = Math.max(60_000, Number(error.retryAfterMs) || 0);
+          cooldowns.set(provider, { until: now().getTime() + delay, error });
+        }
+      }
     }
     counters.failures++;
     throw lastError;
   }
   return { historical: (key, options) => load(key, options, false), intraday: (key, options) => load(key, options, true),
-    status: () => ({ ...counters, policy: 'split_cash_history_by_isin', indstocks: counters.indstocks, indstocks_health: indStatus(), live_stream: 'upstox', candle_series_spliced: false }) };
+    status: () => ({ ...counters, policy: 'split_cash_history_by_isin', cooling_providers: [...cooldowns].filter(([, c]) => c.until > now().getTime()).map(([provider, c]) => ({provider, retry_at:new Date(c.until).toISOString()})), indstocks: counters.indstocks, indstocks_health: indStatus(), live_stream: 'upstox', candle_series_spliced: false }) };
 }
 export const liveAlphaHistoryRouter = createLiveAlphaHistoryRouter();

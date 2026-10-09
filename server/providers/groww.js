@@ -113,7 +113,7 @@ export async function growwRequest(path, params = {}) {
   const msg = json?.error?.message || json?.error?.errorMessage || `Groww request failed (${resp.status})`;
   if (resp.status === 429 || /rate limit/i.test(msg)) {
     const err = new Error('Groww rate limit exceeded');
-    err.isRateLimit = true;
+    err.isRateLimit = true; err.status = 429;
     throw err;
   }
   const error = new Error(msg); error.status = resp.status;

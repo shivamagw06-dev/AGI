@@ -30,3 +30,14 @@ test('failed INDstocks requests fall back to intact Upstox series',async()=>{
  for(const key of ['NSE_EQ|A','NSE_EQ|B'])assert.deepEqual((await router.intraday(key,{})).data,payload.data);
  assert.equal(router.status().indstocks,0);assert.equal(router.status().upstox,2);assert.equal(router.status().failures,0);
 });
+test('throttled Upstox index leaves Groww equities usable and respects retry time',async()=>{
+ let time=Date.parse('2026-10-05T10:00:00+05:30'), calls=0;
+ const router=createLiveAlphaHistoryRouter({now:()=>new Date(time),indConfigured:()=>false,growwConfigured:()=>true,
+ master:async()=>new Map([['NSE_EQ|A','A'],['NSE_EQ|B','B']]),growwHistory:async()=>[[Date.parse(row[0])/1000,...row.slice(1)]],
+ upstoxIntraday:async()=>{calls++;throw Object.assign(new Error('quota'),{status:429,retryAfterMs:120000});}});
+ await assert.rejects(router.intraday('NSE_INDEX|Nifty 50',{}));
+ await router.intraday('NSE_EQ|A',{});await router.intraday('NSE_EQ|B',{});
+ await assert.rejects(router.intraday('NSE_INDEX|Nifty 50',{}));
+ assert.equal(calls,1);assert.equal(router.status().groww,2);
+ time+=120001;await assert.rejects(router.intraday('NSE_INDEX|Nifty 50',{}));assert.equal(calls,2);
+});

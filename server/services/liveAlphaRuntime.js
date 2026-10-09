@@ -339,6 +339,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     runtime.supervisor = startFeedSupervisor();
     const owner = runtime;
     let recovering = false;
+    const recoveredIntradayKeys = new Set();
     let recoveredSession = null;
     let attempts = 0;
     let nextRecovery = 0;
@@ -348,15 +349,14 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       const date = new Date(now.getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
       const minutes = now.getUTCHours() * 60 + now.getUTCMinutes() - 225;
       if (runtime !== owner || recovering || !session.open || minutes < 17 || now.getTime() < nextRecovery) return;
-      if (recoveredSession !== date) { recoveredSession = date; attempts = 0; }
+      if (recoveredSession !== date) { recoveredSession = date; attempts = 0; recoveredIntradayKeys.clear(); }
       if (owner.bootstrap.intraday?.status === 'ready' && owner.bootstrap.intraday?.session === date) return;
-      // A morning quota/auth interruption must not disable recovery all day.
-      if (attempts >= 3) { attempts = 0; nextRecovery = now.getTime() + 30 * 60_000; return; }
+      // Retry only missing keys; provider circuits enforce their own cooldowns.
       recovering = true;
       attempts += 1;
       try {
         await bootstrapLiveAlphaIntraday({ instrumentKeys, featureStore: pipeline.featureStore,
-          active: () => runtime === owner,
+          active: () => runtime === owner, recoveredKeys: recoveredIntradayKeys,
           onProgress: progress => { owner.bootstrap.intraday = { ...progress, session: date, attempt: attempts }; },
         });
       } finally { recovering = false; nextRecovery = Date.now() + 5 * 60_000; }

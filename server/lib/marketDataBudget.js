@@ -40,7 +40,7 @@ export class MarketDataBudget {
       if (now - began + delay > 20_000) {
         state.deferred++;
         const error = new Error(`${provider} market-data budget cooling down; retry on the next scheduled cycle`);
-        error.status = 429; error.isRateLimit = true; error.retryAfterMs = delay;
+        error.status = 429; error.isRateLimit = true; error.localBudget = true; error.retryAfterMs = delay;
         throw error;
       }
       await this.sleep(Math.min(delay, 1000));
@@ -58,7 +58,7 @@ export class MarketDataBudget {
     if (this.pending.size >= (background ? 96 : 128)) {
       state.deferred++;
       const error = new Error('Market-data queue is full; retry next cycle');
-      error.status = 429; error.isRateLimit = true; throw error;
+      error.status = 429; error.isRateLimit = true; error.localBudget = true; throw error;
     }
     const task = (async () => {
       await this.reserve(provider, options.signal, background);
