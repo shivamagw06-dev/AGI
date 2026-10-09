@@ -47,7 +47,7 @@ import { startGrowwEquityOpportunityScheduler } from "./services/growwEquityOppo
 import { startGrowwSectorRotationScheduler } from "./services/growwSectorRotationScheduler.js";
 import { startEngineKeepWarm } from "./services/engineKeepWarm.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
-import { getLiveAlphaRuntimeStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaEarlyRadar, getLiveAlphaRuntimeStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
 import { getLiveAlphaOutcomeStatus, startLiveAlphaOutcomeScheduler } from "./services/liveAlphaOutcomeSettlement.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
@@ -347,6 +347,7 @@ function reg(path, handler) {
 
 // --- Health + debug endpoints
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
+reg('/api/market/live-alpha/early-radar', (_req, res) => res.json(getLiveAlphaEarlyRadar()));
 reg('/api/market/live-alpha/status', (_req, res) => res.json({ ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() }));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/history', async (req,res) => {
