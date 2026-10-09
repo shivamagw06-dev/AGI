@@ -433,6 +433,26 @@ CREATE TABLE IF NOT EXISTS wh_quarantine (
     issues TEXT,
     payload TEXT
 );
+CREATE TABLE IF NOT EXISTS wh_provenance_runs (
+    run_id TEXT PRIMARY KEY,
+    created_at TEXT,
+    tab_id TEXT,
+    kind TEXT,
+    actor TEXT,
+    source TEXT,
+    from_value TEXT,
+    to_value TEXT,
+    rows_changed INTEGER,
+    rolled_back_at TEXT
+);
+CREATE TABLE IF NOT EXISTS wh_provenance_run_rows (
+    run_id TEXT,
+    row_id TEXT,
+    tab_id TEXT,
+    column_key TEXT,
+    old_value TEXT,
+    new_value TEXT
+);
 CREATE TABLE IF NOT EXISTS wh_conflicts (
     id TEXT PRIMARY KEY,
     created_at TEXT,
@@ -545,6 +565,8 @@ _META_INDEXES = (
     "CREATE INDEX IF NOT EXISTS idx_quarantine_tab ON wh_quarantine (tab_id, created_at)",
     "CREATE INDEX IF NOT EXISTS idx_conflicts_row ON wh_conflicts (tab_id, row_id)",
     "CREATE INDEX IF NOT EXISTS idx_conflicts_entity ON wh_conflicts (entity)",
+    "CREATE INDEX IF NOT EXISTS idx_provrun_rows ON wh_provenance_run_rows (run_id)",
+    "CREATE INDEX IF NOT EXISTS idx_provrun_rowid ON wh_provenance_run_rows (row_id)",
 )
 
 
