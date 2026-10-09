@@ -1,4 +1,5 @@
 // src/App.jsx
+import MobileTables from '@/components/mobile/MobileTables';
 import InvestorPortfolioPage from '@/pages/InvestorPortfolioPage';
 import React, { useEffect, Suspense } from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -375,6 +376,7 @@ function App() {
     <HelmetProvider>
       <BrowserRouter>
         <WebsiteTracker />
+        <MobileTables />
         <div className="min-h-screen bg-white">
           <Helmet>
             <title>AGI — Independent Equity Research for Indian Investors</title>

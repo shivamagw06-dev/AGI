@@ -1,3 +1,4 @@
+import MobileDisclosure from '@/components/mobile/MobileDisclosure';
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {API_ORIGIN} from '@/config';
@@ -15,7 +16,7 @@ export default function PortfolioLedger({portfolio:p,admin=false}){
  <div className="india-metrics"><div><span>Continuous model return</span><strong>{pct(d.returnPct)}</strong></div><div><span>Portfolio index</span><strong>{d.nav?.toFixed(2)||'—'}</strong></div><div><span>Latest complete prices</span><strong>{d.priceDate}</strong></div></div>
  <PriceChart title="Continuous portfolio performance" currency={p.market==='usa'?'USD':'INR'} points={[...(p.market==='india'?[{date:d.startedAt,value:100}]:[]),...d.history.map(h=>({date:h.date+(p.market==='india'?'T10:30:00Z':'T20:00:00Z'),value:h.nav}))]}/>
  {d.pending&&<p className="pf-warning">Pending rebalance: {d.pending.effectiveDate} close · {d.pending.reason}. Current holdings remain in effect until complete prices are recorded. Missing prices or a non-trading date keep the request pending.</p>}
- {admin&&<Link className="pf-button" to={`/admin/portfolio-rebalances?edit=${p.id}`}>Schedule rebalance →</Link>}
+ {admin&&<MobileDisclosure title="Manage portfolio"><Link className="pf-button" to={`/admin/portfolio-rebalances?edit=${p.id}`}>Schedule rebalance →</Link></MobileDisclosure>}
  <details><summary>Rebalance history and preserved allocations</summary>{d.events.map((e,i)=><article key={i}><h3>{e.type} · {e.effectiveDate||e.recordedAt?.slice(0,10)}</h3><p>{e.reason} {e.type==='rebalance'?`Before ${e.preNav.toFixed(4)} · cost ${e.cost.toFixed(4)} · after ${e.postNav.toFixed(4)} index points`:''}</p>{(e.target||e.portfolio)&&<table><thead><tr><th>Stock</th><th>Target weight</th></tr></thead><tbody>{(e.target||e.portfolio).holdings.map(h=><tr key={h.symbol}><td>{h.name} ({h.symbol})</td><td>{h.weight.toFixed(3)}%</td></tr>)}</tbody></table>}{e.trades&&<table><thead><tr><th>Symbol</th><th>Model unit change</th><th>Price basis</th></tr></thead><tbody>{e.trades.map(t=><tr key={t.symbol}><td>{t.symbol}</td><td>{t.units.toFixed(6)}</td><td>{t.price.toFixed(4)}</td></tr>)}</tbody></table>}</article>)}</details>
  <p>{d.basis}. Rebalance costs are disclosed per event; taxes and short-borrow costs are excluded. No real orders. Category portfolios rebalance within their existing sleeves, retaining each category’s accumulated gains and losses.</p>
  </>}</section>;
