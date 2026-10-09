@@ -1,3 +1,4 @@
+import LiveAlphaEarlyRadar from './LiveAlphaEarlyRadar';
 import { liveAlphaSnapshotDisplay } from '@/lib/liveAlphaSnapshotDisplay';
 import { useEffect, useMemo, useState } from 'react';
 import API_ORIGIN from '@/config';
@@ -115,7 +116,7 @@ function Evidence({ runtime }) {
 export default function LiveAlphaPage() {
   const [payload,setPayload] = useState({}); const [runtime,setRuntime] = useState(null);
   const [loading,setLoading] = useState(true); const [error,setError] = useState('');
-  const [tab,setTab] = useState('Signals'); const [filter,setFilter] = useState('all');
+  const [tab,setTab] = useState('Setup radar'); const [filter,setFilter] = useState('all');
   const [search,setSearch] = useState(''); const [open,setOpen] = useState(null); const [page,setPage] = useState(0);
   const [sort,setSort] = useState('strength'); const [refresh,setRefresh] = useState(0);
   useEffect(() => {
@@ -139,11 +140,12 @@ export default function LiveAlphaPage() {
   const shown=filterRadarRows(directional,filter,{search}).sort((a,b)=>sort==='symbol' ? a.symbol.localeCompare(b.symbol) : sort==='newest' ? Date.parse(b.timestamp)-Date.parse(a.timestamp) : Math.abs(b.composite)-Math.abs(a.composite));
   const currentPage=Math.min(page,Math.max(0,Math.ceil(shown.length/25)-1));
   if (loading) return <div className="la-page">Loading Live Alpha…</div>;
-  return <main className="la-page"><header className="la-head"><div><span className="la-eyebrow">AGI / MARKET RESEARCH</span><h1>Live Alpha<span>.</span></h1><p>Understand the signal. Check the evidence.</p></div><button onClick={()=>setRefresh(v=>v+1)}>Refresh data ↻</button></header>
+  return <main className="la-page"><header className="la-head"><div><span className="la-eyebrow">AGI / MARKET RESEARCH</span><h1>Live Alpha<span>.</span></h1><p>Developing setups, confirmed moves and an honest record of what happened next.</p></div><button onClick={()=>setRefresh(v=>v+1)}>Refresh data ↻</button></header>
     {error && <p className="la-error" role="alert">{error}. Any displayed snapshot is retained history.</p>}
     <StateBanner readiness={payload.readiness} freshness={payload.freshness} runtime={runtime} requestFailed={Boolean(error)}/>
     <section className="la-metrics"><Metric label="Flagged stocks" value={count(directional.length)} sub={snapshotAvailable ? `of ${allRows.length} in stored snapshot` : 'Snapshot unavailable'}/><Metric label="Positive · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite>0).length)}/><Metric label="Negative · no conflict" value={count(directional.filter(r=>clean(r)&&r.composite<0).length)}/><Metric label="Aligned engines" value={count(directional.filter(aligned).length)} sub="2+ same-direction components"/><Metric label="Conflicting signals" value={count(directional.filter(r=>!clean(r)).length)} sub="Opposing directions"/></section>
-    <nav className="la-tabs" aria-label="Live Alpha views">{['Signals','Signal history','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
+    <nav className="la-tabs" aria-label="Live Alpha views">{['Setup radar','Signals','Signal history','Sector rotation','Equity screen','Evidence'].map(t=><button key={t} className={tab===t?'is-active':''} aria-pressed={tab===t} onClick={()=>setTab(t)}>{t}</button>)}</nav>
+    {tab==='Setup radar' && <LiveAlphaEarlyRadar/>}
     {tab==='Signals' && <>{closedSnapshot&&<p className="la-note" role="status"><strong>Market closed — showing the last saved signals.</strong> Snapshot: {date(payload.freshness?.latest_successful_at)}. These are historical readings, not new live signals. New evaluations resume during the next trading session once data is ready.</p>}{staleSnapshot&&<p className="la-error" role="alert">Current signals withheld: the last evaluation is stale or unavailable. Open Signal history for previously published readings.</p>}<p className="la-note">Scores measure observed model strength, not the chance of profit. Relative leaders can still fall. Aligned engines share inputs; their scores are averaged without an agreement bonus.</p><Shortlist rows={directional} onSelect={s=>{setSearch(s);setFilter('all');setPage(0);setOpen(s);}}/>
     <section className="la-panel"><div className="la-section-head"><h2>{closedSnapshot ? 'Last saved stock signals' : 'Stock signals'}</h2><p>Snapshot: {date(payload.freshness?.latest_successful_at)} · Signal price is the saved last-traded price available at evaluation. Current price refreshes every 4 minutes. Earlier signals remain in Signal history.</p></div><div className="la-toolbar"><input aria-label="Search symbol or sector" placeholder="Search symbol or sector" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/><select aria-label="Filter signals" value={filter} onChange={e=>{setFilter(e.target.value);setPage(0);}}>{[['all','All signals'],['positive','Positive'],['negative','Negative'],['multi','Aligned'],['conflicting','Conflicting']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Sort signals" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}><option value="strength">Model strength</option><option value="symbol">Stock A–Z</option><option value="newest">Newest signal</option></select></div>
     <Table headers={['Stock / sector','Direction','Model strength ±99','Price at signal ₹','Signal time','Evidence','Engine directions','Liquidity','Current price ₹']}>

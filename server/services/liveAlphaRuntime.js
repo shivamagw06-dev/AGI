@@ -1,3 +1,5 @@
+import { RadarRepository } from './liveAlphaRadarRepository.js';
+import { EarlyRadar } from './liveAlphaEarlyRadar.js';
 import { sharedLiveQuotes } from './sharedLiveQuotes.js';
 import { marketDataBudget } from '../lib/marketDataBudget.js';
 import { liveAlphaHistoryRouter } from './liveAlphaHistoryRouter.js';
@@ -217,6 +219,11 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     const store = new SynchronizedSnapshotStore();
     if (recentSnapshots.length) store.ingest({ snapshots: recentSnapshots });
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
+    const radarRepository = new RadarRepository();
+    const radar = new EarlyRadar({ featureStore: pipeline.featureStore, quoteStore: store,
+      universe: universe.members, benchmarkKey: universe.benchmarkKey, save: data => radarRepository.save(data) });
+    try { radar.restore(await radarRepository.load()); }
+    catch { radar.storageError = 'Radar history could not be restored; recovery must succeed before new alerts'; radar.recoveryRequired = true; }
     let lastEvaluationMs = 0;
     const batchQueue = {
       processing: false,
@@ -235,7 +242,6 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       // shortlist, so collection and evaluation follow the NSE session. A
       // short margin either side keeps the first and last minutes whole.
       if (!sessionState(new Date(), { leadMs: SESSION_MARGIN_MS, lagMs: SESSION_MARGIN_MS }).open) return;
-      pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (!sessionState(new Date()).open) return;
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -263,6 +269,8 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     // still ingests every message and this research pipeline persists at most
     // one observation per instrument/minute.
     const onBatch = async (batch) => {
+      // Keep feature observations current even while persistence drains its queue.
+      if (sessionState(new Date(), { leadMs: SESSION_MARGIN_MS, lagMs: SESSION_MARGIN_MS }).open) pipeline.ingest(batch);
       for (const snapshot of batch?.snapshots || []) {
         const key = String(snapshot?.instrument_key || '').trim();
         if (key) batchQueue.pending.set(key, snapshot);
@@ -288,7 +296,21 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       }
     };
     let feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
-    runtime = { provider, feed, pipeline, persistence, store, universe, batchQueue, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, restore_errors: restored.errors, derivatives: universe.derivativeResolution } };
+    runtime = { provider, feed, pipeline, persistence, store, universe, radar, batchQueue, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, restore_errors: restored.errors, derivatives: universe.derivativeResolution } };
+    let radarBusy = false;
+    runtime.radarTimer = setInterval(async () => {
+      if (radarBusy) return;
+      radarBusy = true;
+      try {
+        if (radar.recoveryRequired) {
+          radar.restore(await radarRepository.load()); radar.recoveryRequired = false; radar.storageError = null;
+        }
+        await radar.evaluate(new Date());
+      }
+      catch { radar.storageError = 'Radar evaluation failed; check freshness before using readings'; }
+      finally { radarBusy = false; }
+    }, 5000);
+    runtime.radarTimer.unref?.();
     state = {
       enabled: true, status: 'starting', evaluation_status: 'warming_up',
       started_at: new Date().toISOString(), last_evaluation: null,
@@ -449,6 +471,7 @@ function startFeedSupervisor() {
 }
 
 export function stopLiveAlphaRuntime() {
+  if (runtime?.radarTimer) clearInterval(runtime.radarTimer);
   if (runtime?.fallbackMonitor) clearInterval(runtime.fallbackMonitor);
   if (runtime?.supervisor) clearInterval(runtime.supervisor);
   runtime?.feed.stop();
@@ -604,4 +627,10 @@ export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = 
     research_only: true,
     quotes,
   };
+}
+
+export function getLiveAlphaEarlyRadar() {
+  const result = runtime?.radar?.snapshot() || { version: 'early-range-v1', research_only: true, stale: true, rows: [], events: [], coverage: {}, note: 'Radar is warming up or unavailable.' };
+  return { ...result, checkpoint_storage: 'database_event_journal',
+    retention_note: 'Stage transitions are retained in the database. Recent 100 shown here; price returns are sampled and are not trade fills. Existing signal history is unchanged.' };
 }
