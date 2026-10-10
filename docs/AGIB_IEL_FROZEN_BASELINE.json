@@ -1,0 +1,50 @@
+{
+  "artifact": "AGIB_IEL_FROZEN_BASELINE",
+  "company": "AGI",
+  "programme": "AGI v3.5 Release Certification (post-TIRC)",
+  "status": "CERTIFIED",
+  "engineering_baseline_frozen": true,
+  "date": "2026-07-28",
+  "commit": "3766ae12",
+  "prior_cert_pr": 234,
+  "suite": "all",
+  "n_questions": 1025,
+  "mode": "full",
+  "metrics": {
+    "pass_pct": 99.9,
+    "mean_score": 90.24,
+    "intent": 99.8,
+    "framework": 97.76,
+    "playbook": 99.61,
+    "evidence": 100.0,
+    "replay_all": 100.0,
+    "replay_historical": 100.0,
+    "future_leakage": 0,
+    "hallucinated": 0,
+    "n": 1025
+  },
+  "compare_pr234": {
+    "pass_pct": {
+      "before": 98.44,
+      "after": 99.9
+    },
+    "future_leakage": {
+      "before": 15,
+      "after": 0
+    },
+    "replay_historical": {
+      "before": 73.21,
+      "after": 100.0
+    },
+    "intent": {
+      "before": 99.8,
+      "after": 99.8
+    },
+    "framework": {
+      "before": 97.76,
+      "after": 97.76
+    }
+  },
+  "fabricated": false,
+  "measure_only": true
+}

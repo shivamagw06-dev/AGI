@@ -1,0 +1,137 @@
+"""Reusable cause→effect reasoning graphs for institutional analysis."""
+
+from __future__ import annotations
+
+from academy.schema import CausalModel
+
+
+def all_causal_models() -> list[CausalModel]:
+    return [
+        CausalModel(
+            model_id="repo_to_construction_earnings",
+            name="Repo rate → construction complex earnings",
+            trigger="Repo Rate ↑",
+            direction="decrease",
+            chain=[
+                "Repo Rate ↑",
+                "Loan Rates ↑",
+                "Mortgage Demand ↓",
+                "Housing ↓",
+                "Cement ↓",
+                "Steel ↓",
+                "Construction Companies ↓",
+                "Corporate Earnings ↓",
+            ],
+            industries_affected=["Banks", "Real Estate", "Infrastructure", "Steel"],
+            related_concepts=["monetary_policy", "credit", "discount_rate"],
+        ),
+        CausalModel(
+            model_id="inflation_to_valuation",
+            name="Inflation → valuation",
+            trigger="Inflation ↑",
+            direction="decrease",
+            chain=[
+                "Inflation ↑",
+                "Discount Rate ↑",
+                "DCF ↓",
+                "Valuation ↓",
+                "Expected Returns recalibrated",
+                "Sector Rotation",
+            ],
+            industries_affected=["Software", "IT", "Utilities", "Banks"],
+            related_concepts=["inflation", "discount_rate", "present_value", "yield_curve"],
+        ),
+        CausalModel(
+            model_id="gdp_to_cash_flows",
+            name="GDP → cash-flow forecast",
+            trigger="GDP ↑",
+            direction="increase",
+            chain=[
+                "GDP ↑",
+                "Revenue Forecast ↑",
+                "Margin Forecast (sector-dependent)",
+                "Cash Flow Forecast ↑",
+                "Corporate Earnings ↑",
+            ],
+            industries_affected=["Banks", "Auto", "Steel", "Retail", "Logistics"],
+            related_concepts=["gdp", "business_cycle", "aggregate_demand"],
+        ),
+        CausalModel(
+            model_id="money_to_inflation",
+            name="Money supply → inflation (long run)",
+            trigger="Money Supply ↑↑",
+            direction="increase",
+            chain=[
+                "Money Supply ↑",
+                "Nominal Spending ↑",
+                "Price Level ↑",
+                "Inflation ↑",
+                "Policy Tightening Risk ↑",
+            ],
+            industries_affected=["Banks", "FMCG", "Real Estate"],
+            related_concepts=["money_supply", "quantity_theory_of_money", "inflation", "monetary_policy"],
+        ),
+        CausalModel(
+            model_id="fx_to_exporters",
+            name="INR depreciation → exporter earnings",
+            trigger="INR depreciates",
+            direction="mixed",
+            chain=[
+                "INR depreciates vs USD",
+                "Exporter Competitiveness / Translation ↑",
+                "IT & Software INR earnings ↑",
+                "Import-cost industries face RM inflation",
+                "Net sectoral winners/losers",
+            ],
+            industries_affected=["IT", "Software", "Auto", "Chemicals", "Shipping"],
+            related_concepts=["exchange_rates", "inflation", "international_trade"],
+        ),
+        CausalModel(
+            model_id="credit_impulse",
+            name="Credit impulse → activity",
+            trigger="Credit growth ↑",
+            direction="increase",
+            chain=[
+                "Credit ↑",
+                "Housing & Capex ↑",
+                "Construction & Auto ↑",
+                "Steel & Cement ↑",
+                "Bank volumes ↑ (asset quality lag)",
+                "Corporate Earnings ↑",
+            ],
+            industries_affected=["Banks", "Real Estate", "Auto", "Steel", "Infrastructure"],
+            related_concepts=["credit", "liquidity", "business_cycle", "saving_and_investment"],
+        ),
+        CausalModel(
+            model_id="supply_shock_stagflation",
+            name="Adverse supply shock → stagflation",
+            trigger="Commodity / productivity shock",
+            direction="mixed",
+            chain=[
+                "Aggregate Supply shifts left",
+                "Output ↓",
+                "Prices ↑",
+                "Stagflation",
+                "Policy trade-off worsens",
+                "Margins compressed for cost-takers",
+            ],
+            industries_affected=["Auto", "FMCG", "Chemicals", "Power", "Airlines/Logistics"],
+            related_concepts=["aggregate_supply", "stagflation", "inflation", "phillips_curve"],
+        ),
+        CausalModel(
+            model_id="fiscal_capex_impulse",
+            name="Fiscal capex → infra complex",
+            trigger="Government capex ↑",
+            direction="increase",
+            chain=[
+                "Fiscal Capex ↑",
+                "Infrastructure Orders ↑",
+                "Cement & Steel ↑",
+                "Power & Logistics demand ↑",
+                "Multiplier into incomes",
+                "Corporate Earnings ↑ (beneficiaries)",
+            ],
+            industries_affected=["Infrastructure", "Steel", "Power", "Defence", "Logistics"],
+            related_concepts=["fiscal_policy", "aggregate_demand", "gdp"],
+        ),
+    ]

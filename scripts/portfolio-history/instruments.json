@@ -1,0 +1,1878 @@
+{
+  "20+ Year Treasury Bond iShares": {
+    "symbol": "TLT",
+    "providerName": "iShares 20+ Year Treasury Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TLT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "7-10 Year Treasury Bond iShares": {
+    "symbol": "IEF",
+    "providerName": "iShares 7-10 Year Treasury Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/IEF/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "A10 Networks Inc": {
+    "symbol": "ATEN",
+    "providerName": "A10 Networks, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ATEN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ARM HOLDINGS LTD": {
+    "symbol": "ARM",
+    "providerName": "Arm Holdings plc",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ARM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ASML Holding NV": {
+    "symbol": "ASML",
+    "providerName": "ASML Holding N.V.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ASML/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "AST SPACEMOBILE INC": {
+    "symbol": "ASTS",
+    "providerName": "AST SpaceMobile, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ASTS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ATI Inc.": {
+    "symbol": "ATI",
+    "providerName": "ATI Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ATI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "AbbVie Inc": {
+    "symbol": "ABBV",
+    "providerName": "AbbVie Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ABBV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Advanced Energy Industries Inc": {
+    "symbol": "AEIS",
+    "providerName": "Advanced Energy Industries, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AEIS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Advanced Micro Devices, Inc.": {
+    "symbol": "AMD",
+    "providerName": "Advanced Micro Devices, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AMD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Affirm Holdings Inc": {
+    "symbol": "AFRM",
+    "providerName": "Affirm Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AFRM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Akamai Technologies, Inc.": {
+    "symbol": "AKAM",
+    "providerName": "Akamai Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AKAM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Albemarle Corporation": {
+    "symbol": "ALB",
+    "providerName": "Albemarle Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ALB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Allegro Microsystems, Inc.": {
+    "symbol": "ALGM",
+    "providerName": "Allegro MicroSystems, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ALGM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ally Financial Inc.": {
+    "symbol": "ALLY",
+    "providerName": "Ally Financial Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ALLY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Alphabet Inc. - Class A Shares": {
+    "symbol": "GOOGL",
+    "providerName": "Alphabet Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GOOGL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Alphabet Inc. - Class C Shares": {
+    "symbol": "GOOG",
+    "providerName": "Alphabet Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GOOG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Amazon.com Inc.": {
+    "symbol": "AMZN",
+    "providerName": "Amazon.com, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AMZN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "American Express Co.": {
+    "symbol": "AXP",
+    "providerName": "American Express Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AXP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ametek Inc.": {
+    "symbol": "AME",
+    "providerName": "AMETEK, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AME/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Amgen Inc.": {
+    "symbol": "AMGN",
+    "providerName": "Amgen Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AMGN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Anheuser-Busch InBev SA/NV": {
+    "symbol": "BUD",
+    "providerName": "Anheuser-Busch InBev SA/NV",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BUD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Apple, Inc.": {
+    "symbol": "AAPL",
+    "providerName": "Apple Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AAPL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Applied Digital Corp": {
+    "symbol": "APLD",
+    "providerName": "Applied Digital Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/APLD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Applied Materials, Inc.": {
+    "symbol": "AMAT",
+    "providerName": "Applied Materials, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AMAT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Aurora Innovation Inc": {
+    "symbol": "AUR",
+    "providerName": "Aurora Innovation, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AUR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Axon Enterprise Inc.": {
+    "symbol": "AXON",
+    "providerName": "Axon Enterprise, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AXON/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "BWX Technologies, Inc.": {
+    "symbol": "BWXT",
+    "providerName": "BWX Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BWXT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bank of America Corp.": {
+    "symbol": "BAC",
+    "providerName": "Bank of America Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BAC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bitdeer Technologies Group": {
+    "symbol": "BTDR",
+    "providerName": "Bitdeer Technologies Group",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BTDR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bitmine Immersion Technologies Inc": {
+    "symbol": "BMNR",
+    "providerName": "Bitmine Immersion Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BMNR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Block Inc": {
+    "symbol": "XYZ",
+    "providerName": "Block, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/XYZ/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bloom Energy, Corp.": {
+    "symbol": "BE",
+    "providerName": "Bloom Energy Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Boeing Company, The": {
+    "symbol": "BA",
+    "providerName": "The Boeing Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Boston Scientific Corp.": {
+    "symbol": "BSX",
+    "providerName": "Boston Scientific Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BSX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "BridgeBio Oncology Therapeutics Inc": {
+    "symbol": "BBOT",
+    "providerName": "BridgeBio Oncology Therapeutics, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BBOT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bristol-Myers Squibb Co.": {
+    "symbol": "BMY",
+    "providerName": "Bristol-Myers Squibb Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BMY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Broadcom Inc.": {
+    "symbol": "AVGO",
+    "providerName": "Broadcom Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/AVGO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Bullish": {
+    "symbol": "BLSH",
+    "providerName": "Bullish",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BLSH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CME Group Inc.": {
+    "symbol": "CME",
+    "providerName": "CME Group Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CME/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CORE SCIENTIFIC INC": {
+    "symbol": "CORZ",
+    "providerName": "Core Scientific, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CORZ/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CRISPR Therapeutics AG": {
+    "symbol": "CRSP",
+    "providerName": "CRISPR Therapeutics AG",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRSP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Cameco Corporation": {
+    "symbol": "CCJ",
+    "providerName": "Cameco Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CCJ/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Capital One Financial Corporation": {
+    "symbol": "COF",
+    "providerName": "Capital One Financial Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/COF/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CareDx, Inc.": {
+    "symbol": "CDNA",
+    "providerName": "CareDx, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CDNA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Carpenter Technology Corp.": {
+    "symbol": "CRS",
+    "providerName": "Carpenter Technology Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Caterpillar Inc.": {
+    "symbol": "CAT",
+    "providerName": "Caterpillar Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CAT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Centrus Energy Corp": {
+    "symbol": "LEU",
+    "providerName": "Centrus Energy Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LEU/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Check Point Software Technologies Ltd.": {
+    "symbol": "CHKP",
+    "providerName": "Check Point Software Technologies Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CHKP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Chemical & Mining Co. of Chile Inc.": {
+    "symbol": "SQM",
+    "providerName": "Sociedad Qu\u00edmica y Minera de Chile S.A.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SQM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Chevron Corporation": {
+    "symbol": "CVX",
+    "providerName": "Chevron Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CVX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Cipher Digital Inc": {
+    "symbol": "CIFR",
+    "providerName": "Cipher Digital Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CIFR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Circle Internet Group Inc": {
+    "symbol": "CRCL",
+    "providerName": "Circle Internet Group",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRCL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Cisco Systems, Inc.": {
+    "symbol": "CSCO",
+    "providerName": "Cisco Systems, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CSCO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Cleanspark Inc": {
+    "symbol": "CLSK",
+    "providerName": "CleanSpark, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CLSK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CloudFlare Inc.": {
+    "symbol": "NET",
+    "providerName": "Cloudflare, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NET/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Coca-Cola Company, The": {
+    "symbol": "KO",
+    "providerName": "The Coca-Cola Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/KO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Coca-Cola FEMSA S.A.B de C.V.": {
+    "symbol": "KOF",
+    "providerName": "Coca-Cola FEMSA, S.A.B. de C.V.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/KOF/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Coinbase Global Inc": {
+    "symbol": "COIN",
+    "providerName": "Coinbase Global, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/COIN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Compa\u00f1\u00eda de Minas Buenaventura S.A.A.": {
+    "symbol": "BVN",
+    "providerName": "Compa\u00f1\u00eda de Minas Buenaventura S.A.A.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/BVN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Constellation Energy Corp": {
+    "symbol": "CEG",
+    "providerName": "Constellation Energy Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CEG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Core Natural Resources Inc": {
+    "symbol": "CNR",
+    "providerName": "Core Natural Resources, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CNR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Core S&P 500 iShares ETF": {
+    "symbol": "IVV",
+    "providerName": "iShares Core S&P 500 ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/IVV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CoreWeave Inc.": {
+    "symbol": "CRWV",
+    "providerName": "CoreWeave, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRWV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Costco Wholesale": {
+    "symbol": "COST",
+    "providerName": "Costco Wholesale Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/COST/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Coupang, LLC": {
+    "symbol": "CPNG",
+    "providerName": "Coupang, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CPNG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "CrowdStrike Holdings, Inc.": {
+    "symbol": "CRWD",
+    "providerName": "CrowdStrike Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRWD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Curtiss-Wright Corp": {
+    "symbol": "CW",
+    "providerName": "Curtiss-Wright Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CW/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "DB Commodity Tracking PowerShares": {
+    "symbol": "DBC",
+    "providerName": "Invesco DB Commodity Index Tracking Fund",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DBC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "DaVita HealthCare Partners Inc.": {
+    "symbol": "DVA",
+    "providerName": "DaVita Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DVA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Danaher Corp.": {
+    "symbol": "DHR",
+    "providerName": "Danaher Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DHR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Darling Ingredients Inc.": {
+    "symbol": "DAR",
+    "providerName": "Darling Ingredients Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DAR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Datadog Inc": {
+    "symbol": "DDOG",
+    "providerName": "Datadog, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DDOG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Deere & Company": {
+    "symbol": "DE",
+    "providerName": "Deere & Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Delta Air Lines Inc.": {
+    "symbol": "DAL",
+    "providerName": "Delta Air Lines, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DAL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Denison Mines Corp": {
+    "symbol": "DNN",
+    "providerName": "Denison Mines Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DNN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "DexCom, Inc.": {
+    "symbol": "DXCM",
+    "providerName": "DexCom, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DXCM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "DigitalOcean Holdings, Inc.": {
+    "symbol": "DOCN",
+    "providerName": "DigitalOcean Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DOCN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Dropbox, Inc.": {
+    "symbol": "DBX",
+    "providerName": "Dropbox, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DBX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Duke Energy Corporation": {
+    "symbol": "DUK",
+    "providerName": "Duke Energy Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/DUK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "EAFE MSCI ETF iShares": {
+    "symbol": "EFA",
+    "providerName": "iShares MSCI EAFE ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/EFA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Eaton Corporation plc": {
+    "symbol": "ETN",
+    "providerName": "Eaton Corporation plc",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ETN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ecolab Inc.": {
+    "symbol": "ECL",
+    "providerName": "Ecolab Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ECL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Edwards Lifesciences Corp.": {
+    "symbol": "EW",
+    "providerName": "Edwards Lifesciences Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/EW/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Elbit Systems Ltd.": {
+    "symbol": "ESLT",
+    "providerName": "Elbit Systems Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ESLT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Eli Lilly and Company": {
+    "symbol": "LLY",
+    "providerName": "Eli Lilly and Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LLY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Emerging Markets Stock Idx ETF Vanguard": {
+    "symbol": "VWO",
+    "providerName": "Vanguard FTSE Emerging Markets Index Fund ETF Shares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VWO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Energy Fuels Inc/Canada": {
+    "symbol": "UUUU",
+    "providerName": "Energy Fuels Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/UUUU/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Enphase Energy, Inc.": {
+    "symbol": "ENPH",
+    "providerName": "Enphase Energy, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ENPH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ethos Technologies Corp.": {
+    "symbol": "LIFE",
+    "providerName": "Ethos Technologies Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LIFE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "FTSE Developed Market Index ETF Vanguard": {
+    "symbol": "VEA",
+    "providerName": "Vanguard FTSE Developed Markets Index Fund ETF Shares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VEA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "FedEx Corporation": {
+    "symbol": "FDX",
+    "providerName": "FedEx Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FDX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Fidelity National Information Services": {
+    "symbol": "FIS",
+    "providerName": "Fidelity National Information Services, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FIS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "First Solar, Inc.": {
+    "symbol": "FSLR",
+    "providerName": "First Solar, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FSLR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Fiserv, Inc.": {
+    "symbol": "FISV",
+    "providerName": "Fiserv, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FISV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Fortinet Inc.": {
+    "symbol": "FTNT",
+    "providerName": "Fortinet, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FTNT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Freeport-McMoRan Inc.": {
+    "symbol": "FCX",
+    "providerName": "Freeport-McMoRan Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FCX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Freshworks": {
+    "symbol": "FRSH",
+    "providerName": "Freshworks Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/FRSH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "GALAXY DIGITAL PUBCO INC-A": {
+    "symbol": "GLXY",
+    "providerName": "Galaxy Digital",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GLXY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "GITLAB INC.": {
+    "symbol": "GTLB",
+    "providerName": "GitLab Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GTLB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Garmin Ltd.": {
+    "symbol": "GRMN",
+    "providerName": "Garmin Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GRMN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "General Dynamics Corporation": {
+    "symbol": "GD",
+    "providerName": "General Dynamics Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "General Electric Company": {
+    "symbol": "GE",
+    "providerName": "GE Aerospace",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Global Payments Inc.": {
+    "symbol": "GPN",
+    "providerName": "Global Payments Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GPN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Gold Shares SPDR": {
+    "symbol": "GLD",
+    "providerName": "SPDR Gold Shares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GLD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Guardant Health, Inc.": {
+    "symbol": "GH",
+    "providerName": "Guardant Health, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "HUT 8 MINING CORP": {
+    "symbol": "HUT",
+    "providerName": "Hut 8 Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HUT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Heico Corp": {
+    "symbol": "HEI",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HEI/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=bc6a4fa8-2e62-421c-8b55-5afbba71d727",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
+  },
+  "Home Depot, Inc., The": {
+    "symbol": "HD",
+    "providerName": "The Home Depot, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Honeywell Aerospace Inc": {
+    "symbol": "HONA",
+    "providerName": "Honeywell Aerospace Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HONA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Howmet Aerospace Inc": {
+    "symbol": "HWM",
+    "providerName": "Howmet Aerospace Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HWM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "HubSpot, Inc.": {
+    "symbol": "HUBS",
+    "providerName": "HubSpot, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HUBS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Hubbell Inc.": {
+    "symbol": "HUBB",
+    "providerName": "Hubbell Incorporated",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HUBB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Hudbay Minerals Inc": {
+    "symbol": "HBM",
+    "providerName": "Hudbay Minerals Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HBM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "IREN Ltd": {
+    "symbol": "IREN",
+    "providerName": "IREN Limited",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/IREN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ISHARES 0-3 MONTH TREASURY B": {
+    "symbol": "SGOV",
+    "providerName": "iShares 0-3 Month Treasury Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SGOV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Illumina Inc.": {
+    "symbol": "ILMN",
+    "providerName": "Illumina, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ILMN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Incyte Corporation": {
+    "symbol": "INCY",
+    "providerName": "Incyte Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/INCY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Insulet Corporation": {
+    "symbol": "PODD",
+    "providerName": "Insulet Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PODD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Intel Corporation": {
+    "symbol": "INTC",
+    "providerName": "Intel Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/INTC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "International Business Machines Corp.": {
+    "symbol": "IBM",
+    "providerName": "International Business Machines Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/IBM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Invesco Optimum Yield Diversified Commodity Strategy No K-1": {
+    "symbol": "PDBC",
+    "providerName": "Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PDBC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Itron, Inc.": {
+    "symbol": "ITRI",
+    "providerName": "Itron, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ITRI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "JB Hunt Transport Services Inc.": {
+    "symbol": "JBHT",
+    "providerName": "J.B. Hunt Transport Services, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/JBHT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Johnson & Johnson": {
+    "symbol": "JNJ",
+    "providerName": "Johnson & Johnson",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/JNJ/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Kraft Heinz Company, The": {
+    "symbol": "KHC",
+    "providerName": "The Kraft Heinz Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/KHC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Kroger Co., The": {
+    "symbol": "KR",
+    "providerName": "The Kroger Co.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/KR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "L3Harris Technologies Inc": {
+    "symbol": "LHX",
+    "providerName": "L3Harris Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LHX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "LIBERTY MEDIA CORP-LIBERTY-C": {
+    "symbol": "LLYVK",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LLYVK/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=55a6fd3b-3945-46dc-8d5d-0ca064dfd29a",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
+  },
+  "LITHIUM AMERICAS (ARGENTINA) CORP": {
+    "symbol": "LAR",
+    "providerName": "Lithium Argentina AG",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.lithium-argentina.com/company",
+    "note": "Issuer confirms LAAC renamed LAR in January 2025."
+  },
+  "Lam Research Corporation": {
+    "symbol": "LRCX",
+    "providerName": "Lam Research Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LRCX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Lear Corp.": {
+    "symbol": "LEA",
+    "providerName": "Lear Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LEA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Lennar Corp.": {
+    "symbol": "LEN",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LEN/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=55a6fd3b-3945-46dc-8d5d-0ca064dfd29a",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
+  },
+  "Li Auto Inc": {
+    "symbol": "LI",
+    "providerName": "Li Auto Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Lithium Americas Corp.": {
+    "symbol": "LAC",
+    "providerName": "Lithium Americas Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LAC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Lockheed Martin Corporation": {
+    "symbol": "LMT",
+    "providerName": "Lockheed Martin Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LMT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MARA Holdings Inc": {
+    "symbol": "MARA",
+    "providerName": "MARA Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MARA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MOBILEYE GLOBAL INC.": {
+    "symbol": "MBLY",
+    "providerName": "Mobileye Global Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MBLY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MONTE ROSA THERAPEUTICS INC": {
+    "symbol": "GLUE",
+    "providerName": "Monte Rosa Therapeutics, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GLUE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MP Materials Corp.": {
+    "symbol": "MP",
+    "providerName": "MP Materials Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MSCI Emerging Markets ETF iShares": {
+    "symbol": "EEM",
+    "providerName": "iShares MSCI Emerging Markets ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/EEM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MSCI Emerging Markets Mini Vol iShares": {
+    "symbol": "EEMV",
+    "providerName": "iShares MSCI Emerging Markets Min Vol Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/EEMV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Madison Square Garden Company": {
+    "symbol": "MSGS",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MSGS/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=e4ede621-654e-43ec-a651-81a470089f24",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
+  },
+  "Marvell Technology Group Ltd.": {
+    "symbol": "MRVL",
+    "providerName": "Marvell Technology, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MRVL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MasterCard Inc.": {
+    "symbol": "MA",
+    "providerName": "Mastercard Incorporated",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Maze Therapeutics": {
+    "symbol": "MAZE",
+    "providerName": "Maze Therapeutics, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MAZE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "McDonald's Corp.": {
+    "symbol": "MCD",
+    "providerName": "McDonald's Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MCD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Medtronic PLC": {
+    "symbol": "MDT",
+    "providerName": "Medtronic plc",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MDT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Merck & Co. Inc.": {
+    "symbol": "MRK",
+    "providerName": "Merck & Co., Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MRK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Meta Platforms Inc": {
+    "symbol": "META",
+    "providerName": "Meta Platforms, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/META/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Micron Technology Inc.": {
+    "symbol": "MU",
+    "providerName": "Micron Technology, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MU/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Microsoft Corporation": {
+    "symbol": "MSFT",
+    "providerName": "Microsoft Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MSFT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Mirion Technologies Inc": {
+    "symbol": "MIR",
+    "providerName": "Mirion Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MIR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Moderna, Inc.": {
+    "symbol": "MRNA",
+    "providerName": "Moderna, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MRNA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "MongoDB, Inc.": {
+    "symbol": "MDB",
+    "providerName": "MongoDB, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MDB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Monolithic Power Systems Inc": {
+    "symbol": "MPWR",
+    "providerName": "Monolithic Power Systems, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MPWR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Moody's Corporation": {
+    "symbol": "MCO",
+    "providerName": "Moody's Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MCO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "NANO NUCLEAR ENERGY": {
+    "symbol": "NNE",
+    "providerName": "NANO Nuclear Energy Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NNE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "NIO Inc.": {
+    "symbol": "NIO",
+    "providerName": "NIO Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NIO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "NVIDIA Corporation": {
+    "symbol": "NVDA",
+    "providerName": "NVIDIA Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NVDA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "NXP Semiconductors NV": {
+    "symbol": "NXPI",
+    "providerName": "NXP Semiconductors N.V.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NXPI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Natera Inc": {
+    "symbol": "NTRA",
+    "providerName": "Natera, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NTRA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Navitas Semiconductor Corp": {
+    "symbol": "NVTS",
+    "providerName": "Navitas Semiconductor Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NVTS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Nebius Group N.V.": {
+    "symbol": "NBIS",
+    "providerName": "Nebius Group N.V.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NBIS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "New York Times Company, The": {
+    "symbol": "NYT",
+    "providerName": "The New York Times Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NYT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Nexgen Energy Ltd": {
+    "symbol": "NXE",
+    "providerName": "NexGen Energy Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NXE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Nextpower Inc": {
+    "symbol": "NXT",
+    "providerName": "Nextpower Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NXT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Northrop Grumman Corporation": {
+    "symbol": "NOC",
+    "providerName": "Northrop Grumman Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NOC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "NuScale Power Corp": {
+    "symbol": "SMR",
+    "providerName": "NuScale Power Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SMR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Nucor Corporation": {
+    "symbol": "NUE",
+    "providerName": "Nucor Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NUE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Nutanix, Inc.": {
+    "symbol": "NTNX",
+    "providerName": "Nutanix, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NTNX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ON Semiconductor Corp.": {
+    "symbol": "ON",
+    "providerName": "ON Semiconductor Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ON/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Occidental Petroleum Corporation": {
+    "symbol": "OXY",
+    "providerName": "Occidental Petroleum Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/OXY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Oklo Inc": {
+    "symbol": "OKLO",
+    "providerName": "Oklo Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/OKLO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Okta, Inc.": {
+    "symbol": "OKTA",
+    "providerName": "Okta, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/OKTA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Omega Healthcare Investors Inc.": {
+    "symbol": "OHI",
+    "providerName": "Omega Healthcare Investors, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/OHI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Oracle Corp.": {
+    "symbol": "ORCL",
+    "providerName": "Oracle Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ORCL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ormat Technologies Inc": {
+    "symbol": "ORA",
+    "providerName": "Ormat Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ORA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "PACCAR Inc.": {
+    "symbol": "PCAR",
+    "providerName": "PACCAR Inc",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PCAR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "PG&E Corporation": {
+    "symbol": "PCG",
+    "providerName": "PG&E Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PCG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "PRIME MEDICINE, INC.": {
+    "symbol": "PRME",
+    "providerName": "Prime Medicine, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PRME/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Palantir Technologies Inc": {
+    "symbol": "PLTR",
+    "providerName": "Palantir Technologies Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PLTR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Palo Alto Networks, Inc.": {
+    "symbol": "PANW",
+    "providerName": "Palo Alto Networks, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PANW/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Parker-Hannifin Corporation": {
+    "symbol": "PH",
+    "providerName": "Parker-Hannifin Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "PayPal Holdings, Inc.": {
+    "symbol": "PYPL",
+    "providerName": "PayPal Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PYPL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "PayPay Corp": {
+    "symbol": "PAYP",
+    "providerName": "PayPay Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PAYP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Philip Morris International, Inc.": {
+    "symbol": "PM",
+    "providerName": "Philip Morris International Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Planet Labs PBC": {
+    "symbol": "PL",
+    "providerName": "Planet Labs PBC",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Plug Power Inc.": {
+    "symbol": "PLUG",
+    "providerName": "Plug Power Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PLUG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Procter & Gamble Company, The": {
+    "symbol": "PG",
+    "providerName": "The Procter & Gamble Company",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Qiagen NV": {
+    "symbol": "QGEN",
+    "providerName": "Qiagen N.V.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/QGEN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Qualys, Inc.": {
+    "symbol": "QLYS",
+    "providerName": "Qualys, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/QLYS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "REIT Vanguard ETF": {
+    "symbol": "VNQ",
+    "providerName": "Vanguard Real Estate Index Fund ETF Shares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VNQ/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "REVOLUTION Medicines Inc": {
+    "symbol": "RVMD",
+    "providerName": "Revolution Medicines, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RVMD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "RIVIAN AUTOMOTIVE, INC.": {
+    "symbol": "RIVN",
+    "providerName": "Rivian Automotive, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RIVN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "RTX Corp": {
+    "symbol": "RTX",
+    "providerName": "RTX Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RTX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "RUBRIK INC.": {
+    "symbol": "RBRK",
+    "providerName": "Rubrik, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RBRK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Radware Ltd": {
+    "symbol": "RDWR",
+    "providerName": "Radware Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RDWR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Regeneron Pharmaceuticals, Inc.": {
+    "symbol": "REGN",
+    "providerName": "Regeneron Pharmaceuticals, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/REGN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Relay Therapeutics Inc": {
+    "symbol": "RLAY",
+    "providerName": "Relay Therapeutics, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RLAY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Riot Platforms Inc": {
+    "symbol": "RIOT",
+    "providerName": "Riot Platforms, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RIOT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Robinhood Markets, Inc.": {
+    "symbol": "HOOD",
+    "providerName": "Robinhood Markets, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HOOD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Rocket Lab USA Inc": {
+    "symbol": "RKLB",
+    "providerName": "Rocket Lab Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RKLB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Rockwell Automation Inc.": {
+    "symbol": "ROK",
+    "providerName": "Rockwell Automation, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ROK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "S&P 500 Vanguard ETF": {
+    "symbol": "VOO",
+    "providerName": "Vanguard S&P 500 ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VOO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "SIGMA LITHIUM CORP": {
+    "symbol": "SGML",
+    "providerName": "Sigma Lithium Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SGML/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "SPDR Gold MiniShares Trust": {
+    "symbol": "GLDM",
+    "providerName": "SPDR Gold MiniShares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/GLDM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Salesforce Inc": {
+    "symbol": "CRM",
+    "providerName": "Salesforce, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/CRM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Schrodinger Inc": {
+    "symbol": "SDGR",
+    "providerName": "Schr\u00f6dinger, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SDGR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "SentinelOne, Inc.": {
+    "symbol": "S",
+    "providerName": "SentinelOne, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/S/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ServiceNow, Inc.": {
+    "symbol": "NOW",
+    "providerName": "ServiceNow, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/NOW/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Sirius XM Holdings Inc": {
+    "symbol": "SIRI",
+    "providerName": "Sirius XM Holdings Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SIRI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Snowflake Inc.": {
+    "symbol": "SNOW",
+    "providerName": "Snowflake Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SNOW/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "SolarEdge Technologies, Inc.": {
+    "symbol": "SEDG",
+    "providerName": "SolarEdge Technologies, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SEDG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Southern Copper Corp.": {
+    "symbol": "SCCO",
+    "providerName": "Southern Copper Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SCCO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Space Exploration Technologies Corp": {
+    "symbol": "SPCX",
+    "providerName": "Space Exploration Technologies Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SPCX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Stryker Corporation": {
+    "symbol": "SYK",
+    "providerName": "Stryker Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SYK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Sunrun Inc.": {
+    "symbol": "RUN",
+    "providerName": "Sunrun Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/RUN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "TEMPUS AI": {
+    "symbol": "TEM",
+    "providerName": "Tempus AI, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TEM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "TIPS Bond iShares": {
+    "symbol": "TIP",
+    "providerName": "iShares TIPS Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TIP/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Taiwan Semiconductor Manufacturing Co.": {
+    "symbol": "TSM",
+    "providerName": "Taiwan Semiconductor Manufacturing Company Limited",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TSM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Teck Resources Limited": {
+    "symbol": "TECK",
+    "providerName": "Teck Resources Limited",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TECK/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Teledyne Technologies Inc": {
+    "symbol": "TDY",
+    "providerName": "Teledyne Technologies Incorporated",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TDY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Tenable Holdings Inc.": {
+    "symbol": "TENB",
+    "providerName": "Tenable Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TENB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Terawulf Inc": {
+    "symbol": "WULF",
+    "providerName": "TeraWulf Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WULF/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Tesla, Inc.": {
+    "symbol": "TSLA",
+    "providerName": "Tesla, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TSLA/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Thermo Fisher Scientific, Inc.": {
+    "symbol": "TMO",
+    "providerName": "Thermo Fisher Scientific Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TMO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Toast Inc": {
+    "symbol": "TOST",
+    "providerName": "Toast, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TOST/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "TransDigm Group Incorporated": {
+    "symbol": "TDG",
+    "providerName": "TransDigm Group Incorporated",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TDG/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Trimble Navigation Limited": {
+    "symbol": "TRMB",
+    "providerName": "Trimble Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TRMB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Twilio": {
+    "symbol": "TWLO",
+    "providerName": "Twilio Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TWLO/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Twist Bioscience Corp": {
+    "symbol": "TWST",
+    "providerName": "Twist Bioscience Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/TWST/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "U.S. Total Stock Market Index Vanguard": {
+    "symbol": "VTI",
+    "providerName": "Vanguard Morningstar Total Stock Market ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VTI/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "UiPath, Inc.": {
+    "symbol": "PATH",
+    "providerName": "UiPath, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/PATH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Universal Display Corp.": {
+    "symbol": "OLED",
+    "providerName": "Universal Display Corporation",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/OLED/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Uranium Energy Corp.": {
+    "symbol": "UEC",
+    "providerName": "Uranium Energy Corp.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/UEC/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Vanguard Interm-Term Govt Bond": {
+    "symbol": "VGIT",
+    "providerName": "Vanguard Intermediate-Term Treasury Index Fund ETF Shares",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VGIT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Varonis Systems, Inc.": {
+    "symbol": "VRNS",
+    "providerName": "Varonis Systems, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VRNS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Ventas, Inc.": {
+    "symbol": "VTR",
+    "providerName": "Ventas, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VTR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Veracyte, Inc.": {
+    "symbol": "VCYT",
+    "providerName": "Veracyte, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VCYT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "VeriSign, Inc.": {
+    "symbol": "VRSN",
+    "providerName": "VeriSign, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VRSN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Vertex Pharmaceuticals Incorporated": {
+    "symbol": "VRTX",
+    "providerName": "Vertex Pharmaceuticals Incorporated",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VRTX/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "ViaSat, Inc.": {
+    "symbol": "VSAT",
+    "providerName": "Viasat, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VSAT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Visa, Inc.": {
+    "symbol": "V",
+    "providerName": "Visa Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/V/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "WISE GROUP PLC-CL A": {
+    "symbol": "WSE",
+    "providerName": "Wise Group plc",
+    "reviewedAt": "2026-10-02",
+    "source": "https://newsroom.wise.com/en-NAM/265506-wise-debuts-us-listing-on-nasdaq/",
+    "note": "US Class A listing began May 2026; no London price splicing."
+  },
+  "Walmart Inc.": {
+    "symbol": "WMT",
+    "providerName": "Walmart Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WMT/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Waste Connections, Inc.": {
+    "symbol": "WCN",
+    "providerName": "Waste Connections, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WCN/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Waste Management, Inc.": {
+    "symbol": "WM",
+    "providerName": "Waste Management, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Welltower Inc.": {
+    "symbol": "WELL",
+    "providerName": "Welltower Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WELL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "West Pharmaceutical Services Inc": {
+    "symbol": "WST",
+    "providerName": "West Pharmaceutical Services, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WST/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Woodward Inc": {
+    "symbol": "WWD",
+    "providerName": "Woodward, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WWD/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Workday, Inc.": {
+    "symbol": "WDAY",
+    "providerName": "Workday, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/WDAY/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "XPeng Inc.": {
+    "symbol": "XPEV",
+    "providerName": "XPeng Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/XPEV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Zimmer Biomet Holdings, Inc.": {
+    "symbol": "ZBH",
+    "providerName": "Zimmer Biomet Holdings, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ZBH/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Zoom Communications Inc": {
+    "symbol": "ZM",
+    "providerName": "Zoom Communications, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ZM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "Zscaler, Inc.": {
+    "symbol": "ZS",
+    "providerName": "Zscaler, Inc.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ZS/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "eToro Group Ltd.": {
+    "symbol": "ETOR",
+    "providerName": "eToro Group Ltd.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/ETOR/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares Core Universal USD Bond ETF": {
+    "symbol": "IUSB",
+    "providerName": "iShares Core Universal USD Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/IUSB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares High Yield Systematic Bond ETF": {
+    "symbol": "HYDB",
+    "providerName": "iShares High Yield Systematic Bond ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HYDB/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI EAFE Min Vol Factor ETF": {
+    "symbol": "EFAV",
+    "providerName": "iShares MSCI EAFE Min Vol Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/EFAV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI USA Min Vol Factor ETF": {
+    "symbol": "USMV",
+    "providerName": "iShares MSCI USA Min Vol Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/USMV/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI USA Momentum Factor": {
+    "symbol": "MTUM",
+    "providerName": "iShares MSCI USA Momentum Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MTUM/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI USA Quality Factor ETF": {
+    "symbol": "QUAL",
+    "providerName": "iShares MSCI USA Quality Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/QUAL/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI USA Size Factor ETF": {
+    "symbol": "SIZE",
+    "providerName": "iShares MSCI USA Size Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/SIZE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "iShares MSCI USA Value Factor ETF": {
+    "symbol": "VLUE",
+    "providerName": "iShares MSCI USA Value Factor ETF",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/VLUE/",
+    "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "JPMorgan Chase & Co.": {
+    "symbol": "JPM",
+    "providerName": "JPMorgan Chase & Co.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.jpmorganchase.com/ir",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
+  },
+  "Berkshire Hathaway Inc. Class B": {
+    "symbol": "BRK-B",
+    "providerName": "Berkshire Hathaway Inc. Class B",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.berkshirehathaway.com/",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
+  },
+  "GE Aerospace": {
+    "symbol": "GE",
+    "providerName": "GE Aerospace",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.geaerospace.com/investor-relations",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
+  }
+}

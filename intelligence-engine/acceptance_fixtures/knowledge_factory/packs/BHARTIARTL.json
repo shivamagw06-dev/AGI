@@ -1,0 +1,14 @@
+{
+  "coverage": 0.75,
+  "current_pe": 53.673324,
+  "downside_case": -0.049822,
+  "entity": "BHARTIARTL",
+  "entity_confidence": 0.95,
+  "freshness": "2026-08-01T13:04:24Z",
+  "historical_pe": 47.0229,
+  "missing_fields": [],
+  "provenance": "knowledge_factory",
+  "quality": 90.0,
+  "risk_drivers": "market_beta,volatility",
+  "version": "kf-pipeline-v1.0.0"
+}

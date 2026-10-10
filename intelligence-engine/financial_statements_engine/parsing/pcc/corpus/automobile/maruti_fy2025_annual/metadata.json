@@ -1,0 +1,22 @@
+{
+  "case_id": "maruti_fy2025_annual",
+  "company_id": "nse:MARUTI",
+  "company_name": "Maruti Suzuki",
+  "currency": "INR",
+  "document_hash": "e44c852988c3a2b3eee08134db4ffb807273af9037b60ab3bfef735ff8a89d20",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Passenger Vehicles",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "automobile",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "MARUTI",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

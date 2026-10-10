@@ -1,0 +1,778 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.572977Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited provides information technology (IT) and IT enabled services.\n\nBusiness Segments\n\nThe company operates in several business segments that encompass a broad range of IT services, consulting, and solutions tailored to meet the unique needs of its clients across various industries. The primary segments include IT Services, Consulting, Digital Transformation Services, and Managed Services.\n\nIT Services\n\nThis segment encompasses a wide array of offerings, such as application development and maintenance, infrastructure management, and enterprise solutions.\n\nConsulting\n\nThis segment focuses on delivering strategic business insights and solutions. Through its industry-focused consulting approach, the company helps businesses reimagine their operations and develop comprehensive strategies that drive growth while minimizing risks.\n\nDigital Transformation Services\n\nThis segment offers solutions, such as cloud computing, analytics, and artificial intelligence enabling organizations to thrive in the rapidly evolving digital landscape.\n\nManaged Services\n\nThis segment focuses on delivering extensive support and streamlined operations while allowing clients to concentrate on their core competencies. By providing end-to-end management of IT systems, the company enables businesses to maximize return on investment and maintain a competitive edge in their respective markets.\n\nBusiness Strategy\n\nThe company's business strategy is centered around innovation and customer-centricity. In addition, the company embraces a proactive approach toward sustainability and environmental responsibility, integrating these principles into its business practices.\n\nProducts and Services\n\nThe company offers a comprehensive range of products and services that cater to diverse industry needs. These span across various technological domains, including:\n\nApplication Services: End-to-end development, maintenance, and management of applications.\n\nCloud Services: Comprehensive cloud solutions enabling seamless migration, deployment, and management.\n\nEnterprise Solutions: Implementation of enterprise resource planning (ERP) systems tailored to enhance business processes.\n\nAnalytics and Insights: Advanced data analytics services that drive informed decision-making through enhanced data visibility.\n\nCybersecurity: Robust security solutions that safeguard business assets and crucial information against evolving cyber threats.\n\nIoT Services: Solutions focused on integrating connected devices and enhancing operational efficiencies.\n\nDigital Experience Solutions: Enhancing customer engagement through cutting-edge digital marketing and customer experience management.\n\nGeographical Markets Served\n\nThe company operates on a global scale serving clients across various regions, including North America, Europe, Asia Pacific, Latin America, and the Middle East.\n\nCustomers\n\nThe company serves a diverse range of customers across various industries, including banking, financial services, insurance, healthcare, retail, telecommunications, and manufacturing. The clientele represents a mix of Fortune 500 firms, government entities, and small- to mid-sized enterprises showcasing the company\u2019s ability to cater to varied business needs and scales.\n\nSales and Marketing\n\nThe company utilizes a multifaceted approach to sales and marketing that includes direct sales, partnerships, and digital marketing strategies. The direct sales force works closely with clients to understand their requirements and tailor solutions specifically to meet their needs.\n\nPartnerships with other technology and consulting firms allow the company to broaden its service offering and reach. Additionally, the company employs digital marketing techniques that leverage online platforms to enhance brand visibility and engage potential clients through targeted campaigns.\n\nHistory\n\nTata Consultancy Services Limited was founded in 1968. The company was incorporated in 1995.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.230136Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited provides information technology (IT) and IT enabled services.\n\nBusiness Segments\n\nThe company operates in several business segments that encompass a broad range of IT services, consulting, and solutions tailored to meet the unique needs of its clients across various industries. The primary segments include IT Services, Consulting, Digital Transformation Services, and Managed Services.\n\nIT Services\n\nThis segment encompasses a wide array of offerings, such as application development and maintenance, infrastructure management, and enterprise solutions.\n\nConsulting\n\nThis segment focuses on delivering strategic business insights and solutions. Through its industry-focused consulting approach, the company helps businesses reimagine their operations and develop comprehensive strategies that drive growth while minimizing risks.\n\nDigital Transformation Services\n\nThis segment offers solutions, such as cloud computing, analytics, and artificial intelligence enabling organizations to thrive in the rapidly evolving digital landscape.\n\nManaged Services\n\nThis segment focuses on delivering extensive support and streamlined operations while allowing clients to concentrate on their core competencies. By providing end-to-end management of IT systems, the company enables businesses to maximize return on investment and maintain a competitive edge in their respective markets.\n\nBusiness Strategy\n\nThe company's business strategy is centered around innovation and customer-centricity. In addition, the company embraces a proactive approach toward sustainability and environmental responsibility, integrating these principles into its business practices.\n\nProducts and Services\n\nThe company offers a comprehensive range of products and services that cater to diverse industry needs. These span across various technological domains, including:\n\nApplication Services: End-to-end development, maintenance, and management of applications.\n\nCloud Services: Comprehensive cloud solutions enabling seamless migration, deployment, and management.\n\nEnterprise Solutions: Implementation of enterprise resource planning (ERP) systems tailored to enhance business processes.\n\nAnalytics and Insights: Advanced data analytics services that drive informed decision-making through enhanced data visibility.\n\nCybersecurity: Robust security solutions that safeguard business assets and crucial information against evolving cyber threats.\n\nIoT Services: Solutions focused on integrating connected devices and enhancing operational efficiencies.\n\nDigital Experience Solutions: Enhancing customer engagement through cutting-edge digital marketing and customer experience management.\n\nGeographical Markets Served\n\nThe company operates on a global scale serving clients across various regions, including North America, Europe, Asia Pacific, Latin America, and the Middle East.\n\nCustomers\n\nThe company serves a diverse range of customers across various industries, including banking, financial services, insurance, healthcare, retail, telecommunications, and manufacturing. The clientele represents a mix of Fortune 500 firms, government entities, and small- to mid-sized enterprises showcasing the company\u2019s ability to cater to varied business needs and scales.\n\nSales and Marketing\n\nThe company utilizes a multifaceted approach to sales and marketing that includes direct sales, partnerships, and digital marketing strategies. The direct sales force works closely with clients to understand their requirements and tailor solutions specifically to meet their needs.\n\nPartnerships with other technology and consulting firms allow the company to broaden its service offering and reach. Additionally, the company employs digital marketing techniques that leverage online platforms to enhance brand visibility and engage potential clients through targeted campaigns.\n\nHistory\n\nTata Consultancy Services Limited was founded in 1968. The company was incorporated in 1995.",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.560615Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited provides information technology (IT) and IT enabled services. It offers TCS ADD, a suite of AI powered life sciences platforms; TCS BaNCS, a financial services platform; TCS BFSI Platforms, a cloud-native, subscription-based as-a-service digital ecosystem for insurers and financial firms; TCS Chroma, a cloud-based AI-led hire-to-retire modular platform; TCS Customer Intelligence & Insights, an AI-powered, real-time customer data analytics solution; TCS ERP on Cloud, SAP transformation with AI-powered smart solutions; ignio, a cognitive automation software product; TCS iON, a learning ecosystem; and TCS HOBS, a cloud-native, catalog-centric platform with composable architecture and insights-led personalization capabilities. It also offers TCS Intelligent Urban Exchange for enterprises and smart cities; TCS OmniStore, a retail commerce platform; TCS Optumera, a strategic intelligence platform; TCS Tap, a platform for intelligent procurement; Quartz, a distributed ledger technology; TCS TwinX, a risk-free experimentation platform; TCS MasterCraft, an AI-driven cognitive automation product; Jile, an enterprise agile planning and delivery tool; TCS DigiBOLT, an end-to-end, organization-wide enterprise platform; and TCS AI WisdomNext, an enterprise grade GenAI platform. In addition, the company provides AI, data and analytics, cloud, cognitive business, consulting, cybersecurity, enterprise solutions, industrial autonomy and engineering, network solutions and services, TCS interactive, and sustainability services. It serves banking; capital markets; consumer packaged goods and distribution; communications, media, and information services; education; energy, resources, and utilities; healthcare; high tech; insurance; life sciences; manufacturing; public services; retail; and travel and logistics industries. The company was founded in 1968 and is based in Mumbai, India. The company operates as a subsidiary of Tata Sons Private Limited.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.215279Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited provides information technology (IT) and IT enabled services. It offers TCS ADD, a suite of AI powered life sciences platforms; TCS BaNCS, a financial services platform; TCS BFSI Platforms, a cloud-native, subscription-based as-a-service digital ecosystem for insurers and financial firms; TCS Chroma, a cloud-based AI-led hire-to-retire modular platform; TCS Customer Intelligence & Insights, an AI-powered, real-time customer data analytics solution; TCS ERP on Cloud, SAP transformation with AI-powered smart solutions; ignio, a cognitive automation software product; TCS iON, a learning ecosystem; and TCS HOBS, a cloud-native, catalog-centric platform with composable architecture and insights-led personalization capabilities. It also offers TCS Intelligent Urban Exchange for enterprises and smart cities; TCS OmniStore, a retail commerce platform; TCS Optumera, a strategic intelligence platform; TCS Tap, a platform for intelligent procurement; Quartz, a distributed ledger technology; TCS TwinX, a risk-free experimentation platform; TCS MasterCraft, an AI-driven cognitive automation product; Jile, an enterprise agile planning and delivery tool; TCS DigiBOLT, an end-to-end, organization-wide enterprise platform; and TCS AI WisdomNext, an enterprise grade GenAI platform. In addition, the company provides AI, data and analytics, cloud, cognitive business, consulting, cybersecurity, enterprise solutions, industrial autonomy and engineering, network solutions and services, TCS interactive, and sustainability services. It serves banking; capital markets; consumer packaged goods and distribution; communications, media, and information services; education; energy, resources, and utilities; healthcare; high tech; insurance; life sciences; manufacturing; public services; retail; and travel and logistics industries. The company was founded in 1968 and is based in Mumbai, India. The company operates as a subsidiary of Tata Sons Private Limited.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.541485Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex USA IMI Low Carbon Leaders Index\n\nMSCI EM (Emerging Markets) Size Tilt Index\n\nMSCI ACWI Eu Ctb Overlay Index\n\nMSCI MPF AC Asia Pacific Ex JP Ex HK Unhedged Index\n\nMSCI ACWI Ex Europe/It Svc (Industry) Index\n\nMSCI AC Asia Ex JP Cyclical Sectors Index\n\nMSCI ACWI Universal Index\n\nFTSE All-World ex South Africa Index (USD)\n\nMSCI AC AP Ex JP IMI/It Svc (Industry) Index\n\nMSCI India Equal Weighted Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.184057Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "FTSE All-World Ex Hong Kong Ex China Index\n\nMSCI ACWI Ex CA/It Svc (Industry) Index\n\nMSCI ACWI Screened Index\n\nFTSE Emerging Inc Korea Index\n\nMSCI ACWI IMI Equal Weighted Index\n\nMSCI EM Diversified Multiple 3-Factor Index\n\nS&P Global Ex-Japan LargeMidCap Carbon Efficient Index - Information Technology (Sector)\n\nMSCI AC Asia Ex Japan Climate Action Index\n\nMSCI ACWI Ex Australia Climate Action Index\n\nFTSE All-World Ex UK Aus HK NZ SG Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.557260Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.208806Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.558062Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "RBC Global Asset Management (U.S.) Inc. (Current Investor); Tata Investment Corporation Limited (BSE:501301) (Current Investor); Tata Sons Private Limited (Current Parent); Life Insurance Corporation of India (NSEI:LICI) (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); Singapore (Current Investor); Axis Mutual Fund Trustee Limited (Current Investor); Shah Investor's Home Limited (Current Investor); Societe Generale - India (Current Investor); L&T Finance Holdings Limited, Asset Management Arm (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.210450Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "RBC Global Asset Management (U.S.) Inc. (Current Investor); Tata Investment Corporation Limited (BSE:501301) (Current Investor); Tata Sons Private Limited (Current Parent); Life Insurance Corporation of India (NSEI:LICI) (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); Singapore (Current Investor); Axis Mutual Fund Trustee Limited (Current Investor); Shah Investor's Home Limited (Current Investor); Societe Generale - India (Current Investor); L&T Finance Holdings Limited, Asset Management Arm (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.561588Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 92,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.217214Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 92,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.540801Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.182724Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Consultancy Services Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.562806Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.219230Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.559787Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.213249Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.543478Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.187345Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.542810Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20118097",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.186269Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46356188",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.556471Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IT Consulting and Other Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.206912Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IT Consulting and Other Services",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.558915Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Sons Private Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.211871Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Sons Private Limited",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.576841Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 69,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.233280Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 69,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.555685Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.205248Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.542148Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.185203Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.539757Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "TCS",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.181372Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "TCS",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.580631Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.tcs.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.239335Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.tcs.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.564031Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Amdocs Limited (NasdaqGS:DOX); Itron, Inc. (NasdaqGS:ITRI); International Business Machines Corporation (NYSE:IBM); Robert Bosch GmbH; Dimension Data Holdings Limited; Valores Corporativos Softtek Sa De C.V.; HCL Technologies Limited (NSEI:HCLTECH); Larsen & Toubro Limited (BSE:500510); Serco Group plc (LSE:SRP); Capita plc (LSE:CPI); Accenture plc (NYSE:ACN); Temenos AG (SWX:TEMN); Service By Air, Inc.; Bechtle AG (XTRA:BC8); AKKA Technologies SE; Duck Creek Technologies LLC; DFNN, Inc. (PSE:DFNN); Concentrix Corporation (NasdaqGS:CNXC); Hindustan Aeronautics Limited (NSEI:HAL); Tech Mahindra Limited (NSEI:TECHM); MigrationWare; AVG Technologies UK Limited; American Tire Distributors, Inc.; Mindtree Limited; The Citadel Group Limited; CI&T Inc. (NYSE:CINT); Palantir Technologies Inc. (NasdaqGS:PLTR); Cigniti Technologies Limited (BSE:534758); Qualfon, S.C.; Lakeside Community Healthcare, Inc.; Micware Co., Ltd. (NasdaqGM:MWC); Atento S.A. (OTCPK:ATTO.F); Kratikal Tech Limited (BSE:544811); Rackspace Technology, Inc. (NasdaqGS:RXT); Insourced Limited; Smarttech247 Group plc; Delaplex Limited (NSEI:DELAPLEX); Intel Corporation (NasdaqGS:INTC); Nationwide Credit, Inc.; HP Inc. (NYSE:HPQ); Foundever Worldwide Corporation; DXC Technology Company (NYSE:DXC); Edgewater Technology, Inc.; Telef\u00f4nica Brasil S.A. (BOVESPA:VIVT3); Persistent Systems Limited (NSEI:PERSISTENT); NTT DATA Group Corporation; Trigent Software, Inc.; Telia Company AB (publ) (OM:TELIA); Regal Medical Group, Inc.; EPAM Systems, Inc. (NYSE:EPAM); Sercon Service- Konzepte Fur Informations-Systeme GmbH; Altran North America; E-Infochips Private Limited; IAV GmbH Ingenieurgesellschaft Auto und Verkehr; Genpact Limited (NYSE:G); Mastech Digital, Inc. (NYSEAM:MHH); Telstra Purple Pty Ltd; RecordPoint Software Pty Ltd.; Science Applications International Corporation (NasdaqGS:SAIC); Endava plc (NYSE:DAVA); Globant S.A. (NYSE:GLOB); Appen Limited (ASX:APX); Ameri Holdings, Inc.; KPIT Technologies Limited (NSEI:KPITTECH); Kyndryl Inc.; Methodhub Software Limited (BSE:544637); Computacenter plc (LSE:CCC); Salesforce, Inc. (NYSE:CRM); Deloitte Touche Tohmatsu LLC; Agilysys, Inc. (NasdaqGS:AGYS); Cognizant Technology Solutions Corporation (NasdaqGS:CTSH); Oracle Financial Services Software Limited (BSE:532466); G4S Limited; Afry AB (OM:AFRY); Ashok Leyland Limited (NSEI:ASHOKLEY); Sopra Steria Group SA (ENXTPA:SOP); CarbonMeta Technologies, Inc. (OTCPK:COWI); AISIN AW CO., LTD.; URS Management Services, Inc.; HealthCare Partners, IPA; Diamond Infosystems Limited; Etihad Etisalat Company (SASE:7020); Valuemomentum, Inc.; CMC Ltd.; Hinduja Global Solutions Limited (NSEI:HGS); Amazon Web Services, Inc.; R K Swamy Limited (NSEI:RKSWAMY); EJADA Systems Company Limited; Orient Technologies Limited (NSEI:ORIENTTECH); Deloitte Global Services Limited; nDivision Inc.; EliteSoft Global Inc.; EDAG Engineering GmbH; Sutherland Mortgage Services, Inc.; ANDigital Limited; WeShine Tech Private Limited; Majorel Group Luxembourg S.A.; TDCX Inc.; XPON Technologies Group Limited (ASX:XPN); SOCO Corporation Ltd (ASX:SOC); Prodocs Solutions Limited (BSE:544643); Apple Inc. (NasdaqGS:AAPL); Hitachi Energy USA Inc.; Cartesian, Inc.; Exigen Limited; Mattersight Corporation; BT Group plc (LSE:BT.A); Dell Services Corporation; NTT, Inc. (TSE:9432); OneShield, Inc.; GlobalLogic Inc.; Wipro Limited (BSE:507685); TELUS Corporation (TSX:T); Teleperformance SE (ENXTPA:TEP); Tieto Oyj (HLSE:TIETO); AVL List GmbH; FINEOS Corporation Holdings plc (ASX:FCL); Sonata Software Limited (NSEI:SONATSOFTW); T-Systems International GmbH; Expleo Solutions Limited (NSEI:EXPLEOSOL); LTM Limited (NSEI:LTM); AQS, Inc.; Mphasis Limited (BSE:526299); Allgeier SE (XTRA:AEIN); SAPIEN Technologies, Inc.; Homeloan Management Limited; R S Software (India) Limited (BSE:517447); Arabian Internet and Communication Services Company (SASE:7202); Innominds Software Solutions Pvt. Ltd.; Intellect Design Arena Limited (NSEI:INTELLECT); CLPS Incorporation (NasdaqGM:CLPS); Tiger Analytics, Inc.; Reaktor Group Plc (HLSE:REAKTOR); Outsourcing Solutions Inc.; Silverlake Symmetri (Singapore) Pte. Ltd.; Atos Group (ENXTPA:ATO); Booz Allen Hamilton Holding Corporation (NYSE:BAH); q.beyond AG (XTRA:QBY0); Verizon Communications Inc. (NYSE:VZ); Capgemini SE (ENXTPA:CAP); Zensar Technologies Limited (BSE:504067); Anubex NV; Symphony Technology Group, LLC; Firstsource Solutions Limited (NSEI:FSL); StoneRiver, Inc.; Datacom Group Limited; TELUS International (Cda) Inc.; Aspire Systems, Inc.; Technology One Limited (ASX:TNE); PricewaterhouseCoopers LLP, UK branch; T-Systems North America, Inc.; Salam; Vodafone Romania S.A.; Mambu GmbH; Wizeline, Inc.; Conduent Incorporated (NasdaqGS:CNDT); SharedLabs, Inc.; White Pearl Technology Group AB (OM:WPTG B); Kyndryl Holdings, Inc. (NYSE:KD); Ascendion, Inc.; Genxai Analytics Limited (NSEI:GENXAI); Cisco Systems, Inc. (NasdaqGS:CSCO); Datamatix, Inc.; iQor, Inc.; Xoriant Corporation; Assystem S.A. (ENXTPA:ASY); Maximus, Inc. (NYSE:MMS); Computer Task Group, Incorporated; CMTSU Liquidation, Inc. (OTCPK:CBRI); Infosys Limited (NSEI:INFY); Epicenter, Inc.; Tata Motors Passenger Vehicles Limited (BSE:500570); Mitie Group plc (LSE:MTO); The Innovation Group Limited; TomTom North America, Inc.; Wipro BPO Solutions Limited; WNS (Holdings) Limited; Transcom WorldWide AB; Data#3 Limited (ASX:DTL); Client Services, Inc.; Birlasoft Limited (NSEI:BSOFT); Objective Corporation Limited (ASX:OCL); Synapsis Technology Inc.; Luxoft Holding, Inc.; Bharat Electronics Limited (BSE:500049); Cybage Software Private Limited; IntouchCX Inc.; Cognizant Technology Solutions India Private Limited; Broadcom Inc. (NasdaqGS:AVGO); DATAGROUP SE (XTRA:D6H0); Infostretch Corporation; Ernst & Young Global Limited; Mu Sigma Inc.; Sahara Net LLC; Happiest Minds Technologies Limited (NSEI:HAPPSTMNDS); QuantumBlack LLP; innoWake gmbh; IBM Consulting; IBEX Limited (NasdaqGM:IBEX); Infinity Infoway Limited (BSE:544567); Atturra Limited (ASX:ATA); Ibm Global Services Limited; Testinium Teknoloji Yazilim A.S.; Testingxperts Private Limited; F5, Inc. (NasdaqGS:FFIV); Telstra Group Limited (ASX:TLS); Genpact LLC; Aon plc (NYSE:AON); VMware LLC; Automatic Data Processing, Inc. (NasdaqGS:ADP); TTEC Holdings, Inc. (NasdaqGS:TTEC); Expert Global Solutions, Inc.; Virtusa Corporation; Garmin Ltd. (NYSE:GRMN); Aztecsoft Limited; ExlService Holdings, Inc. (NasdaqGS:EXLS); Siemens Limited (NSEI:SIEMENS); Bertrandt Aktiengesellschaft (XTRA:BDT); Alten S.A. (ENXTPA:ATE); Hexaware Technologies Limited (NSEI:HEXT); GC Services Limited Partnership; Sutherland Global Services, Inc.; Dealer Tire, LLC; Bittium Oyj (HLSE:BITTI); VXI Global Solutions, LLC; PricewaterhouseCoopers International Limited; Fractal Analytics Limited (NSEI:FRACTAL); TIA Technology A/S; Exl Service.com (India) Private Limited; Finsoft Ltd.; Cognizant Technology Solutions Ltd.; Grid Dynamics Holdings, Inc. (NasdaqCM:GDYN); Deloitte Digital; NNG LLC; nCino, Inc. (NasdaqGS:NCNO); Deloitte Touche Tohmatsu Limited; ISCS Analytics, LLC; TaskUs, Inc. (NasdaqGS:TASK); Being Technologies Ltd.; Vertexplus Technologies Limited (NSEI:VERTEXPLUS); Atmastco Defence Systems Private Limited; Innovative Aerosystems, Inc. (NasdaqGS:ISSC); AllianceOne Inc.; Thoughtworks, Inc.; Sify Technologies Limited (NasdaqCM:SIFY); Comcast Corporation (NasdaqGS:CMCSA); RCM Technologies, Inc. (NasdaqGM:RCMT); Innodata Inc. (NasdaqGM:INOD); Insight Enterprises, Inc. (NasdaqGS:NSIT); China Mobile Limited (SEHK:941); Perficient, Inc.; Mahindra & Mahindra Limited (NSEI:M&M); Capgemini N.V.; Infosys BPM Limited; NTG Clarity Networks Inc. (TSXV:NCI); Melstar Information Technologies Limited (BSE:532307); Webhelp SAS; Fresche Solutions Inc.; IBM Global Services U.S.; Deloitte Touche Tohmatsu India, LLP; NTT DATA Americas, Inc.; Saudi Business Machines Ltd.; Movate Inc.; SMS Co., Ltd. (TSE:2175); Genpact India Private Limited; L&T Technology Services Limited (NSEI:LTTS); Latent View Analytics Limited (NSEI:LATENTVIEW); Indegene Limited (NSEI:INDGN); Mastersoft Erp Solutions Private Limited; Foundever Group",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.221322Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "NTT, Inc. (TSE:9432); OneShield, Inc.; GlobalLogic Inc.; Wipro Limited (BSE:507685); TELUS Corporation (TSX:T); Teleperformance SE (ENXTPA:TEP); Tieto Oyj (HLSE:TIETO); AVL List GmbH; FINEOS Corporation Holdings plc (ASX:FCL); Sonata Software Limited (NSEI:SONATSOFTW); T-Systems International GmbH; Expleo Solutions Limited (NSEI:EXPLEOSOL); LTM Limited (NSEI:LTM); AQS, Inc.; Mphasis Limited (BSE:526299); Allgeier SE (XTRA:AEIN); SAPIEN Technologies, Inc.; Homeloan Management Limited; R S Software (India) Limited (BSE:517447); Arabian Internet and Communication Services Company (SASE:7202); Innominds Software Solutions Pvt. Ltd.; Intellect Design Arena Limited (NSEI:INTELLECT); CLPS Incorporation (NasdaqGM:CLPS); Tiger Analytics, Inc.; Reaktor Group Plc (HLSE:REAKTOR); T-Systems North America, Inc.; Salam; Vodafone Romania S.A.; Mambu GmbH; Wizeline, Inc.; Conduent Incorporated (NasdaqGS:CNDT); SharedLabs, Inc.; White Pearl Technology Group AB (OM:WPTG B); Kyndryl Holdings, Inc. (NYSE:KD); Ascendion, Inc.; Genxai Analytics Limited (NSEI:GENXAI); Data#3 Limited (ASX:DTL); Client Services, Inc.; Birlasoft Limited (NSEI:BSOFT); Objective Corporation Limited (ASX:OCL); Synapsis Technology Inc.; Luxoft Holding, Inc.; Bharat Electronics Limited (BSE:500049); Cybage Software Private Limited; IntouchCX Inc.; Cognizant Technology Solutions India Private Limited; Broadcom Inc. (NasdaqGS:AVGO); DATAGROUP SE (XTRA:D6H0); Infostretch Corporation; Ernst & Young Global Limited; Mu Sigma Inc.; Sahara Net LLC; Happiest Minds Technologies Limited (NSEI:HAPPSTMNDS); QuantumBlack LLP; innoWake gmbh; IBM Consulting; IBEX Limited (NasdaqGM:IBEX); Infinity Infoway Limited (BSE:544567); Atturra Limited (ASX:ATA); Ibm Global Services Limited; Testinium Teknoloji Yazilim A.S.; Testingxperts Private Limited; AISIN AW CO., LTD.; URS Management Services, Inc.; HealthCare Partners, IPA; Diamond Infosystems Limited; Etihad Etisalat Company (SASE:7020); Valuemomentum, Inc.; CMC Ltd.; Hinduja Global Solutions Limited (NSEI:HGS); Amazon Web Services, Inc.; R K Swamy Limited (NSEI:RKSWAMY); EJADA Systems Company Limited; Orient Technologies Limited (NSEI:ORIENTTECH); Deloitte Global Services Limited; nDivision Inc.; EliteSoft Global Inc.; EDAG Engineering GmbH; Sutherland Mortgage Services, Inc.; ANDigital Limited; WeShine Tech Private Limited; Majorel Group Luxembourg S.A.; TDCX Inc.; XPON Technologies Group Limited (ASX:XPN); SOCO Corporation Ltd (ASX:SOC); Prodocs Solutions Limited (BSE:544643); Sercon Service- Konzepte Fur Informations-Systeme GmbH; Altran North America; E-Infochips Private Limited; IAV GmbH Ingenieurgesellschaft Auto und Verkehr; Genpact Limited (NYSE:G); Mastech Digital, Inc. (NYSEAM:MHH); Telstra Purple Pty Ltd; RecordPoint Software Pty Ltd.; Science Applications International Corporation (NasdaqGS:SAIC); Endava plc (NYSE:DAVA); Globant S.A. (NYSE:GLOB); Appen Limited (ASX:APX); Ameri Holdings, Inc.; KPIT Technologies Limited (NSEI:KPITTECH); Kyndryl Inc.; Methodhub Software Limited (BSE:544637); Amdocs Limited (NasdaqGS:DOX); Itron, Inc. (NasdaqGS:ITRI); International Business Machines Corporation (NYSE:IBM); Robert Bosch GmbH; Dimension Data Holdings Limited; Valores Corporativos Softtek Sa De C.V.; HCL Technologies Limited (NSEI:HCLTECH); Larsen & Toubro Limited (BSE:500510); Serco Group plc (LSE:SRP); Capita plc (LSE:CPI); Accenture plc (NYSE:ACN); Temenos AG (SWX:TEMN); Service By Air, Inc.; Bechtle AG (XTRA:BC8); AKKA Technologies SE; F5, Inc. (NasdaqGS:FFIV); Telstra Group Limited (ASX:TLS); Genpact LLC; Aon plc (NYSE:AON); VMware LLC; Automatic Data Processing, Inc. (NasdaqGS:ADP); TTEC Holdings, Inc. (NasdaqGS:TTEC); Expert Global Solutions, Inc.; Virtusa Corporation; Garmin Ltd. (NYSE:GRMN); Aztecsoft Limited; ExlService Holdings, Inc. (NasdaqGS:EXLS); Siemens Limited (NSEI:SIEMENS); Bertrandt Aktiengesellschaft (XTRA:BDT); Alten S.A. (ENXTPA:ATE); Hexaware Technologies Limited (NSEI:HEXT); GC Services Limited Partnership; Sutherland Global Services, Inc.; Dealer Tire, LLC; Bittium Oyj (HLSE:BITTI); VXI Global Solutions, LLC; Apple Inc. (NasdaqGS:AAPL); Hitachi Energy USA Inc.; Cartesian, Inc.; Exigen Limited; Mattersight Corporation; BT Group plc (LSE:BT.A); Dell Services Corporation; Outsourcing Solutions Inc.; Silverlake Symmetri (Singapore) Pte. Ltd.; Atos Group (ENXTPA:ATO); Booz Allen Hamilton Holding Corporation (NYSE:BAH); q.beyond AG (XTRA:QBY0); Verizon Communications Inc. (NYSE:VZ); Capgemini SE (ENXTPA:CAP); Zensar Technologies Limited (BSE:504067); Anubex NV; Symphony Technology Group, LLC; Firstsource Solutions Limited (NSEI:FSL); StoneRiver, Inc.; Datacom Group Limited; TELUS International (Cda) Inc.; Aspire Systems, Inc.; Technology One Limited (ASX:TNE); PricewaterhouseCoopers LLP, UK branch; Cisco Systems, Inc. (NasdaqGS:CSCO); Datamatix, Inc.; iQor, Inc.; Xoriant Corporation; Assystem S.A. (ENXTPA:ASY); Maximus, Inc. (NYSE:MMS); Computer Task Group, Incorporated; CMTSU Liquidation, Inc. (OTCPK:CBRI); Infosys Limited (NSEI:INFY); Epicenter, Inc.; Tata Motors Passenger Vehicles Limited (BSE:500570); Mitie Group plc (LSE:MTO); The Innovation Group Limited; TomTom North America, Inc.; Wipro BPO Solutions Limited; WNS (Holdings) Limited; Transcom WorldWide AB; Intel Corporation (NasdaqGS:INTC); Nationwide Credit, Inc.; HP Inc. (NYSE:HPQ); Foundever Worldwide Corporation; DXC Technology Company (NYSE:DXC); Edgewater Technology, Inc.; Telef\u00f4nica Brasil S.A. (BOVESPA:VIVT3); Persistent Systems Limited (NSEI:PERSISTENT); NTT DATA Group Corporation; Trigent Software, Inc.; Telia Company AB (publ) (OM:TELIA); Regal Medical Group, Inc.; EPAM Systems, Inc. (NYSE:EPAM); Computacenter plc (LSE:CCC); Salesforce, Inc. (NYSE:CRM); Deloitte Touche Tohmatsu LLC; Agilysys, Inc. (NasdaqGS:AGYS); Cognizant Technology Solutions Corporation (NasdaqGS:CTSH); Oracle Financial Services Software Limited (BSE:532466); G4S Limited; Afry AB (OM:AFRY); Ashok Leyland Limited (NSEI:ASHOKLEY); Sopra Steria Group SA (ENXTPA:SOP); CarbonMeta Technologies, Inc. (OTCPK:COWI); Duck Creek Technologies LLC; DFNN, Inc. (PSE:DFNN); Concentrix Corporation (NasdaqGS:CNXC); Hindustan Aeronautics Limited (NSEI:HAL); Tech Mahindra Limited (NSEI:TECHM); MigrationWare; AVG Technologies UK Limited; American Tire Distributors, Inc.; Mindtree Limited; The Citadel Group Limited; CI&T Inc. (NYSE:CINT); Palantir Technologies Inc. (NasdaqGS:PLTR); Cigniti Technologies Limited (BSE:534758); Qualfon, S.C.; Lakeside Community Healthcare, Inc.; Micware Co., Ltd. (NasdaqGM:MWC); Atento S.A. (OTCPK:ATTO.F); Kratikal Tech Limited (BSE:544811); Rackspace Technology, Inc. (NasdaqGS:RXT); Insourced Limited; Smarttech247 Group plc; Delaplex Limited (NSEI:DELAPLEX); Innovative Aerosystems, Inc. (NasdaqGS:ISSC); AllianceOne Inc.; Thoughtworks, Inc.; Sify Technologies Limited (NasdaqCM:SIFY); Comcast Corporation (NasdaqGS:CMCSA); RCM Technologies, Inc. (NasdaqGM:RCMT); Innodata Inc. (NasdaqGM:INOD); Insight Enterprises, Inc. (NasdaqGS:NSIT); China Mobile Limited (SEHK:941); Perficient, Inc.; Mahindra & Mahindra Limited (NSEI:M&M); Capgemini N.V.; Infosys BPM Limited; NTG Clarity Networks Inc. (TSXV:NCI); Melstar Information Technologies Limited (BSE:532307); Webhelp SAS; Fresche Solutions Inc.; IBM Global Services U.S.; Deloitte Touche Tohmatsu India, LLP; NTT DATA Americas, Inc.; Saudi Business Machines Ltd.; Movate Inc.; SMS Co., Ltd. (TSE:2175); Genpact India Private Limited; L&T Technology Services Limited (NSEI:LTTS); Latent View Analytics Limited (NSEI:LATENTVIEW); Indegene Limited (NSEI:INDGN); Mastersoft Erp Solutions Private Limited; Foundever Group; PricewaterhouseCoopers International Limited; Fractal Analytics Limited (NSEI:FRACTAL); TIA Technology A/S; Exl Service.com (India) Private Limited; Finsoft Ltd.; Cognizant Technology Solutions Ltd.; Grid Dynamics Holdings, Inc. (NasdaqCM:GDYN); Deloitte Digital; NNG LLC; nCino, Inc. (NasdaqGS:NCNO); Deloitte Touche Tohmatsu Limited; ISCS Analytics, LLC; TaskUs, Inc. (NasdaqGS:TASK); Being Technologies Ltd.; Vertexplus Technologies Limited (NSEI:VERTEXPLUS); Atmastco Defence Systems Private Limited",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.565924Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7622.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.222665Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7622.2,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.569863Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29175.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.226337Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29175.5,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.545138Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 25.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.188496Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 25.5,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.567843Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 88749,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.224314Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 88749,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.571668Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 92163.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.227948Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 92163.9,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.574981Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-09 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.231783Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-09 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.547334Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.99,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.190651Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.03,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.548791Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 16.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.192863Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 16.6,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.548082Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 10.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.191756Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 10.8,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.551786Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -20,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.198144Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -19.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.549518Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.12,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.193993Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.14,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.552554Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -27.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.199746Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -27.1,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.554067Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.201739Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.550253Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -22.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.195142Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -22.2,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.551000Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -20,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.196376Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -20,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.546372Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -24.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.189583Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -24.2,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.554892Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.316,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.203242Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.12,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.579393Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "5G Edge Suite; Accounts Receivables Services; Advanced Drug Development Platform; Advanced Process Control Solutions; AI, Data and Cloud Services; Analytics & Insights Services; APAC Digital Sustainability Index; Application Development and Management Services; Application Portfolio Rationalization Services; Application Support and Technical Helpdesk Solutions; Appointment Scheduling Services; Asset Leveraged Solutions; AURA Dealer Business Management Golden Template; Automotive Electronics and Embedded Systems; Automotive Shop Floor Services; Automotive Sourcing and Procurement Services; Benefits Administration Services; Biostatistics Services; Business & Information Technology Architecture Services; Business Analytics Services; Business Change Management Services; Business Ecosystem Integration Services; Business Intelligence Services; Business Process Services; Campus Management Solution; Capital Markets Services; Centralizing Incident Resolution; Certification Services; Claims Administration Services; Clearing, Depository and Settlement Solutions; Clin E2e; Clinical Data Management Services; Closed Book Administration Services; CloudPlus; CMMI-DEV; CMMI-SVC; Cognitive Business Operation Solutions; Collaborative CRM Solutions; Communication Networking Services; Compliance Management Services; Connected Intelligence Platform Analytics Software; Consistent Service Delivery; Consulting Services; Consumer Electronics Solutions; Contact Center Analytic Solutions; Control System Integration Services; Converged Network Services; Creating And/or Managing High-end Applications; Credit Card Processing; Custom Application Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.237240Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "5G Edge Suite; Accounts Receivables Services; Advanced Drug Development Platform; Advanced Process Control Solutions; AI, Data and Cloud Services; Analytics & Insights Services; APAC Digital Sustainability Index; Application Development and Management Services; Application Portfolio Rationalization Services; Application Support and Technical Helpdesk Solutions; Appointment Scheduling Services; Asset Leveraged Solutions; AURA Dealer Business Management Golden Template; Automotive Electronics and Embedded Systems; Automotive Shop Floor Services; Automotive Sourcing and Procurement Services; Benefits Administration Services; Biostatistics Services; Business & Information Technology Architecture Services; Business Analytics Services; Business Change Management Services; Business Ecosystem Integration Services; Business Intelligence Services; Business Process Services; Campus Management Solution; Capital Markets Services; Centralizing Incident Resolution; Certification Services; Claims Administration Services; Clearing, Depository and Settlement Solutions; Clin E2e; Clinical Data Management Services; Closed Book Administration Services; CloudPlus; CMMI-DEV; CMMI-SVC; Cognitive Business Operation Solutions; Collaborative CRM Solutions; Communication Networking Services; Compliance Management Services; Connected Intelligence Platform Analytics Software; Consistent Service Delivery; Consulting Services; Consumer Electronics Solutions; Contact Center Analytic Solutions; Control System Integration Services; Converged Network Services; Creating And/or Managing High-end Applications; Credit Card Processing; Custom Application Services",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:19.578183Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advanced Drug Development Platform:\nAdvanced Drug Development platform is transforming clinical research, by harnessing digital technologies to minimize human intervention.\n\nAdvanced Process Control Solutions:\nAdvanced Process Control (APC) solutions for modeling and optimization of systems for mineral and metal processing plants.\n\nAnalytics & Insights Services:\nAnalytics & Insights Services can help you analyze the business environment accurately and predict future trends. - Client Challenges - Capability to analyze silos of data across various functional units - Access to a skilled and experienced talent pool - Availability of analytics-specific tools and technology - What TCS Provides.\n\nAPAC Digital Sustainability Index:\nAPAC-focused Digital Sustainability Index will evaluate current sustainability efforts undertaken by companies and governments, identify digital sustainability market leaders in the region, and uncover the factors critical to the development of sustainable digital solutions. A research report will uncover deep insights into key digital sustainability efforts around the region and rank these via the Index. The new index will track the adoption and leverage of digital technologies by enterprises for their growth and transformation, and for discharging their social and environmental responsibilities, to create longer term value for all stakeholders.\n\nAURA Dealer Business Management Golden Template:\nAURA Dealer Business Management (DBM) Golden Template, a new predefined service based on an innovative, business-ready and lean model built for the auto retail sector. The AURA DBM Golden Template is a result of co-innovation and joint development efforts between TCS and SAP. The new AURA service has been built on the SAP ERP and SAP Dealer Business Management applications. The service is offered in the form of a packaged implementation service that can help jump start business operations of auto retailers and contains standard baseline functionality, best practices and end-to-end process scenarios for sales, service, parts business, finance, human resources and their related reports. As a fixed-cost service provided in a ready-to-deploy and out-of-the-box format, AURA reduces implementation time, provides an increased return on investment and facilitates gradual, stage-wise customization and change management.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:17.235415Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advanced Drug Development Platform:\nAdvanced Drug Development platform is transforming clinical research, by harnessing digital technologies to minimize human intervention.\n\nAdvanced Process Control Solutions:\nAdvanced Process Control (APC) solutions for modeling and optimization of systems for mineral and metal processing plants.\n\nAnalytics & Insights Services:\nAnalytics & Insights Services can help you analyze the business environment accurately and predict future trends. - Client Challenges - Capability to analyze silos of data across various functional units - Access to a skilled and experienced talent pool - Availability of analytics-specific tools and technology - What TCS Provides.\n\nAPAC Digital Sustainability Index:\nAPAC-focused Digital Sustainability Index will evaluate current sustainability efforts undertaken by companies and governments, identify digital sustainability market leaders in the region, and uncover the factors critical to the development of sustainable digital solutions. A research report will uncover deep insights into key digital sustainability efforts around the region and rank these via the Index. The new index will track the adoption and leverage of digital technologies by enterprises for their growth and transformation, and for discharging their social and environmental responsibilities, to create longer term value for all stakeholders.\n\nAURA Dealer Business Management Golden Template:\nAURA Dealer Business Management (DBM) Golden Template, a new predefined service based on an innovative, business-ready and lean model built for the auto retail sector. The AURA DBM Golden Template is a result of co-innovation and joint development efforts between TCS and SAP. The new AURA service has been built on the SAP ERP and SAP Dealer Business Management applications. The service is offered in the form of a packaged implementation service that can help jump start business operations of auto retailers and contains standard baseline functionality, best practices and end-to-end process scenarios for sales, service, parts business, finance, human resources and their related reports. As a fixed-cost service provided in a ready-to-deploy and out-of-the-box format, AURA reduces implementation time, provides an increased return on investment and facilitates gradual, stage-wise customization and change management.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "TCS",
+  "updated_at": "2026-08-01T19:38:17.239341Z"
+}

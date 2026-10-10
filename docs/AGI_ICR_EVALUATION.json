@@ -1,0 +1,61 @@
+{
+  "company": "AGI",
+  "sprint": "4.4",
+  "module": "ICR",
+  "icr_version": "institutional-committee-reasoning-v1.0.0",
+  "committee_version": "icr-committee-profile-v1.0.0",
+  "cqs_version": "cqs-v1.0.0",
+  "date": "2026-07-28",
+  "mode": "soft",
+  "results": {
+    "institutional_1000": {
+      "n": 1000,
+      "pass_pct": 99.9,
+      "mean_score": 90.05,
+      "mean_hqs": 95.85,
+      "hqs_pass_pct": 100.0,
+      "mean_cqs": 95.89,
+      "cqs_pass_pct": 100.0,
+      "latency_ms": 10729,
+      "reasoning_changed": false
+    },
+    "cio_frozen_25": {
+      "n": 25,
+      "pass_pct": 100.0,
+      "mean_score": 87.58,
+      "mean_hqs": 95.2,
+      "mean_cqs": 95.26,
+      "cqs_pass_pct": 100.0
+    },
+    "smoke_20": {
+      "n": 20,
+      "pass_pct": 100.0,
+      "mean_score": 87.92,
+      "mean_hqs": 97.32,
+      "mean_cqs": 96.4
+    }
+  },
+  "cqs_component_means_1000": {
+    "bull_completeness": 95.02,
+    "base_realism": 99.1,
+    "bear_completeness": 75.01,
+    "probability_calibration": 100.0,
+    "assumption_quality": 99.1,
+    "catalyst_quality": 99.1,
+    "risk_quality": 99.1,
+    "invalidation_quality": 99.1,
+    "committee_explainability": 99.55
+  },
+  "exit_gate": {
+    "deterministic": true,
+    "replay_preserved": true,
+    "no_reasoning_regression": true,
+    "no_framework_regression": true,
+    "no_communication_regression": true,
+    "langsmith_traces": true,
+    "cqs_generated": true,
+    "hqs_maintained": true,
+    "cio_maintained": true,
+    "voting_engine": false
+  }
+}

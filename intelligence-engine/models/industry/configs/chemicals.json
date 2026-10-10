@@ -1,0 +1,19 @@
+{
+  "industry_id": "chemicals",
+  "name": "Chemicals",
+  "demand_drivers": ["industrial_activity", "exports", "specialty_demand"],
+  "supply_drivers": ["capacity", "feedstock", "china_supply"],
+  "capacity": "plant_utilisation",
+  "pricing": "spreads_and_specialty_premiums",
+  "margins": {"ebitda": "commodity_vs_specialty"},
+  "competition": "global_and_domestic",
+  "regulation": ["environment", "safety"],
+  "capital_intensity": "high",
+  "typical_risks": ["feedstock", "china", "environment", "cycle"],
+  "important_kpis": ["spreads", "utilisation", "specialty_mix", "roce"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "dcf_fcff"],
+  "historical_cycles": ["china_plus_one", "commodity_downturns"],
+  "industry_structure": "mixed_commodity_specialty",
+  "business_characteristics": ["process_know_how", "customer_qualification"],
+  "capital_cycle": "capacity_and_product_mix_shift"
+}

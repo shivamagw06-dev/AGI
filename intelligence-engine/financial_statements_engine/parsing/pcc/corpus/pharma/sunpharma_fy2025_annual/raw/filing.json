@@ -1,0 +1,40 @@
+{
+  "consolidation_type": "consolidated",
+  "document": {
+    "fields": {
+      "CashAndCashEquivalents": {
+        "unit_scale": "crores",
+        "value": 11000.0
+      },
+      "Finance Costs": {
+        "unit_scale": "crores",
+        "value": 700.0
+      },
+      "NetCashFlowsFromUsedInOperatingActivities": {
+        "unit_scale": "crores",
+        "value": 8000.0
+      },
+      "PAT": {
+        "unit_scale": "crores",
+        "value": 9000.0
+      },
+      "Revenue From Operations": {
+        "unit_scale": "crores",
+        "value": 48000.0
+      },
+      "TotalAssets": {
+        "unit_scale": "crores",
+        "value": 75000.0
+      },
+      "TotalEquity": {
+        "unit_scale": "crores",
+        "value": 50000.0
+      }
+    }
+  },
+  "document_type": "json",
+  "evidence_id": "pcc:pharma:sunpharma_fy2025_annual",
+  "period_end": "2025-03-31",
+  "period_type": "annual",
+  "ticker": "SUNPHARMA"
+}

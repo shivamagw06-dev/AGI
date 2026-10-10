@@ -1,0 +1,758 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.945124Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited (\u2018HDFC Bank\u2019) operates as a new-generation private sector bank in India.\n\nThe company provides financial services to its customers in India across metro, urban, semi-urban, and rural markets. The company\u2019s strategy is to provide a comprehensive range of financial products and services to its customers through multiple distribution channels. Since completion of the Transaction on July 1, 2023, the company is also engaged in life and general insurance, asset management, and securities broking products and services through its specialized subsidiaries and joint venture.\n\nThe company has four principal business activities: retail banking, wholesale banking, treasury services, and insurance services. The company\u2019s retail banking products include deposit products, loans (including housing loans and loans to small and medium enterprises), credit cards, debit cards, third-party mutual funds, and insurance products, bill payment services, and other products and services. With respect to wholesale banking, the company offers customers a wide range of commercial and transactional banking services, including working capital finance, trade services, transactional services, and cash management. The company is also a leading provider of structured solutions in India, which combine cash management services with vendor and distributor finance to facilitate supply chain management for the company\u2019s corporate customers. Since completion of the Transaction, the company also provides construction finance. The company\u2019s treasury operations manage its balance sheet, including liquidity and interest rate risks thereon, and include customer-driven services such as advisory services related to foreign exchange and derivative transactions for corporate and institutional customers, supplemented by proprietary trading, including Indian Government securities.\n\nThe company\u2019s non-banking finance company (\u2018NBFC\u2019) subsidiary, HDB Financial Services Limited (\u2018HDBFSL\u2019), offers a wide range of loans and asset finance products, including mortgage loans, commercial vehicle loans, consumer loans, and gold loans, as well as a range of business process outsourcing solutions. The company provides its customers with brokerage accounts through its subsidiary, HDFC Securities Limited (\u2018HSL\u2019), which is one of the leading stock brokerage companies in India and which offers a suite of products and services across various asset classes, such as equity, gold, and debt, and via multiple platforms, i.e., online, mobile, telephone, and branches.\n\nSince completion of the Transaction, the company provides long-term life insurance solutions via its subsidiary, HDFC Life Insurance Company Limited (\u2018HDFC Life\u2019), and a complete range of general insurance products via its joint venture, HDFC ERGO General Insurance Company Limited (\u2018HDFC ERGO\u2019). The company also offers a comprehensive suite of savings and investment products via its subsidiary, HDFC Asset Management Company Limited (\u2018HDFC AMC\u2019), one of India\u2019s largest mutual fund managers.\n\nAs of March 31, 2025, the company was in 4,150 cities and towns and served over 96.9 million customers. In addition, as of March 31, 2025, the company had 15,399 business correspondents, which were primarily manned by common service centers (\u2018CSCs\u2019).\n\nBusiness Strategy\n\nThe company's strategy is to provide a comprehensive range of financial products and services to its customers through multiple distribution channels.\n\nThe key elements of the company's business strategy are to expand the company\u2019s market share in India\u2019s growing banking and financial services sector; continued investments in technology to advance its digital strategy; cross-sell its broad financial product portfolio across its customer base; and embed ESG principles within its wider business strategy.\n\nSegment\n\nThe company operates in five reportable segments: wholesale banking, retail banking, insurance services, treasury services, and others.\n\nRetail Banking\n\nThe retail banking segment serves retail customers through a branch network and other delivery channels. This segment raises deposits from customers and grants loans, provides credit cards and debit cards, and distributes third-party financial products, such as mutual funds and insurance to such customers. Revenues of the retail banking segment are derived from interest earned on retail loans, fees for banking services, profit from foreign exchange and derivative transactions, and interest earned from other segments for surplus funds placed with those segments. The company\u2019s retail banking loan products also include loans to small and medium enterprises for commercial vehicles, construction equipment, and other business purposes.\n\nWholesale Banking\n\nThe wholesale banking segment provides loans and transaction services to corporate customers. Revenues of the wholesale banking segment consist of interest earned on loans given to corporate customers, investment income from credit substitutes, interest earned on the cash float arising from transaction services, fees from such transaction services, and profits from foreign exchange and derivative transactions with wholesale banking customers.\n\nTreasury Services\n\nThe treasury services segment undertakes trading operations on a proprietary account (including investments in government securities), foreign exchange operations, and derivatives trading both on a proprietary account and customer flows and borrowings. Revenues of the treasury services segment primarily consist of fees and gains and losses from trading operations and of net interest revenue/expense from investments in government securities and borrowings.\n\nInsurance Services\n\nThe insurance services segment comprises the life insurance business, which offers a wide range of individual and group insurance solutions, such as protection, pension, savings, investment, annuity, and health. Revenues from the insurance segment consist of premiums, investment income from managed assets, linked income (fund management charges, policy administration charges, mortality charges, surrender charge, discontinuance charges, reinstatement fees, etc.), and other miscellaneous income.\n\nOthers\n\nThe others segment comprises businesses other than the retail banking segment, wholesale banking segment, treasury services segment, and insurance services segment.\n\nPrincipal Business Activities\n\nThe company\u2019s principal business activities consist of retail banking, wholesale banking, treasury services, and insurance services.\n\nRetail Banking\n\nThe company considers itself a one-stop shop for the financial needs of its customers. The company provides a comprehensive range of financial products, including deposit products, loans, credit cards, debit cards, payment wallets, third-party mutual funds, and insurance products, bill payment services, and other services. The company\u2019s retail banking loan products include loans to small and medium enterprises for commercial vehicles, construction equipment, and other business purposes. The company groups these loans as part of its retail banking business considering, among other things, the customer profile, the nature of the product, the differing risks and returns, the market segment, its organization structure, and its internal business reporting mechanism. Such grouping ensures optimal utilization and deployment of specialized resources in the company\u2019s retail banking business. Since completion of the Transaction, the company is directly engaged in providing housing loans. The company also has specific products designed for lower-income individuals through its Sustainable Livelihood Initiative. Through this initiative, the company reaches out to the unbanked and underbanked segments of the Indian population in rural areas. The company actively markets its services through its banking outlets and alternate sales channels, as well as through its relationships with auto",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.879984Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited (\u2018HDFC Bank\u2019) operates as a new-generation private sector bank in India.\n\nThe company provides financial services to its customers in India across metro, urban, semi-urban, and rural markets. The company\u2019s strategy is to provide a comprehensive range of financial products and services to its customers through multiple distribution channels. Since completion of the Transaction on July 1, 2023, the company is also engaged in life and general insurance, asset management, and securities broking products and services through its specialized subsidiaries and joint venture.\n\nThe company has four principal business activities: retail banking, wholesale banking, treasury services, and insurance services. The company\u2019s retail banking products include deposit products, loans (including housing loans and loans to small and medium enterprises), credit cards, debit cards, third-party mutual funds, and insurance products, bill payment services, and other products and services. With respect to wholesale banking, the company offers customers a wide range of commercial and transactional banking services, including working capital finance, trade services, transactional services, and cash management. The company is also a leading provider of structured solutions in India, which combine cash management services with vendor and distributor finance to facilitate supply chain management for the company\u2019s corporate customers. Since completion of the Transaction, the company also provides construction finance. The company\u2019s treasury operations manage its balance sheet, including liquidity and interest rate risks thereon, and include customer-driven services such as advisory services related to foreign exchange and derivative transactions for corporate and institutional customers, supplemented by proprietary trading, including Indian Government securities.\n\nThe company\u2019s non-banking finance company (\u2018NBFC\u2019) subsidiary, HDB Financial Services Limited (\u2018HDBFSL\u2019), offers a wide range of loans and asset finance products, including mortgage loans, commercial vehicle loans, consumer loans, and gold loans, as well as a range of business process outsourcing solutions. The company provides its customers with brokerage accounts through its subsidiary, HDFC Securities Limited (\u2018HSL\u2019), which is one of the leading stock brokerage companies in India and which offers a suite of products and services across various asset classes, such as equity, gold, and debt, and via multiple platforms, i.e., online, mobile, telephone, and branches.\n\nSince completion of the Transaction, the company provides long-term life insurance solutions via its subsidiary, HDFC Life Insurance Company Limited (\u2018HDFC Life\u2019), and a complete range of general insurance products via its joint venture, HDFC ERGO General Insurance Company Limited (\u2018HDFC ERGO\u2019). The company also offers a comprehensive suite of savings and investment products via its subsidiary, HDFC Asset Management Company Limited (\u2018HDFC AMC\u2019), one of India\u2019s largest mutual fund managers.\n\nAs of March 31, 2025, the company was in 4,150 cities and towns and served over 96.9 million customers. In addition, as of March 31, 2025, the company had 15,399 business correspondents, which were primarily manned by common service centers (\u2018CSCs\u2019).\n\nBusiness Strategy\n\nThe company's strategy is to provide a comprehensive range of financial products and services to its customers through multiple distribution channels.\n\nThe key elements of the company's business strategy are to expand the company\u2019s market share in India\u2019s growing banking and financial services sector; continued investments in technology to advance its digital strategy; cross-sell its broad financial product portfolio across its customer base; and embed ESG principles within its wider business strategy.\n\nSegment\n\nThe company operates in five reportable segments: wholesale banking, retail banking, insurance services, treasury services, and others.\n\nRetail Banking\n\nThe retail banking segment serves retail customers through a branch network and other delivery channels. This segment raises deposits from customers and grants loans, provides credit cards and debit cards, and distributes third-party financial products, such as mutual funds and insurance to such customers. Revenues of the retail banking segment are derived from interest earned on retail loans, fees for banking services, profit from foreign exchange and derivative transactions, and interest earned from other segments for surplus funds placed with those segments. The company\u2019s retail banking loan products also include loans to small and medium enterprises for commercial vehicles, construction equipment, and other business purposes.\n\nWholesale Banking\n\nThe wholesale banking segment provides loans and transaction services to corporate customers. Revenues of the wholesale banking segment consist of interest earned on loans given to corporate customers, investment income from credit substitutes, interest earned on the cash float arising from transaction services, fees from such transaction services, and profits from foreign exchange and derivative transactions with wholesale banking customers.\n\nTreasury Services\n\nThe treasury services segment undertakes trading operations on a proprietary account (including investments in government securities), foreign exchange operations, and derivatives trading both on a proprietary account and customer flows and borrowings. Revenues of the treasury services segment primarily consist of fees and gains and losses from trading operations and of net interest revenue/expense from investments in government securities and borrowings.\n\nInsurance Services\n\nThe insurance services segment comprises the life insurance business, which offers a wide range of individual and group insurance solutions, such as protection, pension, savings, investment, annuity, and health. Revenues from the insurance segment consist of premiums, investment income from managed assets, linked income (fund management charges, policy administration charges, mortality charges, surrender charge, discontinuance charges, reinstatement fees, etc.), and other miscellaneous income.\n\nOthers\n\nThe others segment comprises businesses other than the retail banking segment, wholesale banking segment, treasury services segment, and insurance services segment.\n\nPrincipal Business Activities\n\nThe company\u2019s principal business activities consist of retail banking, wholesale banking, treasury services, and insurance services.\n\nRetail Banking\n\nThe company considers itself a one-stop shop for the financial needs of its customers. The company provides a comprehensive range of financial products, including deposit products, loans, credit cards, debit cards, payment wallets, third-party mutual funds, and insurance products, bill payment services, and other services. The company\u2019s retail banking loan products include loans to small and medium enterprises for commercial vehicles, construction equipment, and other business purposes. The company groups these loans as part of its retail banking business considering, among other things, the customer profile, the nature of the product, the differing risks and returns, the market segment, its organization structure, and its internal business reporting mechanism. Such grouping ensures optimal utilization and deployment of specialized resources in the company\u2019s retail banking business. Since completion of the Transaction, the company is directly engaged in providing housing loans. The company also has specific products designed for lower-income individuals through its Sustainable Livelihood Initiative. Through this initiative, the company reaches out to the unbanked and underbanked segments of the Indian population in rural areas. The company actively markets its services through its banking outlets and alternate sales channels, as well as through its relationships with auto",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.936459Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited provides banking and financial products and services to individuals and businesses in India, Bahrain, Hong Kong, Singapore, and Dubai. The company operates through Treasury, Retail Banking, Wholesale Banking, Other Banking Business, Insurance Business, and Other segments. It offers savings, salary, current, rural, public provident fund, pension, and demat accounts; fixed and recurring deposits; and safe deposit lockers, as well as offshore accounts and deposits, and overdrafts against fixed deposits. The company also provides personal, home, car and pre owned car, marriage, two-wheeler, business, doctor, educational, gold, consumer, and rural loans; loans against properties, securities, mutual funds, and car; loans for professionals; government sponsored programs; and loans on credit card, as well as working capital, term loans, supply chain management, project finance, export finance, commercial vehicle / equipment finance, tractor finance, infrastructure, and agriculture finance. In addition, it offers credit, debit, prepaid, forex, and kisan gold cards; payment and collection, export, import, remittance, bank guarantee, letter of credit, trade, hedging, and merchant and cash management services; and insurance and investment products. Further, the company provides short term finance, bill discounting, structured finance, export credit, loan repayment, custodial, and documents collection services; online, mobile, and phone banking services; unified payment interface, immediate payment, national electronic funds transfer, and real time gross settlement services; channel financing, vendor financing, money market, derivatives, employee trusts, cash surplus corporates, tax payment, and bankers to rights/public issue services; and financial solutions for supply chain partners and agricultural customers. It operates branches and automated teller machines in various cities/towns. The company was incorporated in 1994 and is headquartered in Mumbai, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.865430Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited provides banking and financial products and services to individuals and businesses in India, Bahrain, Hong Kong, Singapore, and Dubai. The company operates through Treasury, Retail Banking, Wholesale Banking, Other Banking Business, Insurance Business, and Other segments. It offers savings, salary, current, rural, public provident fund, pension, and demat accounts; fixed and recurring deposits; and safe deposit lockers, as well as offshore accounts and deposits, and overdrafts against fixed deposits. The company also provides personal, home, car and pre owned car, marriage, two-wheeler, business, doctor, educational, gold, consumer, and rural loans; loans against properties, securities, mutual funds, and car; loans for professionals; government sponsored programs; and loans on credit card, as well as working capital, term loans, supply chain management, project finance, export finance, commercial vehicle / equipment finance, tractor finance, infrastructure, and agriculture finance. In addition, it offers credit, debit, prepaid, forex, and kisan gold cards; payment and collection, export, import, remittance, bank guarantee, letter of credit, trade, hedging, and merchant and cash management services; and insurance and investment products. Further, the company provides short term finance, bill discounting, structured finance, export credit, loan repayment, custodial, and documents collection services; online, mobile, and phone banking services; unified payment interface, immediate payment, national electronic funds transfer, and real time gross settlement services; channel financing, vendor financing, money market, derivatives, employee trusts, cash surplus corporates, tax payment, and bankers to rights/public issue services; and financial solutions for supply chain partners and agricultural customers. It operates branches and automated teller machines in various cities/towns. The company was incorporated in 1994 and is headquartered in Mumbai, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.906398Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "S&P India BMI Index\n\nS&P/IFCI India\n\nS&P/IFCI Asia Ex-Malaysia LargeMidCap\n\nS&P Asia Pacific Emerging BMI Value Index\n\nS&P Global Ex-North America BMI\n\nS&P GIVI Asia Pacific Emerging Plus LargeMidCap Index\n\nS&P India BMI Financials (Sector) Index\n\nS&P GIVI Global Ex. U.S. LargeMidCap Index\n\nBSE Financial Services Index\n\nS&P Global Ex-Australia LargeMidCap",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.830385Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI AC Asia IMI Index\n\nMSCI AC AP Ex JP Factor Mix A-Series (USD) Index\n\nFTSE India Banks Index\n\nFTSE All-World Ex North America Banks (Supersector) Index\n\nFTSE All-World Ex Eurobloc Banks Index\n\nFTSE All-World ex US Index (USD)\n\nFTSE All-World Emerging Asia Pacific Index (USD)\n\nMSCI IN IMI/Financials (Sector) Index\n\nMSCI MPF EM (Emerging Markets) Ex HK Unhedged Index\n\nMSCI ACWI Ex USA Factor Mix A-Series (USD) Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.931032Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.858134Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.931856Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Temasek Holdings (Private) Limited (Current Investor); Fidelity Investments (Current Investor); International Finance Corporation (Current Investor); ICICI Venture Funds Management Company Limited (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); ICICI Prudential Life Insurance Company Limited (NSEI:ICICIPRULI) (Current Investor); SBI Life Insurance Company Limited (NSEI:SBILIFE) (Current Investor); Hindustan Composites Limited (NSEI:HINDCOMPOS) (Current Investor); JPMorgan Funds Limited (Current Investor); Washington Mutual Asset Securities Corp. (Current Investor); Impala Partners, LLC (Current Investor); Chandler Corporation (Current Investor); WestBridge Capital Partners LLC (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.859273Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Temasek Holdings (Private) Limited (Current Investor); Fidelity Investments (Current Investor); International Finance Corporation (Current Investor); ICICI Venture Funds Management Company Limited (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); ICICI Prudential Life Insurance Company Limited (NSEI:ICICIPRULI) (Current Investor); SBI Life Insurance Company Limited (NSEI:SBILIFE) (Current Investor); Hindustan Composites Limited (NSEI:HINDCOMPOS) (Current Investor); JPMorgan Funds Limited (Current Investor); Washington Mutual Asset Securities Corp. (Current Investor); Impala Partners, LLC (Current Investor); Chandler Corporation (Current Investor); WestBridge Capital Partners LLC (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.937845Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 127,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.867781Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 127,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.905215Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.829375Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.938696Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.870184Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.934859Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.863116Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.910955Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.833330Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.909409Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20212630",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.832352Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355599",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.930245Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Diversified Banks",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.856818Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Diversified Banks",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.933587Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited (NSEI:HDFCBANK)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.861515Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFC Bank Limited (NSEI:HDFCBANK)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.948651Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 83,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.883290Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 83,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.929415Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.854844Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.908167Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.831361Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.903634Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFCBANK",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.827977Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "HDFCBANK",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.951787Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.hdfc.bank.in",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.889368Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.hdfc.bank.in",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.939595Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Wells Fargo & Company (NYSE:WFC); SCB X Public Company Limited (SET:SCB); Sberbank of Russia (MISX:SBER); The Federal Bank Limited (NSEI:FEDERALBNK); Industrial and Commercial Bank of China Limited (SEHK:1398); Motilal Oswal Financial Services Limited (NSEI:MOTILALOFS); DAM Capital Advisors Limited (NSEI:DAMCAPITAL); Aadhar Housing Finance Limited (NSEI:AADHARHFC); AMBIT Capital Private Limited; ICICI Securities Limited; Shubham Housing Development Finance Company Limited; Grihum Housing Finance Limited; IDFC First Bank Limited (BSE:539437); AFINIT; Amazon Pay (India) Private Limited; Piramal Enterprises Limited; HSBC Holdings plc (LSE:HSBA); JPMorgan Chase & Co. (NYSE:JPM); Standard Chartered PLC (LSE:STAN); DBS Group Holdings Ltd (SGX:D05); PT Bank Central Asia Tbk (IDX:BBCA); City Union Bank Limited (NSEI:CUB); Jammu and Kashmir Bank Limited (NSEI:J&KBANK); GIC Housing Finance Limited (NSEI:GICHSGFIN); Citi India Products Limited; J.P. Morgan India Private Limited; ICICI Home Finance Company Limited; Home First Finance Company India Limited (NSEI:HOMEFIRST); India Shelter Finance Corporation Limited (NSEI:INDIASHLTR); Fincare Small Finance Bank Limited; One MobiKwik Systems Limited (NSEI:MOBIKWIK); Bandhan Bank Limited (NSEI:BANDHANBNK); ART Affordable Housing Finance (India) Limited; Lloyds Banking Group plc (LSE:LLOY); Malayan Banking Berhad (KLSE:MAYBANK); Public Bank Berhad (KLSE:PBBANK); Oversea-Chinese Banking Corporation Limited (SGX:O39); Shriram Finance Limited (BSE:511218); The South Indian Bank Limited (NSEI:SOUTHBANK); DCB Bank Limited (NSEI:DCBBANK); Spandana Sphoorty Financial Limited (NSEI:SPANDANA); Prudent Corporate Advisory Services Limited (NSEI:PRUDENT); Nuvama Wealth Management Limited (NSEI:NUVAMA); Muthoot Homefin (India) Limited; IIFL Capital Services Limited (NSEI:IIFLCAPS); Transaction Analysts India Pvt Ltd; BNP Paribas; China Construction Bank Corporation (SEHK:939); Agricultural Bank of China Limited (SEHK:1288); PT Bank Tabungan Negara (Persero) Tbk (IDX:BBTN); SBI Cards and Payment Services Limited (NSEI:SBICARD); Tata Capital Housing Finance Limited; Bajaj Housing Finance Limited (NSEI:BAJAJHFL); Nido Home Finance Limited; Aptus Value Housing Finance India Limited (NSEI:APTUS); Aavas Financiers Limited (NSEI:AAVAS); Capital Small Finance Bank Limited (NSEI:CAPITALSFB); Utkarsh Small Finance Bank Limited (NSEI:UTKARSHBNK); ESAF Small Finance Bank (NSEI:ESAFSFB); Fino Payments Bank Limited (NSEI:FINOPB); Fubon Financial Holding Co., Ltd. (TWSE:2881); LIC Housing Finance Limited (NSEI:LICHSGFIN); Cholamandalam Investment and Finance Company Limited (BSE:511243); Government Housing Bank; The Hongkong and Shanghai Banking Corporation Limited, India; Can Fin Homes Limited (BSE:511196); CSB Bank Limited (NSEI:CSBBANK); JM Financial Limited (BSE:523405); L&T Finance Limited; SBICAP Securities Limited; PNB Housing Finance Limited (NSEI:PNBHOUSING); AU Small Finance Bank Limited (NSEI:AUBANK); Jana Small Finance Bank Limited (NSEI:JSFB); NJ IndiaInvest Private Limited; Manappuram Home Finance Limited; Pay Point India Network Pvt. Ltd.; Appnit Technologies Pvt. Ltd.; DBS Bank Ltd.; The Karur Vysya Bank Limited (NSEI:KARURVYSYA); Standard Chartered Bank India Branches; Bank of America N.A. (India Branches); Systematix Corporate Services Limited (BSE:526506); Emkay Global Financial Services Limited (NSEI:EMKAY); RBL Bank Limited (NSEI:RBLBANK); Equirus Capital Private Limited; The Nainital Bank Limited; Muthoot Housing Finance Company Limited; Mas Rural Housing & Mortgage Finance Ltd.; Motilal Oswal Home Finance Limited; Vastu Housing Finance Corporation Limited; GaragePreneurs Internet Private Limited; Share Samadhan Limited (BSE:544251); American Express Company (NYSE:AXP); Citigroup Inc. (NYSE:C); Bajaj Finance Limited (NSEI:BAJFINANCE); Bank of China Limited (SEHK:3988); CaixaBank, S.A. (BME:CABK); CreditAccess Grameen Limited (NSEI:CREDITACC); Jefferies India Private Limited; Axis Capital Limited; Airtel Payments Bank Ltd.; Triotech Solutions Pvt. Ltd.; Zipcash Card Services Pvt. Ltd.; PhonePe Limited; Paytm Payments Bank Limited; Ujjivan Small Finance Bank Limited (NSEI:UJJIVANSFB); Piramal Finance Limited (NSEI:PIRAMALFIN); Anand Rathi Wealth Limited (NSEI:ANANDRATHI); Banco Santander, S.A. (BME:SAN); United Overseas Bank Limited (SGX:U11); RHB Bank Berhad (KLSE:RHBBANK); Nationwide Building Society (LSE:NBS); PT Bank CIMB Niaga Tbk (IDX:BNGA); 360 One Wam Limited (NSEI:360ONE); Religare Housing Development Finance Corporation Ltd; Suryoday Small Finance Bank Limited (NSEI:SURYODAY); Truhome Finance Limited; Equitas Small Finance Bank Limited (NSEI:EQUITASBNK); BlackBuck Limited (NSEI:BLACKBUCK); Jio Payments Bank Limited; JM Financial Home Loans Limited; 360 ONE Distribution Services Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.871413Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Lloyds Banking Group plc (LSE:LLOY); Malayan Banking Berhad (KLSE:MAYBANK); Public Bank Berhad (KLSE:PBBANK); Oversea-Chinese Banking Corporation Limited (SGX:O39); Shriram Finance Limited (BSE:511218); The South Indian Bank Limited (NSEI:SOUTHBANK); DCB Bank Limited (NSEI:DCBBANK); Spandana Sphoorty Financial Limited (NSEI:SPANDANA); Prudent Corporate Advisory Services Limited (NSEI:PRUDENT); Nuvama Wealth Management Limited (NSEI:NUVAMA); Muthoot Homefin (India) Limited; IIFL Capital Services Limited (NSEI:IIFLCAPS); Transaction Analysts India Pvt Ltd; BNP Paribas; Fubon Financial Holding Co., Ltd. (TWSE:2881); LIC Housing Finance Limited (NSEI:LICHSGFIN); Cholamandalam Investment and Finance Company Limited (BSE:511243); Government Housing Bank; The Hongkong and Shanghai Banking Corporation Limited, India; Can Fin Homes Limited (BSE:511196); CSB Bank Limited (NSEI:CSBBANK); JM Financial Limited (BSE:523405); L&T Finance Limited; SBICAP Securities Limited; PNB Housing Finance Limited (NSEI:PNBHOUSING); AU Small Finance Bank Limited (NSEI:AUBANK); Jana Small Finance Bank Limited (NSEI:JSFB); NJ IndiaInvest Private Limited; Manappuram Home Finance Limited; Pay Point India Network Pvt. Ltd.; Appnit Technologies Pvt. Ltd.; American Express Company (NYSE:AXP); Citigroup Inc. (NYSE:C); Bajaj Finance Limited (NSEI:BAJFINANCE); Bank of China Limited (SEHK:3988); CaixaBank, S.A. (BME:CABK); CreditAccess Grameen Limited (NSEI:CREDITACC); Jefferies India Private Limited; Axis Capital Limited; Airtel Payments Bank Ltd.; Triotech Solutions Pvt. Ltd.; Zipcash Card Services Pvt. Ltd.; PhonePe Limited; Paytm Payments Bank Limited; Ujjivan Small Finance Bank Limited (NSEI:UJJIVANSFB); Piramal Finance Limited (NSEI:PIRAMALFIN); Anand Rathi Wealth Limited (NSEI:ANANDRATHI); Banco Santander, S.A. (BME:SAN); United Overseas Bank Limited (SGX:U11); RHB Bank Berhad (KLSE:RHBBANK); Nationwide Building Society (LSE:NBS); PT Bank CIMB Niaga Tbk (IDX:BNGA); 360 One Wam Limited (NSEI:360ONE); Religare Housing Development Finance Corporation Ltd; Suryoday Small Finance Bank Limited (NSEI:SURYODAY); Truhome Finance Limited; Equitas Small Finance Bank Limited (NSEI:EQUITASBNK); BlackBuck Limited (NSEI:BLACKBUCK); Jio Payments Bank Limited; JM Financial Home Loans Limited; 360 ONE Distribution Services Limited; China Construction Bank Corporation (SEHK:939); Agricultural Bank of China Limited (SEHK:1288); PT Bank Tabungan Negara (Persero) Tbk (IDX:BBTN); SBI Cards and Payment Services Limited (NSEI:SBICARD); Tata Capital Housing Finance Limited; Bajaj Housing Finance Limited (NSEI:BAJAJHFL); Nido Home Finance Limited; Aptus Value Housing Finance India Limited (NSEI:APTUS); Aavas Financiers Limited (NSEI:AAVAS); Capital Small Finance Bank Limited (NSEI:CAPITALSFB); Utkarsh Small Finance Bank Limited (NSEI:UTKARSHBNK); ESAF Small Finance Bank (NSEI:ESAFSFB); Fino Payments Bank Limited (NSEI:FINOPB); Piramal Enterprises Limited; HSBC Holdings plc (LSE:HSBA); JPMorgan Chase & Co. (NYSE:JPM); Standard Chartered PLC (LSE:STAN); DBS Group Holdings Ltd (SGX:D05); PT Bank Central Asia Tbk (IDX:BBCA); City Union Bank Limited (NSEI:CUB); Jammu and Kashmir Bank Limited (NSEI:J&KBANK); GIC Housing Finance Limited (NSEI:GICHSGFIN); Citi India Products Limited; J.P. Morgan India Private Limited; ICICI Home Finance Company Limited; Home First Finance Company India Limited (NSEI:HOMEFIRST); India Shelter Finance Corporation Limited (NSEI:INDIASHLTR); Fincare Small Finance Bank Limited; One MobiKwik Systems Limited (NSEI:MOBIKWIK); Bandhan Bank Limited (NSEI:BANDHANBNK); ART Affordable Housing Finance (India) Limited; DBS Bank Ltd.; The Karur Vysya Bank Limited (NSEI:KARURVYSYA); Standard Chartered Bank India Branches; Bank of America N.A. (India Branches); Systematix Corporate Services Limited (BSE:526506); Emkay Global Financial Services Limited (NSEI:EMKAY); RBL Bank Limited (NSEI:RBLBANK); Equirus Capital Private Limited; The Nainital Bank Limited; Muthoot Housing Finance Company Limited; Mas Rural Housing & Mortgage Finance Ltd.; Motilal Oswal Home Finance Limited; Vastu Housing Finance Corporation Limited; GaragePreneurs Internet Private Limited; Share Samadhan Limited (BSE:544251); Wells Fargo & Company (NYSE:WFC); SCB X Public Company Limited (SET:SCB); Sberbank of Russia (MISX:SBER); The Federal Bank Limited (NSEI:FEDERALBNK); Industrial and Commercial Bank of China Limited (SEHK:1398); Motilal Oswal Financial Services Limited (NSEI:MOTILALOFS); DAM Capital Advisors Limited (NSEI:DAMCAPITAL); Aadhar Housing Finance Limited (NSEI:AADHARHFC); AMBIT Capital Private Limited; ICICI Securities Limited; Shubham Housing Development Finance Company Limited; Grihum Housing Finance Limited; IDFC First Bank Limited (BSE:539437); AFINIT; Amazon Pay (India) Private Limited",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.940766Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.872626Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.941669Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 31196.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.875477Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 31196.1,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.911835Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7.81,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.835283Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7.81,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.943330Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 121664.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.877388Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 121664.1,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.946863Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-16 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.881979Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-16 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.915151Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.74,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.838714Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.74,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.918545Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -6.35,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.841248Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -6.35,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.916993Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.651,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.840195Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.657,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.923375Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -26,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.847370Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -26,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.920114Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.92,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.842267Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.95,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.925385Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -9.02,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.849758Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -8.95,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.926940Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.57,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.851758Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.51,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.920984Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -20,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.843319Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -20,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.921741Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -25.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.845601Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -25.8,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.913757Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -24.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.836914Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -24.5,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.928485Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.93,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.852993Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 36.3,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.950746Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services; Agricultural Loans; Asset Management Services; Auto Loans; Brokerage Services; Bullion Services; Commercial Loans; Construction Equipment Financing Services; Credit Cards; Current Accounts; Custody Services; Distribution of General Insurance Services; Distribution of Health Insurance Products; Distribution of Life Insurance Products; Distribution of Mutual Funds; Foreign Exchange Services; Gold Loans; Guarantee Services; Health Care Equipment Financing Loans; Home Loans; Investment Banking Services; Letters of Credit; Loan Syndication Services; Miscellaneous Banking Services; Mortgage Loans; Personal Loans; Savings Accounts; Time Deposits; Trade Finance Services; Treasury Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.887273Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services; Agricultural Loans; Asset Management Services; Auto Loans; Brokerage Services; Bullion Services; Commercial Loans; Construction Equipment Financing Services; Credit Cards; Current Accounts; Custody Services; Distribution of General Insurance Services; Distribution of Health Insurance Products; Distribution of Life Insurance Products; Distribution of Mutual Funds; Foreign Exchange Services; Gold Loans; Guarantee Services; Health Care Equipment Financing Loans; Home Loans; Investment Banking Services; Letters of Credit; Loan Syndication Services; Miscellaneous Banking Services; Mortgage Loans; Personal Loans; Savings Accounts; Time Deposits; Trade Finance Services; Treasury Services",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:21.949696Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services:\nAdvisory services are provided on investments, weather, cropping, and harvesting through SMS.\n\nAgricultural Loans:\nAgricultural Loans include Pre and Post-Harvest Crop Loans, Farmer Finance,.\n\nAuto Loans:\nAuto loans include Two-Wheeler loans, tractor loan. Also includes financing of new and used car purchases.\n\nBrokerage Services:\nBrokerage Services includes stock broking services.\n\nBullion Services:\nBullion Services include gold and silver bars.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:57.885518Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services:\nAdvisory services are provided on investments, weather, cropping, and harvesting through SMS.\n\nAgricultural Loans:\nAgricultural Loans include Pre and Post-Harvest Crop Loans, Farmer Finance,.\n\nAuto Loans:\nAuto loans include Two-Wheeler loans, tractor loan. Also includes financing of new and used car purchases.\n\nBrokerage Services:\nBrokerage Services includes stock broking services.\n\nBullion Services:\nBullion Services include gold and silver bars.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "HDFCBANK",
+  "updated_at": "2026-08-01T19:36:57.889374Z"
+}

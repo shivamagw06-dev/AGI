@@ -1,0 +1,121 @@
+/**
+ * The India AI Infrastructure strategy: the portfolio owner's basket, the
+ * ratings and statuses they assign, and their reading of it.
+ *
+ * Editorial columns (layer, AI materiality rating, key evidence, status) are
+ * the owner's judgments, with each evidence line checked against the
+ * company's own documents in AGI's record. Every financial column on the page
+ * is AGI arithmetic on filed results and AGI's market value; no broker or
+ * consensus figure is used, so none appears here.
+ */
+
+export const STRATEGY_ASOF = '2026-09-19';
+
+export const STRATEGY_FACTORS = [
+  'direct AI revenue', 'AI order book', 'contracted capacity', 'customer quality', 'earnings growth', 'FCF',
+  'capex intensity', 'ROIC/ROCE potential', 'valuation', 'execution visibility', 'expectation load',
+];
+
+// rating: the owner's AI materiality rating. status: the basket status.
+//
+// Which rows form the basket is not set here: the page places a row in the
+// basket only if it passes AGI's materiality test (Material, or Material on
+// AGI estimate), and on the watch list otherwise, so a status can never
+// contradict the test. Status vocabulary: Core for a pass on filed figures,
+// Emerging Core for a pass on AGI's estimate, with the owner's qualifiers
+// (Execution, High Risk) kept. Watch-list rows carry the status they would
+// take on passing.
+export const STRATEGY_ROWS = [
+  { symbol: 'NETWEB', name: 'Netweb Technologies', layer: 'AI compute', rating: 'Very High', evidence: 'AI about 62% of Q1 revenue; AI "maybe" 40–45% of the order book', status: 'Core' },
+  { symbol: 'STLTECH', name: 'Sterlite Technologies', layer: 'Optical connectivity', rating: 'Very High', evidence: '$1.11 bn (₹10,000+ cr) Product Award Letter for US AI data-centre connectivity, FY27–FY29; potential value estimated at prevailing selling prices, with purchase orders released periodically', status: 'Core' },
+  { symbol: 'BLUESTARCO', name: 'Blue Star', layer: 'DC MEP / cooling', rating: 'High', evidence: 'About ₹1,000 cr DC MEP revenue in FY26; order book about ₹1,500 cr at any given point (Q4 FY26 call); about ₹1,500 cr of new DC MEP orders in Q1 FY27', status: 'Core' },
+  { symbol: 'LT', name: 'Larsen & Toubro', layer: 'AI factory / EPC / cloud', rating: 'High', evidence: 'Vyoma "Mega" order (L&T\'s ₹10,000–15,000 cr band) for a 10,000-GPU NVIDIA B300 AI factory at its Chennai data centre; 26 MW operating (24 MW Chennai, 2 MW Panvel), with 6 MW more at an advanced stage of commissioning', status: 'Core' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel', layer: 'Nxtra DC', rating: 'High', evidence: 'Nxtra FY26 revenue ₹2,434 cr at a 40.3% EBITDA margin; valued at about $3.1 bn in the March 2026 funding; capacity definitions differ across disclosures, so not reconciled; targeting 1 GW', status: 'Core' },
+  { symbol: 'ANANTRAJ', name: 'Anant Raj', layer: 'DC / cloud', rating: 'High', evidence: '₹145.9 cr of data-centre turnover in FY26, about 9% (demerger filing); ₹176.49 cr of \'Data Center, Infrastructure and Allied services\' revenue (Q4 FY26 presentation); roadmap to 357 MW', status: 'Core / Execution' },
+  { symbol: 'ABB', name: 'ABB India', layer: 'Switchgear / electrical', rating: 'High', evidence: 'Direct DC switchgear and RMU orders; DC "almost 15% to 17%" of Q2 orders (analyst call, filed 7 Aug 2026)', status: 'Core' },
+  { symbol: 'SCHNEIDER', name: 'Schneider Electric Infrastructure', layer: 'Switchgear / electrical', rating: 'Medium-High', evidence: 'Data centres and semiconductors together more than a fifth of the ₹2,169 cr order bank', status: 'Core' },
+  { symbol: 'CUMMINSIND', name: 'Cummins India', layer: 'Backup power', rating: 'High', evidence: 'DC 30–35% of FY26 domestic power-generation revenue; management cited about 40% in the June quarter, but the denominator is not consistently specified', status: 'Core' },
+  { symbol: 'CRAFTSMAN', name: 'Craftsman Automation', layer: 'DC engine components', rating: 'Medium', evidence: 'German foundry supplies stationary-engine components into growing data-centre demand; management has not given a precise data-centre revenue figure', status: 'Emerging Core' },
+  { symbol: 'HFCL', name: 'HFCL', layer: 'AI/DC connectivity', rating: 'High', evidence: '₹495.8 cr export order for data-centre connectivity; ₹215 cr dedicated connectivity plant approved', status: 'Core' },
+  { symbol: 'DIACABS', name: 'Diamond Power Infrastructure', layer: 'DC cabling', rating: 'Medium-High', evidence: '₹435 cr DC order book (11.8% of ₹3,688 cr); letter of intent for a Hyderabad DC campus', status: 'Core' },
+  { symbol: 'CLEANMAX', name: 'CleanMax', layer: 'DC renewable power', rating: 'Very High', evidence: 'Data & AI customers are 42% of contracted capacity, over 2.5 GW; customers include Amazon, Google and Meta', status: 'Core / High Risk' },
+  { symbol: 'SANSERA', name: 'Sansera Engineering', layer: 'Semiconductor-equipment parts', rating: 'Medium', evidence: 'About ₹1,250 cr semiconductor-equipment order over five years; regular production begun', status: 'Core' },
+  { symbol: 'MTARTECH', name: 'MTAR Technologies', layer: 'AI/DC assemblies', rating: 'Medium-High', evidence: '₹45 cr of SLB data-centre orders in Q1 and ₹35.56 cr of data-centre orders in April; whether the two overlap is not reconciled', status: 'Emerging Core' },
+
+  // Watch list today: each fails the materiality test, for the reason shown on the page.
+  { symbol: 'RELIANCE', name: 'Reliance Industries', layer: 'AI DC / power / network', rating: 'Medium-High', evidence: '168 MW AI data centre for Meta, due within two years', status: 'Core' },
+  { symbol: 'ADANIENT', name: 'Adani Enterprises', layer: 'AdaniConneX', rating: 'High', evidence: '65.4 MW operating against 960+ MW tied up; the 400 MW Vizag order is part of the Google contract (AEL Q1 FY27 call); AdaniConneX is a 50:50 JV', status: 'Core / Execution' },
+  { symbol: 'POWERINDIA', name: 'Hitachi Energy India', layer: 'Transformers / grid', rating: 'High', evidence: '₹32,222 cr backlog; data centres the major segment contributor to Q4 FY26 orders (value and share not disclosed)', status: 'Core' },
+  { symbol: 'GVT&D', name: 'GE Vernova T&D India', layer: 'Transformers / grid', rating: 'Medium-High', evidence: '₹20,930 cr backlog; direct DC equipment exposure: 220 kV GIS commissioned for NTT Data Center (value and share not disclosed)', status: 'Core' },
+  { symbol: 'POLYCAB', name: 'Polycab India', layer: 'DC cabling', rating: 'Medium-High', evidence: 'Cables supplied to named data-centre projects establish exposure; management puts industry cable content at about ₹3.5 cr per MW, but Polycab-specific revenue and order value are not disclosed', status: 'Core' },
+  { symbol: 'TATAPOWER', name: 'Tata Power', layer: 'Power / grid / storage', rating: 'Medium', evidence: 'One 25-year renewable power agreement for Princeton Digital Group\'s Mumbai DC; grid, FDRE and storage are not DC evidence', status: 'Threshold Exception' },
+  { symbol: 'CGPOWER', name: 'CG Power and Industrial Solutions', layer: 'Semiconductor packaging (OSAT)', rating: 'Medium', evidence: 'Audited ₹502.8 cr FY26 semiconductor segment, largely Axiro RF (not AI/DC revenue); OSAT commercial production began July 2026, at 0.5 m units a day with G2 planned for 14.5 m', status: 'Core' },
+  { symbol: 'KEC', name: 'KEC International', layer: 'Transmission', rating: 'Medium', evidence: 'First transmission-line order to evacuate power to a data centre; value not split out of a ₹1,180 cr batch', status: 'Core / Optionality', member: false, watchReason: 'A data-centre line order exists, but its value is not split out of a ₹1,180 cr batch; contractors need a value' },
+  { symbol: 'NTPCGREEN', name: 'NTPC Green Energy', layer: 'RTC DC power', rating: 'Medium-High', evidence: 'MoUs with Nxtra (up to 500 MW) and CtrlS (up to 2 GW); not yet power purchase agreements', status: 'Emerging Core', member: false, watchReason: 'MoUs only; a signed power purchase agreement would pass the evidence test' },
+];
+
+// Filed figures for basket names that are not index members, so AGI's
+// member data does not carry them. Filled from the companies' own results.
+export const NON_MEMBER_FILED = {
+  // Audited FY26 consolidated results (16 May 2026) and Q1 FY27 results (10 Aug 2026), kecrpg.com.
+  // Capex is one combined line (PPE and intangibles, net of CWIP and capital advances).
+  KEC: {
+    revenueFY26: 23505.54, patFY26: 605.59, cfoFY26: -414.13, capexFY26: 328.68, capexIntangiblesFY26: 0,
+    revenueQ1FY27: 5023.54, revenueQ1FY26: 5022.88,
+  },
+  // Audited FY26 consolidated results and Q1 FY27 results, ngel.in. The PDFs are scans:
+  // each figure was read against the page image, not only the OCR text.
+  NTPCGREEN: {
+    revenueFY26: 2858.42, patFY26: 522.6, cfoFY26: 2386.2, capexFY26: 15264.46, capexIntangiblesFY26: 1.38,
+    revenueQ1FY27: 1106.86, revenueQ1FY26: 680.21,
+  },
+};
+
+export const STRUCTURES = [
+  {
+    title: 'Direct AI earnings',
+    names: ['NETWEB', 'STLTECH', 'BLUESTARCO', 'HFCL', 'CUMMINSIND'],
+    text: 'Netweb, STL, Blue Star, HFCL and Cummins already have measurable AI/data-centre revenue or orders. These deserve the highest AI-evidence confidence.',
+  },
+  {
+    title: 'AI factory and compute platform',
+    names: ['LT'],
+    text: 'L&T, through Vyoma: an AI factory (the 10,000-GPU NVIDIA B300 cluster it will deploy for Together AI), hyperscale colocation, GPU-as-a-Service and sovereign cloud. Broader than a data-centre landlord: the variables are GPU deployment, utilisation of the compute it sells, and how much of the ₹10,000-15,000 cr order band turns into revenue, against L&T\'s engineering and construction base.',
+  },
+  {
+    title: 'Data-centre asset owners',
+    names: ['BHARTIARTL', 'ANANTRAJ'],
+    text: 'Bharti/Nxtra and Anant Raj. For these, the most important variables are commissioned MW, contracted MW, billed MW, utilisation and revenue/EBITDA per MW. Nxtra\'s March 2026 funding round valued the business at around US$3.1 billion post-closing (Airtel release, 30 March 2026). Adani Enterprises (AdaniConneX) and Reliance belong here too, and sit on the watch list until they pass the materiality test.',
+  },
+  {
+    title: 'Electrical picks-and-shovels',
+    names: ['ABB', 'SCHNEIDER', 'DIACABS'],
+    text: 'ABB, Schneider and Diamond Power. Their thesis depends primarily on converting India\'s DC capacity build-out into switchgear and cable orders rather than having "AI revenue" in the traditional sense. Hitachi, GE Vernova, KEC and Polycab share the thesis and wait on the watch list for a disclosed data-centre figure.',
+  },
+  {
+    title: 'AI electricity',
+    names: ['CLEANMAX'],
+    text: 'CleanMax. Here contracted DC-linked GW, PPA economics, storage, incremental ROIC and FCF matter much more than headline earnings growth. Its named customers already include the hyperscalers and data-centre operators, though most of its Data & AI capacity is emission-offset deals rather than power delivered to data centres. NTPC Green and Tata Power are on the watch list.',
+  },
+  {
+    title: 'Components and semiconductors',
+    names: ['SANSERA', 'MTARTECH', 'CRAFTSMAN'],
+    text: 'Sansera, MTAR and Craftsman. Precision parts and engine components whose AI/data-centre business is real but small against the whole company, so earnings momentum and the conversion of orders to revenue matter most. CG Power is on the watch list: its semiconductor revenue is RF chip design, and its OSAT plant only began commercial production in July 2026.',
+  },
+];
+
+export const OUTSIDE = [
+  { name: 'Kaynes Technology', text: 'The semiconductor packaging ramp is real; AI/HPC economics still need customer and utilisation evidence.' },
+  { name: 'Waaree Energies', text: 'BESS/DC optionality, but actual DC orders need to emerge: data centres are named only as target customers for its battery plant.' },
+  { name: 'Adani Energy Solutions', text: 'Excellent DC-grid logic, but direct DC project economics need to become visible; management calls DC volume "very negligible" today.' },
+  { name: 'Gujarat Fluorochemicals / Navin Fluorine', text: 'Semiconductor-material exposure exists, but revenue attribution is weak.' },
+  { name: 'Power Grid', text: 'A very credible structural transmission beneficiary, but too diffuse to call AI earnings material today.' },
+];
+
+export const FIVE_METRICS = [
+  ['AI Materiality', 'how much consolidated earnings AI can actually move.'],
+  ['Evidence Confidence', 'disclosed / derived / AGI estimate.'],
+  ['Capital Quality', 'ROIC, FCF and capex efficiency.'],
+  ['Earnings Momentum', 'growth plus backlog and order conversion (revisions from filed figures; AGI has no consensus source).'],
+  ['Expectation Load', 'how demanding today\'s valuation already is.'],
+];

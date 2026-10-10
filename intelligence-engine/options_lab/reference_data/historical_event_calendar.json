@@ -1,0 +1,286 @@
+{
+  "mode": "retrospective",
+  "status": "partial_source_inventory_not_session_clearance",
+  "sources": {
+    "cpi_oct": {
+      "url": "https://cpi.mospi.gov.in/PDFile/Press/PR%20September%202025.pdf",
+      "retrieved_on": "2026-10-02"
+    },
+    "cpi_feb": {
+      "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/feb/doc2026212787501.pdf",
+      "retrieved_on": "2026-10-02"
+    },
+    "gdp_feb": {
+      "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/feb/doc2026227806501.pdf",
+      "retrieved_on": "2026-10-02"
+    },
+    "cpi_jun": {
+      "url": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/jun/doc2026612891101.pdf",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20251029": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20251029a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20251210": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20251210a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260128": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260128a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260318": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260429": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260617": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260729": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260729a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "fomc_20260916": {
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
+      "retrieved_on": "2026-10-02"
+    },
+    "rbi_20260206": {
+      "url": "https://www.linkedin.com/posts/reservebankofindia_february-6-2026-join-us-for-the-live-activity-7425044252738564096-zHyO",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Official announcement of scheduled broadcast start"
+    },
+    "rbi_20260408": {
+      "url": "https://www.linkedin.com/posts/reservebankofindia_rbi-rbimonetarypolicy-rbipressconference-activity-7447184645361709057-U5LF",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Official announcement of scheduled broadcast start"
+    },
+    "rbi_date_20251001": {
+      "url": "https://www.rbi.org.in/scripts/PublicationsView.aspx?id=23139",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Meeting schedule or dated policy statement listing; no verified announcement time"
+    },
+    "rbi_date_20251205": {
+      "url": "https://www.rbi.org.in/scripts/PublicationsView.aspx?id=23139",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Meeting schedule or dated policy statement listing; no verified announcement time"
+    },
+    "rbi_date_20260605": {
+      "url": "https://bulletin.rbi.org.in/",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Meeting schedule or dated policy statement listing; no verified announcement time"
+    },
+    "rbi_date_20260805": {
+      "url": "https://m.rbi.org.in/scripts/BS_SpeechesView.aspx?Id=104",
+      "retrieved_on": "2026-10-02",
+      "publisher": "Reserve Bank of India",
+      "evidence": "Meeting schedule or dated policy statement listing; no verified announcement time"
+    },
+    "iea_20260311": {
+      "url": "https://www.iea.org/news/iea-member-countries-to-carry-out-largest-ever-oil-stock-release-amid-market-disruptions-from-middle-east-conflict",
+      "retrieved_on": "2026-10-02",
+      "publisher": "International Energy Agency"
+    }
+  },
+  "events": [
+    {
+      "id": "cpi_oct",
+      "category": "india_macro",
+      "at": "2025-10-13T16:00:00+05:30",
+      "source_ids": [
+        "cpi_oct"
+      ]
+    },
+    {
+      "id": "cpi_feb",
+      "category": "india_macro",
+      "at": "2026-02-12T16:00:00+05:30",
+      "source_ids": [
+        "cpi_feb"
+      ]
+    },
+    {
+      "id": "gdp_feb",
+      "category": "india_macro",
+      "at": "2026-02-27T16:00:00+05:30",
+      "source_ids": [
+        "gdp_feb"
+      ]
+    },
+    {
+      "id": "cpi_jun",
+      "category": "india_macro",
+      "at": "2026-06-12T16:00:00+05:30",
+      "source_ids": [
+        "cpi_jun"
+      ]
+    },
+    {
+      "id": "fomc_20251029",
+      "category": "fomc",
+      "at": "2025-10-29T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20251029"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20251210",
+      "category": "fomc",
+      "at": "2025-12-10T14:00:00-05:00",
+      "source_ids": [
+        "fomc_20251210"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260128",
+      "category": "fomc",
+      "at": "2026-01-28T14:00:00-05:00",
+      "source_ids": [
+        "fomc_20260128"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260318",
+      "category": "fomc",
+      "at": "2026-03-18T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20260318"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260429",
+      "category": "fomc",
+      "at": "2026-04-29T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20260429"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260617",
+      "category": "fomc",
+      "at": "2026-06-17T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20260617"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260729",
+      "category": "fomc",
+      "at": "2026-07-29T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20260729"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "fomc_20260916",
+      "category": "fomc",
+      "at": "2026-09-16T14:00:00-04:00",
+      "source_ids": [
+        "fomc_20260916"
+      ],
+      "scope": "Scheduled policy statement; excludes minutes and speeches"
+    },
+    {
+      "id": "rbi_20260206",
+      "category": "rbi",
+      "at": "2026-02-06T10:00:00+05:30",
+      "source_ids": [
+        "rbi_20260206"
+      ],
+      "scope": "Scheduled monetary policy statement start; not precise first market dissemination of decision"
+    },
+    {
+      "id": "rbi_20260408",
+      "category": "rbi",
+      "at": "2026-04-08T10:00:00+05:30",
+      "source_ids": [
+        "rbi_20260408"
+      ],
+      "scope": "Scheduled monetary policy statement start; not precise first market dissemination of decision"
+    }
+  ],
+  "session_coverage": {},
+  "pending_events": [
+    {
+      "id": "rbi_date_20251001",
+      "category": "rbi",
+      "date": "2025-10-01",
+      "source_ids": [
+        "rbi_date_20251001"
+      ],
+      "status": "announcement_time_unverified"
+    },
+    {
+      "id": "rbi_date_20251205",
+      "category": "rbi",
+      "date": "2025-12-05",
+      "source_ids": [
+        "rbi_date_20251205"
+      ],
+      "status": "announcement_time_unverified"
+    },
+    {
+      "id": "rbi_date_20260605",
+      "category": "rbi",
+      "date": "2026-06-05",
+      "source_ids": [
+        "rbi_date_20260605"
+      ],
+      "status": "announcement_time_unverified"
+    },
+    {
+      "id": "rbi_date_20260805",
+      "category": "rbi",
+      "date": "2026-08-05",
+      "source_ids": [
+        "rbi_date_20260805"
+      ],
+      "status": "announcement_time_unverified"
+    }
+  ],
+  "news_events": [
+    {
+      "id": "iea_emergency_release_20260311",
+      "topic": "oil_supply",
+      "event_date": "2026-03-11",
+      "heading": "IEA members agree emergency oil stock release",
+      "source_ids": [
+        "iea_20260311"
+      ],
+      "evidence_mode": "retrospective",
+      "published_at": null,
+      "first_seen_at": null,
+      "note": "Date verified; precise publication and historical receipt unavailable. Context only."
+    },
+    {
+      "id": "middle_east_conflict_20260228",
+      "topic": "geopolitical",
+      "event_date": "2026-02-28",
+      "heading": "Middle East conflict disrupts oil flows",
+      "source_ids": [
+        "iea_20260311"
+      ],
+      "evidence_mode": "retrospective",
+      "published_at": null,
+      "first_seen_at": null,
+      "note": "Onset date described in later IEA release. Not contemporaneous evidence; never backdate a signal."
+    }
+  ]
+}

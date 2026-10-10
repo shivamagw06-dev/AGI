@@ -1,0 +1,1418 @@
+{
+  "asOf": "2026-10-02",
+  "generatedAt": "2026-10-05T11:35:17.701006+00:00",
+  "method": "Current weights, adjusted-close buy-and-hold simulation; not fund track record",
+  "portfolios": [
+    {
+      "id": "aging",
+      "name": "Aging",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.717532834942974,
+          "maxDrawdownPct": 6.868617488689321,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -2.435086676383369,
+          "maxDrawdownPct": 8.109897606286209,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 7.1288264296341275,
+          "maxDrawdownPct": 7.547798663783656,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 18.757359684633457,
+          "maxDrawdownPct": 9.750524474358645,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "all-weather",
+      "name": "All Weather",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -2.458910568606121,
+          "maxDrawdownPct": 3.3680614615268945,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.096424062121193,
+          "maxDrawdownPct": 3.5645597242839444,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 1.6433896984984875,
+          "maxDrawdownPct": 3.478794622793069,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 5.4321776125981325,
+          "maxDrawdownPct": 4.591675234131209,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "alphabet-strategy",
+      "name": "Alphabet Strategy",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.251748223469351,
+          "maxDrawdownPct": 4.938188692558154,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.540122853815984,
+          "maxDrawdownPct": 11.181357103932744,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 21.97617751816443,
+          "maxDrawdownPct": 21.4742224946738,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": true,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": null,
+          "maxDrawdownPct": null,
+          "coveredWeight": 97.25,
+          "reason": "Missing instrument history: full-portfolio return withheld",
+          "missing": [
+            {
+              "name": "PayPay Corp",
+              "symbol": "PAYP",
+              "weight": 1.45,
+              "reason": "New listing: not enough history for this period"
+            },
+            {
+              "name": "Ethos Technologies Corp.",
+              "symbol": "LIFE",
+              "weight": 1.3,
+              "reason": "New listing: not enough history for this period"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "artificial-intelligence",
+      "name": "Artificial Intelligence",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 12.340122717774538,
+          "maxDrawdownPct": 2.4522000155056234,
+          "coveredWeight": 99.99999999999997,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 13.475661148456354,
+          "maxDrawdownPct": 12.908005353649054,
+          "coveredWeight": 99.99999999999997,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 72.48670058675599,
+          "maxDrawdownPct": 20.827929559544934,
+          "coveredWeight": 99.99999999999997,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 82.84804218316208,
+          "maxDrawdownPct": 22.914022694003965,
+          "coveredWeight": 99.99999999999997,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "berkshire-strategy",
+      "name": "Berkshire Strategy",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -3.8951148483737374,
+          "maxDrawdownPct": 4.665365213302786,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 0.34921421982547773,
+          "maxDrawdownPct": 4.595983521719149,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 12.066835861788272,
+          "maxDrawdownPct": 5.206183882043924,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 19.505581363661626,
+          "maxDrawdownPct": 5.9237246524610265,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "big-tech",
+      "name": "Big Tech",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 11.020977623235195,
+          "maxDrawdownPct": 3.1769711220046903,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 10.06849840175581,
+          "maxDrawdownPct": 11.171880025677282,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 58.44891141763664,
+          "maxDrawdownPct": 17.944785565950582,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 93.39075375983722,
+          "maxDrawdownPct": 22.142520863865258,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "blackrock-smart-beta",
+      "name": "BlackRock Smart Beta",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.5811023997940312,
+          "maxDrawdownPct": 2.9369701585301944,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.2761177283729506,
+          "maxDrawdownPct": 3.2736443977091634,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 23.450260553636504,
+          "maxDrawdownPct": 4.517402732656606,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 32.4689895812627,
+          "maxDrawdownPct": 7.553388851738796,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "blockchain-ecosystem",
+      "name": "Blockchain Ecosystem",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 3.7110515787137643,
+          "maxDrawdownPct": 13.69933712640885,
+          "coveredWeight": 100.01000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 6.364859196652506,
+          "maxDrawdownPct": 16.61884943210108,
+          "coveredWeight": 100.01000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 23.71916742182694,
+          "maxDrawdownPct": 32.86253580636639,
+          "coveredWeight": 100.01000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -18.124732463404058,
+          "maxDrawdownPct": 48.253399124198616,
+          "coveredWeight": 100.01000000000002,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "clean-energy",
+      "name": "Clean Energy",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 1.4465373793654868,
+          "maxDrawdownPct": 8.031290837948646,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -8.264796259229978,
+          "maxDrawdownPct": 19.386111015621942,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 9.54551093509326,
+          "maxDrawdownPct": 34.40934069419601,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 37.32416646890493,
+          "maxDrawdownPct": 33.96353258514135,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "cloud-computing",
+      "name": "Cloud Computing",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 10.350801540699273,
+          "maxDrawdownPct": 3.317138719951629,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 26.59725554149457,
+          "maxDrawdownPct": 7.148608015336677,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 62.38940504151398,
+          "maxDrawdownPct": 21.15371717475214,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 42.911563753149615,
+          "maxDrawdownPct": 29.64715067812961,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "critical-minerals",
+      "name": "Critical Minerals",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -9.352702826501492,
+          "maxDrawdownPct": 12.592765197712573,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -0.0008036344053552469,
+          "maxDrawdownPct": 16.136775900300748,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -2.572147913080336,
+          "maxDrawdownPct": 28.203666282038633,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 38.52559397242934,
+          "maxDrawdownPct": 27.011399020945102,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "cybersecurity",
+      "name": "Cybersecurity",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 18.195530025853767,
+          "maxDrawdownPct": 5.391917546630076,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 21.86869907487903,
+          "maxDrawdownPct": 13.040670660368592,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 98.81129232747345,
+          "maxDrawdownPct": 13.793910422955813,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 51.6615376887585,
+          "maxDrawdownPct": 30.626641201196502,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "defense-security",
+      "name": "Defense & Security",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.426009675639044,
+          "maxDrawdownPct": 8.043331057287595,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -15.70203184582769,
+          "maxDrawdownPct": 17.980982888474106,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -4.932070430161984,
+          "maxDrawdownPct": 18.217256967722296,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 9.585481472488166,
+          "maxDrawdownPct": 17.99801972693316,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "deglobalization",
+      "name": "Deglobalization",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 0.5963855039062382,
+          "maxDrawdownPct": 4.2805479868588066,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -6.091612657586665,
+          "maxDrawdownPct": 12.575009504772172,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 6.3881436343729,
+          "maxDrawdownPct": 12.650512063160168,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 33.83567720922764,
+          "maxDrawdownPct": 12.915706362197243,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "digital-cash",
+      "name": "Digital Cash",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -6.954843559373969,
+          "maxDrawdownPct": 10.152981719924071,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.08691669065768,
+          "maxDrawdownPct": 10.463624316534936,
+          "coveredWeight": 99.99,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": true,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": null,
+          "maxDrawdownPct": null,
+          "coveredWeight": 95.36,
+          "reason": "Missing instrument history: full-portfolio return withheld",
+          "missing": [
+            {
+              "name": "WISE GROUP PLC-CL A",
+              "symbol": "WSE",
+              "weight": 4.63,
+              "reason": "New listing: not enough history for this period"
+            }
+          ]
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": null,
+          "maxDrawdownPct": null,
+          "coveredWeight": 90.62,
+          "reason": "Missing instrument history: full-portfolio return withheld",
+          "missing": [
+            {
+              "name": "Fiserv, Inc.",
+              "symbol": "FISV",
+              "weight": 4.74,
+              "reason": "Missing prices or insufficient listing history"
+            },
+            {
+              "name": "WISE GROUP PLC-CL A",
+              "symbol": "WSE",
+              "weight": 4.63,
+              "reason": "New listing: not enough history for this period"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electric-vehicles",
+      "name": "Electric Vehicles",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -4.844509254662521,
+          "maxDrawdownPct": 7.339072261598134,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -17.33590583296073,
+          "maxDrawdownPct": 21.056736589070212,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -6.339673345283203,
+          "maxDrawdownPct": 28.588564630836377,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -7.179694957854322,
+          "maxDrawdownPct": 28.73934565056684,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "gates-strategy",
+      "name": "Gates Strategy",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -4.126218223130351,
+          "maxDrawdownPct": 5.898501464514705,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1394996457447792,
+          "maxDrawdownPct": 6.738759509387526,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 0.24830010686922588,
+          "maxDrawdownPct": 6.929878421188862,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 21.915326540087232,
+          "maxDrawdownPct": 8.06653929241261,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "genomics",
+      "name": "Genomics",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 17.58178051438284,
+          "maxDrawdownPct": 4.245483015962048,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 49.07550873208319,
+          "maxDrawdownPct": 8.242694640660043,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 131.92154509251614,
+          "maxDrawdownPct": 8.693748540221025,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 214.2080918361232,
+          "maxDrawdownPct": 17.358455621662095,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "global-multi-asset-aggressive",
+      "name": "Global Multi-Asset (Aggressive)",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.6971942005473797,
+          "maxDrawdownPct": 2.208370480582267,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.539076955202213,
+          "maxDrawdownPct": 2.562219802226573,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 11.631312680215643,
+          "maxDrawdownPct": 4.3384773046596825,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 16.170175489967132,
+          "maxDrawdownPct": 7.73395840933091,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "global-multi-asset-conservative",
+      "name": "Global Multi-Asset (Conservative)",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -2.0114286093377176,
+          "maxDrawdownPct": 2.6941346793820764,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1801415191743603,
+          "maxDrawdownPct": 3.360655775788479,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 1.3455499956195993,
+          "maxDrawdownPct": 3.194623485326986,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 3.804956016775307,
+          "maxDrawdownPct": 5.116471102445786,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "global-multi-asset-moderate",
+      "name": "Global Multi-Asset (Moderate)",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1233350126089725,
+          "maxDrawdownPct": 2.2908388137572455,
+          "coveredWeight": 99.99000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 1.5776084409675484,
+          "maxDrawdownPct": 2.266787236459755,
+          "coveredWeight": 99.99000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 8.199700872612414,
+          "maxDrawdownPct": 3.445613639272127,
+          "coveredWeight": 99.99000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 12.550278562153716,
+          "maxDrawdownPct": 6.180250564590873,
+          "coveredWeight": 99.99000000000001,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "moat",
+      "name": "Moat",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": 2.3926289261091416,
+          "maxDrawdownPct": 2.1200348425467364,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 3.026678664645832,
+          "maxDrawdownPct": 4.137658145353685,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 21.174226737906075,
+          "maxDrawdownPct": 4.995116395308596,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 27.334796105221358,
+          "maxDrawdownPct": 10.48335396933141,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "nuclear-energy",
+      "name": "Nuclear Energy",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -12.734822693764336,
+          "maxDrawdownPct": 17.703056779511904,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -14.70084247708552,
+          "maxDrawdownPct": 19.444961201458177,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": -23.451655078150345,
+          "maxDrawdownPct": 33.61799040391954,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": -27.533157843816834,
+          "maxDrawdownPct": 37.94129804468395,
+          "coveredWeight": 100.00999999999999,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "space-tech",
+      "name": "Space Tech",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -0.05424068377132274,
+          "maxDrawdownPct": 3.8070165747658313,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -10.224982777108915,
+          "maxDrawdownPct": 11.70549175874761,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": true,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": null,
+          "maxDrawdownPct": null,
+          "coveredWeight": 83.19000000000001,
+          "reason": "Missing instrument history: full-portfolio return withheld",
+          "missing": [
+            {
+              "name": "Space Exploration Technologies Corp",
+              "symbol": "SPCX",
+              "weight": 12.46,
+              "reason": "New listing: not enough history for this period"
+            },
+            {
+              "name": "Honeywell Aerospace Inc",
+              "symbol": "HONA",
+              "weight": 4.34,
+              "reason": "New listing: not enough history for this period"
+            }
+          ]
+        },
+        {
+          "months": 12,
+          "isNew": true,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": null,
+          "maxDrawdownPct": null,
+          "coveredWeight": 83.19000000000001,
+          "reason": "Missing instrument history: full-portfolio return withheld",
+          "missing": [
+            {
+              "name": "Space Exploration Technologies Corp",
+              "symbol": "SPCX",
+              "weight": 12.46,
+              "reason": "New listing: not enough history for this period"
+            },
+            {
+              "name": "Honeywell Aerospace Inc",
+              "symbol": "HONA",
+              "weight": 4.34,
+              "reason": "New listing: not enough history for this period"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swensen-portfolio",
+      "name": "Swensen Portfolio",
+      "revision": 1,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.5234179035550688,
+          "maxDrawdownPct": 2.8665780002939734,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": -0.3866220680549315,
+          "maxDrawdownPct": 3.4122515853218127,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 8.96801069923303,
+          "maxDrawdownPct": 3.3981898803972843,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 10.356518363454015,
+          "maxDrawdownPct": 7.493348880590334,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    },
+    {
+      "id": "us-top10",
+      "name": "AGI US Top 10 — Quality Growth",
+      "revision": 3,
+      "asOf": "2026-10-02",
+      "periods": [
+        {
+          "months": 1,
+          "isNew": false,
+          "start": "2026-09-02",
+          "end": "2026-10-02",
+          "returnPct": -1.1647649482559475,
+          "maxDrawdownPct": 2.8022037530531674,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 3,
+          "isNew": false,
+          "start": "2026-07-02",
+          "end": "2026-10-02",
+          "returnPct": 2.6694792344012175,
+          "maxDrawdownPct": 4.614731287415729,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 6,
+          "isNew": false,
+          "start": "2026-04-02",
+          "end": "2026-10-02",
+          "returnPct": 16.88921731442441,
+          "maxDrawdownPct": 4.78900198587473,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        },
+        {
+          "months": 12,
+          "isNew": false,
+          "start": "2025-10-02",
+          "end": "2026-10-02",
+          "returnPct": 12.625073824743914,
+          "maxDrawdownPct": 13.15361176751516,
+          "coveredWeight": 100,
+          "reason": null,
+          "missing": []
+        }
+      ]
+    }
+  ]
+}

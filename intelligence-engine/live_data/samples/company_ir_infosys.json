@@ -1,0 +1,20 @@
+{
+  "effective_date": "2024-07-26",
+  "ticker": "INFY",
+  "documents": [
+    {
+      "doc_type": "quarterly_results",
+      "title": "Q1 FY25 Financial Results",
+      "url": "https://www.infosys.com/investors/reports-filings/quarterly-results/2024-2025/q1/financial-results.pdf",
+      "published_at": "2024-07-18",
+      "guidance_mentioned": true
+    },
+    {
+      "doc_type": "investor_presentation",
+      "title": "Q1 FY25 Investor Presentation",
+      "url": "https://www.infosys.com/investors/reports-filings/quarterly-results/2024-2025/q1/investor-presentation.pdf",
+      "published_at": "2024-07-18",
+      "guidance_mentioned": true
+    }
+  ]
+}

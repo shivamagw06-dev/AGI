@@ -1,0 +1,20 @@
+{
+  "ticker": "TCS",
+  "document_type": "json",
+  "period_end": "2025-03-31",
+  "period_type": "annual",
+  "consolidation_type": "consolidated",
+  "evidence_id": "cert:tcs_annual_min",
+  "document": {
+    "fields": {
+      "Revenue From Operations": {"value": 240000.0, "unit_scale": "crores"},
+      "Other Income": {"value": 5000.0, "unit_scale": "crores"},
+      "PAT": {"value": 48000.0, "unit_scale": "crores"},
+      "Finance Costs": {"value": 800.0, "unit_scale": "crores"},
+      "CashAndCashEquivalents": {"value": 35000.0, "unit_scale": "crores"},
+      "TotalAssets": {"value": 150000.0, "unit_scale": "crores"},
+      "TotalEquity": {"value": 90000.0, "unit_scale": "crores"},
+      "NetCashFlowsFromUsedInOperatingActivities": {"value": 42000.0, "unit_scale": "crores"}
+    }
+  }
+}

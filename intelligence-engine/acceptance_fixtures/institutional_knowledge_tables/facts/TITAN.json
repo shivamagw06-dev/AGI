@@ -1,0 +1,798 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.258194Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited, together with its subsidiaries, manufactures and sells watches, jewelry, eyewear, and other accessories and products in India and internationally.\n\nBusiness Segments\n\nThe company\u2019s primary segments include Watches, Jewelry, and Eyewear.\n\nWatches\n\nThe Watch segment has been a cornerstone of the company's legacy and continues to be a market leader. The company offers a wide array of watches catering to various demographics, blending traditional craftsmanship with contemporary design and technology. This includes luxury, sports, and fashion watches that appeal to a broad audience.\n\nJewelry\n\nThe Jewelry division has experienced tremendous growth due to the increasing demand for both traditional and contemporary jewelry. Under brands such as Tanishq, the company provides an extensive range of gold and diamond jewelry that resonates with Indian culture while also adapting to modern trends. Tanishq, in particular, has established a reputation for quality, design excellence, and ethical sourcing of materials.\n\nEyewear\n\nThe eyewear segment has also seen significant expansion, propelled by rising awareness about eye health and fashion trends in eyewear. The company markets this product line under brands like Titan Eyeplus, offering prescription glasses, sunglasses, and contact lenses, thus tapping into the growing optical retail market.\n\nBusiness Strategy\n\nThe company\u2019s business strategy focuses on diversification and innovation, driven by a deep understanding of consumer behavior and market trends. Additionally, the company prioritizes data-driven decision-making, leveraging market research insights to shape its strategies. Key elements include a commitment to innovation and design excellence, ensuring that the company not only meets but anticipates customer demands. Brand strengthening is crucial, with significant investments in marketing campaigns that resonate with target demographics to foster emotional engagement. A customer-centric approach underpins operations, emphasizing the need to understand customer preferences and experiences, which enhances product development and brand loyalty. Further, the company integrates sustainability and ethics into its business model, promoting environmental responsibility through ethical sourcing and compliance with regulations. The company also seeks expansion opportunities, particularly in semi-urban and rural markets, while enhancing its international presence through strategic collaborations and acquisitions. Ultimately, these strategies aim to sustain growth, maximize shareholder value, and positively impact society.\n\nProducts and Services\n\nThe company offers a diverse range of products across its various business divisions. In the watch segment, the company designs and manufactures timepieces that cater to a wide spectrum of preferences, from simple and functional models to luxurious and intricate designs. This variety showcases the company's commitment to quality, as each watch is crafted with precision and incorporates advanced technology, ensuring durability and style. In the jewelry domain, the company excels in innovation, providing a selection that includes traditional gold jewelry, modern diamond pieces, and exquisite wedding collections that celebrate cultural heritage. The emphasis on customization and unique designs enhances the overall customer experience, making each piece special.\n\nThe company also prioritizes customer service, particularly in the eyewear segment. The company\u2019s Titan Eyeplus brand not only sells eyewear products but also provides eye check-up facilities at its retail outlets, positioning itself as a comprehensive solution for eye care and eyewear needs. This service-oriented approach appeals to health-conscious consumers who seek both quality products and professional care. Furthermore, the company is dedicated to continuous improvement and innovation, ensuring that all its offerings reflect contemporary styles while adhering to the brand's promise of quality and excellence.\n\nGeographical Markets Served\n\nThe company\u2019s geographical outreach extends throughout India and spans several international markets. The company actively participates in the global market through its International Business Division, ensuring its products reach a wider audience. Enhanced distribution and marketing strategies have been employed to strengthen its international presence. \n\nSeasonality\n\nThe Major festivals and wedding seasons in India witness increased demand for watches and jewelry, leading to higher sales during certain quarters. The company strategically plans its marketing and inventory management to align with these seasonal peaks, ensuring availability and enhancing promotional efforts during these critical periods.\n\nCustomers\n\nThe company serves a diverse customer base that spans various demographics and geographic locations. The customer categories include individual consumers of all ages across urban and semi-urban regions, as well as corporate clients looking for bulk purchases or customization. Additionally, the company serves millions of customers annually across its retail outlets and online platforms, demonstrating the extensive reach and brand loyalty it has cultivated over the years.\n\nSales and Marketing Channel\n\nThe company employs a multifaceted approach to sales and marketing, integrating traditional and digital channels. Retail stores, e-commerce platforms, and strategic partnerships serve as essential outlets. Additionally, the company's marketing strategies include engaging advertising campaigns that utilize various media channels, social media engagement for brand storytelling, and promotional events that foster customer interaction. By blending these channels, the company enhances product visibility and creates a unified brand experience.\n\nHistory\n\nThe company was founded in 1984. It was incorporated in 1984. The company was formerly known as Titan Industries Limited and changed its name to Titan Company Limited in August 2013.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.236504Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited, together with its subsidiaries, manufactures and sells watches, jewelry, eyewear, and other accessories and products in India and internationally.\n\nBusiness Segments\n\nThe company\u2019s primary segments include Watches, Jewelry, and Eyewear.\n\nWatches\n\nThe Watch segment has been a cornerstone of the company's legacy and continues to be a market leader. The company offers a wide array of watches catering to various demographics, blending traditional craftsmanship with contemporary design and technology. This includes luxury, sports, and fashion watches that appeal to a broad audience.\n\nJewelry\n\nThe Jewelry division has experienced tremendous growth due to the increasing demand for both traditional and contemporary jewelry. Under brands such as Tanishq, the company provides an extensive range of gold and diamond jewelry that resonates with Indian culture while also adapting to modern trends. Tanishq, in particular, has established a reputation for quality, design excellence, and ethical sourcing of materials.\n\nEyewear\n\nThe eyewear segment has also seen significant expansion, propelled by rising awareness about eye health and fashion trends in eyewear. The company markets this product line under brands like Titan Eyeplus, offering prescription glasses, sunglasses, and contact lenses, thus tapping into the growing optical retail market.\n\nBusiness Strategy\n\nThe company\u2019s business strategy focuses on diversification and innovation, driven by a deep understanding of consumer behavior and market trends. Additionally, the company prioritizes data-driven decision-making, leveraging market research insights to shape its strategies. Key elements include a commitment to innovation and design excellence, ensuring that the company not only meets but anticipates customer demands. Brand strengthening is crucial, with significant investments in marketing campaigns that resonate with target demographics to foster emotional engagement. A customer-centric approach underpins operations, emphasizing the need to understand customer preferences and experiences, which enhances product development and brand loyalty. Further, the company integrates sustainability and ethics into its business model, promoting environmental responsibility through ethical sourcing and compliance with regulations. The company also seeks expansion opportunities, particularly in semi-urban and rural markets, while enhancing its international presence through strategic collaborations and acquisitions. Ultimately, these strategies aim to sustain growth, maximize shareholder value, and positively impact society.\n\nProducts and Services\n\nThe company offers a diverse range of products across its various business divisions. In the watch segment, the company designs and manufactures timepieces that cater to a wide spectrum of preferences, from simple and functional models to luxurious and intricate designs. This variety showcases the company's commitment to quality, as each watch is crafted with precision and incorporates advanced technology, ensuring durability and style. In the jewelry domain, the company excels in innovation, providing a selection that includes traditional gold jewelry, modern diamond pieces, and exquisite wedding collections that celebrate cultural heritage. The emphasis on customization and unique designs enhances the overall customer experience, making each piece special.\n\nThe company also prioritizes customer service, particularly in the eyewear segment. The company\u2019s Titan Eyeplus brand not only sells eyewear products but also provides eye check-up facilities at its retail outlets, positioning itself as a comprehensive solution for eye care and eyewear needs. This service-oriented approach appeals to health-conscious consumers who seek both quality products and professional care. Furthermore, the company is dedicated to continuous improvement and innovation, ensuring that all its offerings reflect contemporary styles while adhering to the brand's promise of quality and excellence.\n\nGeographical Markets Served\n\nThe company\u2019s geographical outreach extends throughout India and spans several international markets. The company actively participates in the global market through its International Business Division, ensuring its products reach a wider audience. Enhanced distribution and marketing strategies have been employed to strengthen its international presence. \n\nSeasonality\n\nThe Major festivals and wedding seasons in India witness increased demand for watches and jewelry, leading to higher sales during certain quarters. The company strategically plans its marketing and inventory management to align with these seasonal peaks, ensuring availability and enhancing promotional efforts during these critical periods.\n\nCustomers\n\nThe company serves a diverse customer base that spans various demographics and geographic locations. The customer categories include individual consumers of all ages across urban and semi-urban regions, as well as corporate clients looking for bulk purchases or customization. Additionally, the company serves millions of customers annually across its retail outlets and online platforms, demonstrating the extensive reach and brand loyalty it has cultivated over the years.\n\nSales and Marketing Channel\n\nThe company employs a multifaceted approach to sales and marketing, integrating traditional and digital channels. Retail stores, e-commerce platforms, and strategic partnerships serve as essential outlets. Additionally, the company's marketing strategies include engaging advertising campaigns that utilize various media channels, social media engagement for brand storytelling, and promotional events that foster customer interaction. By blending these channels, the company enhances product visibility and creates a unified brand experience.\n\nHistory\n\nThe company was founded in 1984. It was incorporated in 1984. The company was formerly known as Titan Industries Limited and changed its name to Titan Company Limited in August 2013.",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.249671Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited, together with its subsidiaries, manufactures and sells watches, jewelry, eyewear, fragrances, women\u2019s bags, and other accessories and products in India and internationally. The company operates through four segments: Watches and Wearables, Jewellery, Eyecare, and Others. The company designs, manufactures, and retails watches and wearables under the Nebula, Titan, Titan Clock, Zoop, Titan Octane, Titan Raga, Xylys, Edge, Fastrack, Sonata, Titan Smart, Fastrack smart, SF, Titan World, and Helios brands; jewellery products under the Mia, CaratLane, Tanishq, and Zoya brands; and eyecare products under the Titan Glares, Titan Eye+ and Fastrack Eyecare brands. It also offers sarees, dress materials, and ready-to-wear kurtas under the Taneira brand; perfumes under the SKINN brand; belts and wallets under the TITAN brand; and bags under the Fastrack and IRTH brands. In addition, the company provides manufacturing services and automation solutions for the aerospace, defense, transportation, electrical and electronics, and medical sectors. Further, it provides automation and precision engineering solutions. It offers its products through owned and franchised retail stores, as well as online. The company was formerly known as Titan Industries Limited and changed its name to Titan Company Limited in August 2013. Titan Company Limited was incorporated in 1984 and is based in Bengaluru, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.222397Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited, together with its subsidiaries, manufactures and sells watches, jewelry, eyewear, fragrances, women\u2019s bags, and other accessories and products in India and internationally. The company operates through four segments: Watches and Wearables, Jewellery, Eyecare, and Others. The company designs, manufactures, and retails watches and wearables under the Nebula, Titan, Titan Clock, Zoop, Titan Octane, Titan Raga, Xylys, Edge, Fastrack, Sonata, Titan Smart, Fastrack smart, SF, Titan World, and Helios brands; jewellery products under the Mia, CaratLane, Tanishq, and Zoya brands; and eyecare products under the Titan Glares, Titan Eye+ and Fastrack Eyecare brands. It also offers sarees, dress materials, and ready-to-wear kurtas under the Taneira brand; perfumes under the SKINN brand; belts and wallets under the TITAN brand; and bags under the Fastrack and IRTH brands. In addition, the company provides manufacturing services and automation solutions for the aerospace, defense, transportation, electrical and electronics, and medical sectors. Further, it provides automation and precision engineering solutions. It offers its products through owned and franchised retail stores, as well as online. The company was formerly known as Titan Industries Limited and changed its name to Titan Company Limited in August 2013. Titan Company Limited was incorporated in 1984 and is based in Bengaluru, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.229674Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "S&P Emerging LargeMidCap Index\n\nS&P Global Ex-China BMI Index\n\nS&P GIVI Pan Asia Ex. Japan Index\n\nS&P GIVI India Index\n\nS&P/IFCI Composite Ex-Malaysia Consumer Durables & Apparel (Industry Group)\n\nS&P India LargeMidCap Consumer Durables & Apparel (Industry Group) Index\n\nS&P Global Ex-U.S. & China A BMI\n\nS&P GIVI Global Growth Markets Tilt Index\n\nS&P/IFCI Composite Growth\n\nDow Jones Islamic Market Emerging Markets Large Cap Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.192760Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EM (Emerging Markets) Ex Coal Index\n\nMSCI EM Asia Index\n\nMSCI EFM/Consumer Discr (Sector) Index\n\nMSCI EAFE + EM/Textls App Lux Gds (Industry) Index\n\nMSCI BRIC/Consumer Discr (Sector) Index\n\nMSCI BRIC IMI/Consumer Discr (Sector) Index\n\nMSCI BRIC Equal Weighted Index\n\nMSCI ACWI/Cons Dur & Apparel (Industry Group) Index\n\nMSCI ACWI Ex USA/Cons Dur & Apparel (Industry Group) Index\n\nMSCI ACWI With USA Gross Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.246177Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.216451Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.246939Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Investment Corporation Limited (BSE:501301) (Current Investor); Tata Sons Private Limited (Current Investor); Tata AIG General Insurance Company Limited (Current Investor); Tata AIA Life Insurance Company Limited (Current Investor); Tata International Limited (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.218336Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Tata Investment Corporation Limited (BSE:501301) (Current Investor); Tata Sons Private Limited (Current Investor); Tata AIG General Insurance Company Limited (Current Investor); Tata AIA Life Insurance Company Limited (Current Investor); Tata International Limited (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.250596Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.223545Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.227843Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.190936Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.251433Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.225512Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.248839Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.221214Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.233509Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.197719Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.231894Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20207313",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.196219Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355680",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.245400Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Apparel, Accessories and Luxury Goods",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.214973Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Apparel, Accessories and Luxury Goods",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.247742Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited (BSE:500114)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.219925Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Titan Company Limited (BSE:500114)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.261038Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.242073Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.244596Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.213083Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Consumer Discretionary",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.231165Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.194414Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.226359Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "TITAN",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.189353Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "TITAN",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.265644Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.titancompany.in",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.247475Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.titancompany.in",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.253359Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Pidilite Industries Limited (NSEI:PIDILITIND); Garmin International, Inc.; Gili India Limited; Khazana Jewellery Pvt. Ltd.; Sai Silks (Kalamandir) Limited (NSEI:KALAMANDIR); PC Jeweller Limited (NSEI:PCJEWELLER); Waman Hari Pethe Jewellers; Guru Krupa Gems and Jewellery Limited (BSE:540545); D. P. Abhushan Limited (NSEI:DPABHUSHAN); Johnson Watch Co. Pvt. Ltd.; Hoshiyar Singh Suresh Chandra Sarees Private Limited; Modern Jewels Private Limited; Relaxo Footwears Limited (BSE:530517); Ethos Limited (NSEI:ETHOSLTD); CaratLane Trading Private Limited; Reliance Vision Express Private Ltd; GRT Jewellers (India) Private Limited; Manubhai Zaveri Ornaments Private Limited; Sky Gold and Diamonds Limited (BSE:541967); BlueStone Jewellery and Lifestyle Limited (NSEI:BLUESTONE); Imagine Marketing Limited; Swatch Group (India) Retail Private Limited; P C Chandra Jewellers Private Limited; PNGS Gargi Fashion Jewellery Limited (BSE:543709); Saraswati Saree Depot Limited (NSEI:SSDL); Lawrence And Mayo (india) Private Limited; Samsung Electronics Co., Ltd. (KOSE:A005930); Kanani Industries Limited (BSE:506184); Anjali Jewellers Pvt Ltd.; P.C. Chandra (Gems) Pvt Ltd; GKB Lens Pvt. Ltd.; Grasim Industries Limited (NSEI:GRASIM); Gitanjali Gems Limited; Page Industries Limited (NSEI:PAGEIND); Intex Technologies (I) Ltd.; Thangamayil Jewellery Limited (NSEI:THANGAMAYL); Kapoor Watch Company Private Limited; Vedant Fashions Limited (NSEI:MANYAVAR); Specsmakers Opticians Private Limited; Khimani Watch Company Private Limited; Zimson Times Private Limited; Dabur India Limited (NSEI:DABUR); Kalyan Jewellers India Limited (NSEI:KALYANKJIL); Malabar Gold and Diamonds Limited; Eyegear Optics India Pvt. Ltd.; Huawei Technologies Co., Ltd.; Helvetica Lifestyle Boutique Private Limited; Boltt Games Pvt. Ltd.; Cellecor Gadgets Limited (NSEI:CELLECOR); Gangar Opticians Private Limited; Marico Limited (BSE:531642); Vaibhav Global Limited (NSEI:VAIBHAVGBL); Fitbit LLC; Mehrasons Jewellers Private Limited; Lenskart Solutions Limited (NSEI:LENSKART); RBZ Jewellers Limited (NSEI:RBZJEWEL); Kamal Watch Company Pvt. Ltd.; Laxmi Jewellery Export Private Limited; Eighty Jewellers Limited (BSE:543518); M P Jewellers; Apple Inc. (NasdaqGS:AAPL); Fossil Group, Inc. (NasdaqGS:FOSL); Britannia Industries Limited (NSEI:BRITANNIA); Rajesh Exports Limited (NSEI:RAJESHEXPO); Goldiam International Limited (BSE:526729); Dindayal Jalan Textiles Ltd.; P N Gadgil Jewellers Limited (NSEI:PNGJL); Manoj Vaibhav Gems 'N' Jewellers Limited (NSEI:MVGJL); Bhima Jewellers & Diamonds; Swarnsarita Jewels India Limited (BSE:526365); Reliance Retail Limited; Aditya Birla Fashion and Retail Limited (NSEI:ABFRL); Joyalukkas India Limited; Tribhovandas Bhimji Zaveri Limited (NSEI:TBZ); Senco Gold Limited (NSEI:SENCO); Asian Star Company Ltd.; Kenvi Jewels Limited (BSE:540953); Ashapuri Gold Ornament Limited (BSE:542579); Veerkrupa Jewellers Limited (BSE:543545); Varyaa Creations Limited (BSE:544168)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.227226Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Pidilite Industries Limited (NSEI:PIDILITIND); Garmin International, Inc.; Gili India Limited; Khazana Jewellery Pvt. Ltd.; Sai Silks (Kalamandir) Limited (NSEI:KALAMANDIR); PC Jeweller Limited (NSEI:PCJEWELLER); Waman Hari Pethe Jewellers; Guru Krupa Gems and Jewellery Limited (BSE:540545); D. P. Abhushan Limited (NSEI:DPABHUSHAN); Johnson Watch Co. Pvt. Ltd.; Hoshiyar Singh Suresh Chandra Sarees Private Limited; Modern Jewels Private Limited; Marico Limited (BSE:531642); Vaibhav Global Limited (NSEI:VAIBHAVGBL); Fitbit LLC; Mehrasons Jewellers Private Limited; Lenskart Solutions Limited (NSEI:LENSKART); RBZ Jewellers Limited (NSEI:RBZJEWEL); Kamal Watch Company Pvt. Ltd.; Laxmi Jewellery Export Private Limited; Eighty Jewellers Limited (BSE:543518); M P Jewellers; Swarnsarita Jewels India Limited (BSE:526365); Reliance Retail Limited; Aditya Birla Fashion and Retail Limited (NSEI:ABFRL); Joyalukkas India Limited; Tribhovandas Bhimji Zaveri Limited (NSEI:TBZ); Senco Gold Limited (NSEI:SENCO); Asian Star Company Ltd.; Kenvi Jewels Limited (BSE:540953); Ashapuri Gold Ornament Limited (BSE:542579); Veerkrupa Jewellers Limited (BSE:543545); Varyaa Creations Limited (BSE:544168); Samsung Electronics Co., Ltd. (KOSE:A005930); Kanani Industries Limited (BSE:506184); Anjali Jewellers Pvt Ltd.; P.C. Chandra (Gems) Pvt Ltd; GKB Lens Pvt. Ltd.; Dabur India Limited (NSEI:DABUR); Kalyan Jewellers India Limited (NSEI:KALYANKJIL); Malabar Gold and Diamonds Limited; Eyegear Optics India Pvt. Ltd.; Huawei Technologies Co., Ltd.; Helvetica Lifestyle Boutique Private Limited; Boltt Games Pvt. Ltd.; Cellecor Gadgets Limited (NSEI:CELLECOR); Gangar Opticians Private Limited; Apple Inc. (NasdaqGS:AAPL); Fossil Group, Inc. (NasdaqGS:FOSL); Britannia Industries Limited (NSEI:BRITANNIA); Rajesh Exports Limited (NSEI:RAJESHEXPO); Goldiam International Limited (BSE:526729); Dindayal Jalan Textiles Ltd.; P N Gadgil Jewellers Limited (NSEI:PNGJL); Manoj Vaibhav Gems 'N' Jewellers Limited (NSEI:MVGJL); Bhima Jewellers & Diamonds; Relaxo Footwears Limited (BSE:530517); Ethos Limited (NSEI:ETHOSLTD); CaratLane Trading Private Limited; Reliance Vision Express Private Ltd; GRT Jewellers (India) Private Limited; Manubhai Zaveri Ornaments Private Limited; Sky Gold and Diamonds Limited (BSE:541967); BlueStone Jewellery and Lifestyle Limited (NSEI:BLUESTONE); Imagine Marketing Limited; Swatch Group (India) Retail Private Limited; P C Chandra Jewellers Private Limited; PNGS Gargi Fashion Jewellery Limited (BSE:543709); Saraswati Saree Depot Limited (NSEI:SSDL); Lawrence And Mayo (india) Private Limited; Grasim Industries Limited (NSEI:GRASIM); Gitanjali Gems Limited; Page Industries Limited (NSEI:PAGEIND); Intex Technologies (I) Ltd.; Thangamayil Jewellery Limited (NSEI:THANGAMAYL); Kapoor Watch Company Private Limited; Vedant Fashions Limited (NSEI:MANYAVAR); Specsmakers Opticians Private Limited; Khimani Watch Company Private Limited; Zimson Times Private Limited",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.254393Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 841,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.229467Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 841,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.256411Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9340.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.232779Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9340.6,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.234687Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 50.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.199604Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 50.6,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.255274Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 47889.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.231388Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 47889.2,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.257317Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 45086.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.234601Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 45086.1,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_announced": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.259135Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-07 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.238306Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-07 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.260094Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-07 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.240106Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-07 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.236738Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.036,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.201928Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.01,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.238184Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 13.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.204117Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 13.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.237470Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.93,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.203001Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.94,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.241315Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 43.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.208515Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 43.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.238917Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.205206Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9.24,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.242108Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 62.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.209669Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 62.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.242887Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 178.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.210739Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 178.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.239640Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.206289Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 23.1,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.240569Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.207361Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 29.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.235874Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.200872Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19.8,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.243650Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.062,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.211837Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.09,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.263981Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Backpacks; Bags; Belts; Clocks and Accessories; Dress Materials; Fragrances; Frames; Jewellery Products; Lenses; Machine Building Products; Perfumes; Precision Engineering Products; Ready-to-wear Kurtas; Sarees; Sunglasses; Wallets; Watches",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.245677Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Backpacks; Bags; Belts; Clocks and Accessories; Dress Materials; Fragrances; Frames; Jewellery Products; Lenses; Machine Building Products; Perfumes; Precision Engineering Products; Ready-to-wear Kurtas; Sarees; Sunglasses; Wallets; Watches",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:20.262008Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Backpacks:\nBackpacks includes Ergo light backpacks.\n\nBags:\nBags are offered under the SKINN, Fastrack brand and Irth Bags.\n\nDress Materials:\nDress Materials offered underTaneira brand.\n\nFragrances:\nFragrances are offered under Skinn and SKINN Nox Oud brands.\n\nFrames:\nFrames made from biodegradable materials like castor oil seeds.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:38:20.243483Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Backpacks:\nBackpacks includes Ergo light backpacks.\n\nBags:\nBags are offered under the SKINN, Fastrack brand and Irth Bags.\n\nDress Materials:\nDress Materials offered underTaneira brand.\n\nFragrances:\nFragrances are offered under Skinn and SKINN Nox Oud brands.\n\nFrames:\nFrames made from biodegradable materials like castor oil seeds.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "TITAN",
+  "updated_at": "2026-08-01T19:38:20.247481Z"
+}

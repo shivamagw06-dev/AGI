@@ -1,0 +1,101 @@
+[
+  {
+    "profileId": "in-mukesh-ambani-and-family-ced48bc9",
+    "holder": "Mukesh D Ambani",
+    "scope": "INE002A01018",
+    "bucket": "family",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://rilstaticasset.akamaized.net/sites/default/files/2026-07/SHP30062026.pdf",
+    "evidenceNote": "June 2026 promoter table names this member; significant-beneficial-owner table identifies these five people together. Direct registered shares only; no look-through corporate attribution.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-mukesh-ambani-and-family-ced48bc9",
+    "holder": "Nita M Ambani",
+    "scope": "INE002A01018",
+    "bucket": "family",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://rilstaticasset.akamaized.net/sites/default/files/2026-07/SHP30062026.pdf",
+    "evidenceNote": "June 2026 promoter table names this member; significant-beneficial-owner table identifies these five people together. Direct registered shares only; no look-through corporate attribution.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-mukesh-ambani-and-family-ced48bc9",
+    "holder": "Isha M Ambani",
+    "scope": "INE002A01018",
+    "bucket": "family",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://rilstaticasset.akamaized.net/sites/default/files/2026-07/SHP30062026.pdf",
+    "evidenceNote": "June 2026 promoter table names this member; significant-beneficial-owner table identifies these five people together. Direct registered shares only; no look-through corporate attribution.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-mukesh-ambani-and-family-ced48bc9",
+    "holder": "Akash M Ambani",
+    "scope": "INE002A01018",
+    "bucket": "family",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://rilstaticasset.akamaized.net/sites/default/files/2026-07/SHP30062026.pdf",
+    "evidenceNote": "June 2026 promoter table names this member; significant-beneficial-owner table identifies these five people together. Direct registered shares only; no look-through corporate attribution.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-mukesh-ambani-and-family-ced48bc9",
+    "holder": "Anant M Ambani",
+    "scope": "INE002A01018",
+    "bucket": "family",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://rilstaticasset.akamaized.net/sites/default/files/2026-07/SHP30062026.pdf",
+    "evidenceNote": "June 2026 promoter table names this member; significant-beneficial-owner table identifies these five people together. Direct registered shares only; no look-through corporate attribution.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-mukul-agrawal-72418872",
+    "holder": "MUKUL MAHAVIR AGRAWAL",
+    "scope": "INE794A01010",
+    "bucket": "personal",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://nsearchives.nseindia.com/corporate/xbrl/SHP_1696377_20072026085555_WEB.xml",
+    "evidenceNote": "Legal-name variant on the existing Neuland holding. Scoped to this issuer; other issuers require identity review.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-radhakishan-damani-756ef461",
+    "holder": "Radhakishan Shivkishan Damani",
+    "scope": "INE192R01011",
+    "bucket": "personal",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://nsearchives.nseindia.com/corporate/xbrl/SHP_1692414_14072026052337_WEB.xml",
+    "evidenceNote": "Legal-name variant in Avenue Supermarts promoter disclosure. Personal direct shares only; family trusts and corporate positions are not automatically attributed.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-sbi-group-ca67e728",
+    "holder": "SBI Mutual Fund",
+    "scope": "*",
+    "bucket": "managed",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://www.sbifunds.com/",
+    "evidenceNote": "Official SBI Funds website describes its mutual-fund management offering. These are client-managed fund positions, not bank proprietary assets or personal wealth.",
+    "status": "approved"
+  },
+  {
+    "profileId": "in-sbi-group-ca67e728",
+    "holder": "SBI Mutual Funds",
+    "scope": "*",
+    "bucket": "managed",
+    "validFrom": "2026-06-30",
+    "validTo": null,
+    "evidenceUrl": "https://www.sbifunds.com/",
+    "evidenceNote": "Official SBI Funds website describes its mutual-fund management offering. These are client-managed fund positions, not bank proprietary assets or personal wealth.",
+    "status": "approved"
+  }
+]

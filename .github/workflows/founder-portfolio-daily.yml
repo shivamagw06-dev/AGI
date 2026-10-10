@@ -1,0 +1,31 @@
+name: Founder Portfolio Daily Validation
+on:
+  schedule:
+    - cron: '0 13 * * 1-5'
+  workflow_dispatch:
+concurrency:
+  group: founder-portfolio-daily
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Refresh, value and validate founder portfolio
+        env:
+          ENGINE_TOKEN: ${{ secrets.INTELLIGENCE_ENGINE_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$ENGINE_TOKEN" || { echo "::error::INTELLIGENCE_ENGINE_TOKEN is not configured"; exit 1; }
+          code="$(curl -sS --max-time 300 -o /tmp/founder-portfolio.json -w '%{http_code}' -X POST -H "X-AGI-Intelligence-Token: $ENGINE_TOKEN" https://agib-intelligence-engine.onrender.com/v1/founder-portfolio/refresh)"
+          cat /tmp/founder-portfolio.json; echo
+          test "$code" = "200" || { echo "::error::Refresh returned HTTP $code"; exit 1; }
+          python - <<'PY'
+          import json, os
+          report = (json.load(open('/tmp/founder-portfolio.json')).get('report') or {})
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write('## Founder Portfolio Daily Validation\n\n')
+              out.write(f"- Status: **{report.get('status', 'UNKNOWN')}**\n- Assets: {report.get('asset_count', 0)}\n- Priced: {report.get('priced_count', 0)}\n- Snapshot written: {report.get('snapshot_written', False)}\n- Message: {report.get('message', '')}\n")
+          if report.get('status') != 'OK' or not report.get('snapshot_written'):
+              raise SystemExit('Validation failed closed; prior public snapshot preserved')
+          PY
