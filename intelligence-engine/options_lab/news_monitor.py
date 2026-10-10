@@ -120,8 +120,10 @@ def poll(symbols, universe, *, now=None, get=read_json, live_collection=True):
         schema(db)
         row=db.execute('SELECT payload FROM paper_news_status WHERE id=1').fetchone()
         previous=json.loads(row[0]) if row else {}
+    if previous.get('next_attempt_at') and at < p.timestamp(previous['next_attempt_at']):
+        return previous
     snapshot=dict(previous,mode='observe',rule_version=VERSION,last_attempt_at=at.isoformat(),
-                  universe=universe,instrument_count=len(symbols),refresh_seconds=60)
+                  universe=universe,instrument_count=len(symbols),refresh_seconds=120)
     try:
         articles=normalize(fetch_news(symbols,load_access_token(),get),symbols,at)
         completed=now or datetime.now(timezone.utc)
@@ -139,7 +141,7 @@ def poll(symbols, universe, *, now=None, get=read_json, live_collection=True):
                            (article['id'],article['first_seen_at'],json.dumps(article)))
             # Do not repeatedly arm old stories after restarts or pagination changes.
             articles.sort(key=lambda a:a['published_at'],reverse=True)
-            snapshot.update(available=True,error=None,last_success_at=completed.isoformat(),articles=articles)
+            snapshot.update(available=True,error=None,last_success_at=completed.isoformat(),articles=articles,failures=0,next_attempt_at=None)
             record_review(db,snapshot,completed)
             db.execute('INSERT OR REPLACE INTO paper_news_status VALUES(1,?)',(json.dumps(snapshot),))
             cutoff=(completed-timedelta(days=30)).isoformat()
@@ -148,6 +150,9 @@ def poll(symbols, universe, *, now=None, get=read_json, live_collection=True):
     except Exception as error:
         # Never log exception text/headers: may contain secrets or provider response.
         code=getattr(error,'code',None) or getattr(getattr(error,'response',None),'status_code',None)
+        failures=min(int(previous.get('failures',0))+1,8)
+        delay=min(1800,60*2**failures) if code==429 else min(900,60*failures)
+        snapshot.update(failures=failures,next_attempt_at=(at+timedelta(seconds=delay)).isoformat())
         snapshot.update(available=False,error=f'News refresh failed ({"HTTP "+str(code) if code else type(error).__name__}); coverage unknown')
         with closing(p.database()) as db, db:
             schema(db)
@@ -244,5 +249,5 @@ class NewsWorker:
                     # Dashboard freshness expires even when this status write fails.
                     pass
                 first=False
-            try: await asyncio.wait_for(self.stop.wait(),timeout=60)
+            try: await asyncio.wait_for(self.stop.wait(),timeout=120)
             except asyncio.TimeoutError: pass

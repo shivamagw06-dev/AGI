@@ -87,13 +87,13 @@ def setup(candles, name):
     return dict(side=side, rv=rv, bar_at=bars[-1]['at'])
 
 
-def usable(row, now):
+def usable(row, now, entry=True):
     try:
         return (row.get('provider')=='upstox' and row.get('underlying_key')=='NSE_INDEX|Nifty 50'
             and p.valid_quote(row) and row.get('quote_at')
             and 0 <= (now-p.timestamp(row['quote_at'])).total_seconds()<=5
             and min(p.number(row.get('bid_size')) or 0,p.number(row.get('ask_size')) or 0)>=row['lot_size']
-            and 2 <= (datetime.fromisoformat(row['expiry']).date()-now.astimezone(p.IST).date()).days<=14)
+            and (2 if entry else 0) <= (datetime.fromisoformat(row['expiry']).date()-now.astimezone(p.IST).date()).days<=14)
     except (KeyError,ValueError,TypeError):return False
 
 
@@ -130,7 +130,7 @@ def execution(legs, quotes, now, *, entry, signal_at=None):
     result=[];times=[]
     for leg in legs:
         q=quotes.get(leg['instrument_key'])
-        if not q or not usable(q,now):return None
+        if not q or not usable(q,now,entry=entry):return None
         if any(q[k]!=leg[k] for k in ('expiry','lot_size','strike','option_type')):return None
         qt=p.timestamp(q['quote_at']);times.append(qt.timestamp())
         if signal_at and qt<=p.timestamp(signal_at):return None
@@ -167,13 +167,14 @@ def terms(fills,name,spot):
                 reserve=reserve,entry_cost=entry_cost,fee_model=FEE_MODEL)
 
 
-def advance(state, rows, now, allow_entries):
+def advance(state, rows, now, allow_entries, recover_gaps=False):
     at=now.isoformat();local=now.astimezone(p.IST);day=local.date().isoformat();minute=local.hour*60+local.minute
     if state['last_at'] and int(now.timestamp())<=int(p.timestamp(state['last_at']).timestamp()):return
     active=local.weekday()<5 and 555<=minute<930
     gap=bool(state['last_at'] and (now-p.timestamp(state['last_at'])).total_seconds()>5)
     new_day=state['day']!=day
     quotes={r['instrument_key']:r for r in rows if usable(r,now)}
+    exit_quotes={r['instrument_key']:r for r in rows if usable(r,now,entry=False)}
     spots=[p.number(r.get('spot')) for r in rows if r.get('spot_at') and 0<=(now-p.timestamp(r['spot_at'])).total_seconds()<=5]
     spots=[s for s in spots if s and s>0]
     valid=active and bool(quotes) and bool(spots) and (max(spots)-min(spots))/min(spots)<.002
@@ -184,12 +185,23 @@ def advance(state, rows, now, allow_entries):
         if new_day:
             a.update(daily_start=a['equity'],daily_entries=0,last_signal_bar=None,pending=None)
         pos=a['position']
-        if pos and (gap or new_day or not valid):
+        a['evaluated_at']=at
+        if pos and not a['blocked'] and (gap or new_day or not valid):
             a['blocked']=True;a['pending']=None
             p.event(a,at,'data_gap','Spread unresolved across data gap; both legs preserved, agent halted')
-        if a['blocked']:continue
+        if a['blocked']:
+            fills=execution(pos['legs'],exit_quotes,now,entry=False) if recover_gaps and pos and active and spots and (max(spots)-min(spots))/min(spots)<.002 else None
+            if fills and all(p.timestamp(f['quote_at'])>p.timestamp(pos['entry_at']) for f in fills):
+                equity=a['cash']+cashflow(fills)
+                reason='Data-gap recovery at first usable basket; missing-period exits unknown'
+                a['trades'].append(dict(**pos,exit_at=at,exit_legs=fills,pnl=round(equity-pos['equity_before'],2),reason=reason,
+                    evidence_status='data_gap_recovery',exit_cost=sum(f['charges']['total'] for f in fills)))
+                a.update(cash=equity,equity=equity,position=None,pending=None,blocked=False,capital_reserved=0.,recovery_day=day)
+                a['peak']=max(a['peak'],equity);a['max_drawdown']=max(a['max_drawdown'],a['peak']-equity)
+                p.event(a,at,'recovery',reason)
+            continue
         if pos:
-            fills=execution(pos['legs'],quotes,now,entry=False)
+            fills=execution(pos['legs'],exit_quotes,now,entry=False)
             if not fills:
                 a['blocked']=True;p.event(a,at,'data_gap','Both spread exit quotes unavailable or unsynchronised; agent halted');continue
             equity=a['cash']+cashflow(fills);pnl=equity-pos['equity_before'];a['equity']=equity
@@ -226,6 +238,7 @@ def advance(state, rows, now, allow_entries):
                 p.event(a,at,'skip',f'Basket cancelled: {reason}')
         elif not valid:
             a['status']='Waiting for market / fresh quotes'
+        elif a.get('recovery_day')==day:a['status']='Recovery exit recorded; new entries locked for this session'
         elif not allow_entries:a['status']='New entries paused'
         elif a['daily_entries']>=2 or a['equity']<=a['daily_start']-2000:a['status']='Daily entry/loss limit reached'
         elif len(state['candles'])<12:a['status']=f"Warming up: {len(state['candles'])}/12 complete five-minute candles"

@@ -85,7 +85,7 @@ def direction(strategy, history, spot):
     return None
 
 
-def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900):
+def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900, recover_gaps=False):
     """Atomic simulated transition; caller persists the state and source cursor."""
     if interval_seconds not in (1, 900):
         raise ValueError('Supported observation intervals are 1 and 900 seconds')
@@ -124,6 +124,7 @@ def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900
         for agent in state['agents'].values():
             agent['daily_start'] = agent['equity']
             agent['daily_entries'] = 0
+            agent['recovery_day'] = None
             agent['pending'] = None
     quotes = {r['instrument_key']: r for r in rows if valid_quote(r)
               and (not fast or (r.get('quote_at') and
@@ -131,11 +132,29 @@ def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900
     policy = state['policy']
     for name, agent in state['agents'].items():
         pos = agent['position']
-        if pos and (gap or new_day or stale or inconsistent):
+        agent['evaluated_at'] = at
+        if pos and not agent['blocked'] and (gap or new_day or stale or inconsistent):
             agent['blocked'] = True
             agent['pending'] = None
             event(agent, at, 'data_gap', 'Open position unresolved across missing/stale quotes; agent halted')
         if agent['blocked']:
+            q = quotes.get(pos['instrument_key']) if pos else None
+            # Recovery is a new observed exit, never a claimed fill during the gap.
+            if recover_gaps and fast and pos and q and not stale and not inconsistent and minute < 930:
+                match = all(q.get(k) == pos.get(k) for k in ('expiry','strike','option_type'))
+                depth = (number(q.get('bid_size')) or 0) >= pos['quantity']
+                if match and depth and q['expiry'] >= day and timestamp(q['quote_at']) > timestamp(pos['entry_at']):
+                    exit_price = float(q['bid']) * (1-policy['slippage_pct']/100)
+                    proceeds = exit_price * pos['quantity']
+                    equity = agent['cash'] + proceeds - fee(proceeds,policy)
+                    reason = 'Data-gap recovery at first usable quote; missing-period exits unknown'
+                    agent['trades'].append(dict(**pos,exit_at=at,exit_price=exit_price,
+                        exit_cost=fee(proceeds,policy),pnl=round(equity-pos['equity_before'],2),
+                        reason=reason,evidence_status='data_gap_recovery',recovery_quote_at=q['quote_at']))
+                    agent.update(cash=equity,equity=equity,position=None,blocked=False,pending=None,recovery_day=day)
+                    agent['peak']=max(agent['peak'],equity)
+                    agent['max_drawdown']=max(agent['max_drawdown'],agent['peak']-equity)
+                    event(agent,at,'recovery',reason)
             continue
         if pos:
             quote = quotes.get(pos['instrument_key'])
@@ -186,7 +205,9 @@ def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900
                 event(agent,at,'skip','Signal cancelled: missing, delayed or unusable next quote')
         # Do not create another signal on a quote used for an exit or entry.
         else:
-            if not allow_entries or stale or inconsistent:
+            if agent.get('recovery_day') == day:
+                agent['status'] = 'Recovery exit recorded; new entries locked for this session'
+            elif not allow_entries or stale or inconsistent:
                 event(agent,at,'skip','Entries paused or source observations are stale/inconsistent')
             elif agent['equity'] <= agent['daily_start']-policy['daily_loss'] or agent['daily_entries'] >= policy['max_trades_per_day']:
                 event(agent,at,'risk','Daily entry/loss limit reached')
@@ -203,6 +224,8 @@ def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900
                     event(agent,at,'signal',f'{side} candidate; awaiting next recorded quote')
                 else:
                     agent['status'] = 'Waiting for setup and liquid contract (2–14 days to expiry)'
+            else:
+                agent['status'] = 'Outside entry hours'
         agent['peak'] = max(agent['peak'],agent['equity'])
         agent['max_drawdown'] = max(agent['max_drawdown'],agent['peak']-agent['equity'])
     # Strategy context stays on the 15-minute clock even with 1-second exits.
@@ -483,7 +506,7 @@ def stream_tick(rows, status, *, now, prune=False):
         rows=[r for r in rows if r.get('option_type') in ('CE','PE')]
         if 'spreads' not in state:
             state['spreads']=spread_agents.fresh()
-        spread_agents.advance(state['spreads'],rows,now,bool(row['enabled']))
+        spread_agents.advance(state['spreads'],rows,now,bool(row['enabled']),recover_gaps=True)
         if not rows:
             for agent in state['agents'].values():
                 agent['pending'] = None
@@ -493,7 +516,7 @@ def stream_tick(rows, status, *, now, prune=False):
                 elif not agent['blocked']:
                     agent['status'] = status.get('status','Waiting for stream')
         else:
-            step(state, rows, wall_now=now, allow_entries=bool(row['enabled']), interval_seconds=1)
+            step(state, rows, wall_now=now, allow_entries=bool(row['enabled']), interval_seconds=1,recover_gaps=True)
         # Observer failures must not interrupt price evaluation or position exits.
         try:
             news_monitor.observe(db,state,news_before,now)

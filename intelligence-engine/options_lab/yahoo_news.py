@@ -3,13 +3,13 @@ import json
 import hashlib
 import xml.etree.ElementTree as ET
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlsplit
 
 from . import paper_agents as p
 
-URL = 'https://finance.yahoo.com/rss/topstories'
+URL = 'https://finance.yahoo.com/news/rssindex'
 INTERVAL = 300
 
 
@@ -66,6 +66,8 @@ def poll(*, now=None, get=fetch):
         schema(db)
         row=db.execute('SELECT payload FROM paper_yahoo_news WHERE id=1').fetchone()
         previous=json.loads(row[0]) if row else {}
+    if previous.get('next_attempt_at') and at < p.timestamp(previous['next_attempt_at']):
+        return previous
     snapshot=dict(previous,last_attempt_at=at.isoformat(),refresh_seconds=INTERVAL,source='Yahoo Finance',
                   feed_url=URL,scope='Global top stories; not complete India coverage',mode='display_only')
     try:
@@ -77,10 +79,10 @@ def poll(*, now=None, get=fetch):
             article['first_seen_at']=saved.get('first_seen_at',completed.isoformat())
             article['original_published_at']=saved.get('original_published_at',article['published_at'])
             article['updated_at']=completed.isoformat() if saved and any(saved.get(k)!=article[k] for k in ('heading','published_at')) else saved.get('updated_at')
-        snapshot.update(available=True,error=None,last_success_at=completed.isoformat(),articles=articles)
+        snapshot.update(available=True,error=None,last_success_at=completed.isoformat(),articles=articles,next_attempt_at=None)
     except Exception as error:
         code=getattr(getattr(error,'response',None),'status_code',None)
-        snapshot.update(available=False,error='Yahoo refresh failed ('+('HTTP '+str(code) if code else type(error).__name__)+'); retained headlines may be stale')
+        snapshot.update(available=False,next_attempt_at=(at+timedelta(minutes=30)).isoformat(),error='Yahoo refresh failed ('+('HTTP '+str(code) if code else type(error).__name__)+'); retained headlines may be stale')
     with closing(p.database()) as db, db:
         schema(db)
         db.execute('INSERT OR REPLACE INTO paper_yahoo_news VALUES(1,?)',(json.dumps(snapshot),))

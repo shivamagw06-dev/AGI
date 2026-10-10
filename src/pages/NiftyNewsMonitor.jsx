@@ -6,7 +6,7 @@ export default function NiftyNewsMonitor({news,names}){
   <p className="np-eyebrow">NEWS MONITOR · OBSERVATION ONLY</p>
   <h2>{unavailable?'News unavailable — coverage unknown':news.would_pause?'Potential news risk — would pause new entries':'No recent headline rule matches'}</h2>
   <p>This observer records proposed risk flags for the original eleven strategies without changing their trades or calendar. The separate news agent above uses its own event eligibility rules. Matches are keyword-based research labels, not verified impact assessments.</p>
-  <p>Last successful refresh: {when(news?.last_success_at)} IST · Refresh: every minute during market hours · {news?.instrument_count??0} stocks</p>
+  <p>Last successful refresh: {when(news?.last_success_at)} IST · Refresh: every 2 minutes during market hours; delayed after errors · {news?.instrument_count??0} stocks</p>
   <small>{news?.universe||'Waiting for constituent coverage'} · News source: Upstox · Rules: {news?.rule_version||'Pending'}</small>
   {news?.error&&<p className="np-warning">{news.error}</p>}
   {!unavailable&&news?.would_pause&&<p className="np-warning">Suggested pause until {when(news.until)} IST. Paper trading continues under its existing rules.</p>}
@@ -19,9 +19,9 @@ export default function NiftyNewsMonitor({news,names}){
    {!news?.observations?.length?<p>Waiting for new strategy candidates or paper entries after the monitor starts.</p>:<div className="np-scroll"><table><thead><tr><th>Time (IST)</th><th>Strategy / event</th><th>News assessment</th></tr></thead><tbody>{news.observations.map((o,i)=><tr key={i}><td>{when(o.at)}</td><td>{o.agent==='all'?'All strategies':names[o.agent]||o.agent}<small>{o.kind==='paper_entry'?'Paper entry':o.kind==='news_review'?'News assessment':'Candidate'}</small></td><td>{o.would_pause===null?'Unknown — news unavailable':o.would_pause?'Would pause':'No matching pause rule'}{o.headlines?.map(a=><small key={a.id}>{a.heading}</small>)}</td></tr>)}</tbody></table></div>}
   </details>
   <small>A proposed pause lasts 30 minutes from publication, never from delayed discovery. Headlines older than that cannot start a fresh pause. No historical news has been injected into past backtests.</small>
-  <div aria-label="Yahoo Finance news">
-   <h3>Yahoo Finance</h3>
-   <p>Global top stories · refresh every 5 minutes during market hours · for reading only. This feed does not change strategy signals or trades and is not complete India coverage.</p>
+  {news?.next_attempt_at&&<p>News retry after: {when(news.next_attempt_at)} IST</p>}<div aria-label="Yahoo Finance news">
+   <h3>Yahoo Finance</h3>{news?.yahoo?.next_attempt_at&&<p>Retry after: {when(news.yahoo.next_attempt_at)} IST</p>}
+   <p>General finance news · refresh every 5 minutes during market hours · for reading only. This feed does not change strategy signals or trades and is not complete India coverage.</p>
    <p>{news?.yahoo?.fresh&&Date.now()-new Date(news.yahoo.last_success_at).getTime()<=600000?'Feed available':'Feed unavailable or stale'} · Last successful refresh: {when(news?.yahoo?.last_success_at)} IST</p>
    {news?.yahoo?.latest_published_at&&<p>Newest returned article: {when(news.yahoo.latest_published_at)} IST. {!news.yahoo.content_recent&&'The feed contains older stories; a successful refresh does not establish current news coverage.'}</p>}
    {news?.yahoo?.error&&<p className="np-warning">{news.yahoo.error}</p>}

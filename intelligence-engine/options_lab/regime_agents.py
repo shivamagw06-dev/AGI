@@ -316,6 +316,7 @@ def advance(state, rows, now, allow_entries):
         state['iv_today']=dict(day=day,iv=ctx['iv'],at=at,available_at=at,unit='percent',source='Upstox V3 stream',method='last-completed-bar-atm-ce-pe-v1')
     # Exit/mark every open basket before admitting any new exposure.
     for name,a in state['agents'].items():
+        a['evaluated_at']=at
         pos=a['position']
         if not pos:continue
         if a['blocked']:continue
