@@ -7,11 +7,11 @@ const root = new URL('../data/investorProfiles/', import.meta.url);
 const directory = JSON.parse(fs.readFileSync(new URL('index.json', root), 'utf8'));
 const profiles = directory.map(item => JSON.parse(fs.readFileSync(new URL(`holdings/${item.country.toLowerCase()}-${item.slug}.json`, root), 'utf8')));
 
-test('all 134 India and US investors have distinct resolvable profile routes', () => {
-  assert.equal(directory.length, 134);
-  assert.equal(directory.filter(row => row.country === 'IN').length, 63);
-  assert.equal(directory.filter(row => row.country === 'US').length, 71);
-  assert.equal(new Set(directory.map(row => investorPath(row.country, row.name))).size, 134);
+test('all 273 India and US investors have distinct resolvable profile routes', () => {
+  assert.equal(directory.length, 273);
+  assert.equal(directory.filter(row => row.country === 'IN').length, 186);
+  assert.equal(directory.filter(row => row.country === 'US').length, 87);
+  assert.equal(new Set(directory.map(row => investorPath(row.country, row.name))).size, 273);
   for (const row of directory) assert.equal(row.slug, investorSlug(row.name));
   assert.notEqual(investorPath('IN', 'Mohnish Pabrai'), investorPath('US', 'Mohnish Pabrai'));
 });
@@ -39,6 +39,7 @@ test('source units, missing disclosures and below-threshold positions are not co
   assert.equal(numberFromDisclosure('0%'), 0);
   assert.equal(numberFromDisclosure('1,000'), 1000);
   assert.equal(disclosureStatus({ change: 'Below 1% first time' }), 'Below threshold');
+  assert.equal(disclosureStatus({ change: 'Filing Awaited', quantity: '100', history: ['-', '2%'] }), 'Filing awaited');
   assert.equal(disclosureStatus({ change: 'New' }), 'New disclosure');
   assert.equal(disclosureStatus({ change: 'Add 8.73%' }), 'Increased');
   assert.equal(disclosureStatus({ change: 'Reduce 5.35%' }), 'Reduced');
@@ -58,4 +59,23 @@ test('CSV includes provenance and security class, escapes quotes and neutralizes
   assert.ok(csv.includes('"COM · Put · SH"'));
   assert.ok(csv.includes('"-2.5"'));
   assert.ok(csv.includes('"https://example.com/filing","2026-06-30","2026-09-26"'));
+});
+
+test('October refresh checks all source profiles and preserves official US filings', () => {
+ const audit = JSON.parse(fs.readFileSync(new URL('../../docs/investor-holdings-refresh-2026-10-15.json', import.meta.url)));
+ assert.equal(audit.length, 273);
+ assert.equal(audit.filter(p => p.result === 'refreshed').length, 259);
+ assert.equal(audit.filter(p => p.result === 'no-latest-table').length, 14);
+ for (const p of profiles) {
+  const latest = p.trendlyneSnapshot || p;
+  if (latest.country === 'US' && latest.retrievedAt === '2026-10-15') {
+   assert.equal(latest.periods[0], 'Company ownership %');
+   assert.ok(latest.rows.every(row => row.stock && row.sourceUrl?.startsWith('https://us.trendlyne.com/')));
+   if (latest.rows.length >= 200) assert.equal(latest.sourceLimited, true);
+  }
+  if (p.trendlyneSnapshot) assert.ok(['sec13f', 'fund-disclosures'].includes(p.kind));
+  if (p.latestSourceUnavailable) assert.equal(p.lastCheckedAt, '2026-10-15');
+ }
+ const damani=profiles.find(p => p.name === 'Radhakishan Damani');
+ assert.equal(damani.rows.find(r => r.stock === 'Horizon Industrial Parks').value, '161.9127 Cr');
 });
