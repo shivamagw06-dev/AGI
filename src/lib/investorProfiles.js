@@ -17,6 +17,7 @@ export function numberFromDisclosure(value) {
 
 export function disclosureStatus(row) {
   const change = String(row.change || '').toLowerCase();
+  if (change.includes('filing awaited')) return 'Filing awaited';
   if (change.includes('below')) return 'Below threshold';
   if (change === 'new' || change === 'buy') return 'New disclosure';
   if (change.startsWith('add ')) return 'Increased';
@@ -35,6 +36,6 @@ export function portfolioCsv(profile) {
     if (/^[=+@\t\r]/.test(text) || (/^-/.test(text) && numberFromDisclosure(text) == null)) text = `'${text}`;
     return `"${text.replaceAll('"', '""')}"`;
   };
-  const header = ['Stock', 'Holder', 'Security class / option / units', 'CUSIP', 'Holding value (reported units)', 'Quantity', 'Reported change', ...profile.periods, 'Reporting period', 'Retrieved'];
-  return [header, ...profile.rows.map(row => [row.stock, row.holder, row.security, row.cusip, row.value, row.quantity, row.change, ...profile.periods.map((_, i) => row.history?.[i] ?? ''), row.reportPeriod || profile.reportPeriod, profile.retrievedAt])].map(row => row.map(escape).join(',')).join('\r\n');
+  const header = ['Stock', 'Holder', 'Security class / option / units', 'CUSIP', 'Holding value (reported units)', 'Quantity', 'Reported change', ...profile.periods, 'Source', 'Reporting period', 'Retrieved'];
+  return [header, ...profile.rows.map(row => [row.stock, row.holder, row.security, row.cusip, row.value, row.quantity, row.change, ...profile.periods.map((_, i) => row.history?.[i] ?? ''), profile.sourceUrl, row.reportPeriod || profile.reportPeriod, profile.retrievedAt])].map(row => row.map(escape).join(',')).join('\r\n');
 }

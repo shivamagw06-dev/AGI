@@ -25,7 +25,9 @@ export default function InvestorPortfolioPage() {
   const country = ['in', 'us'].includes(market) ? market.toUpperCase() : null;
   const entry = directory.find(item => item.country === country && item.slug === investorId);
   const category=entry?.category || 'individual';
-  const [profile, setProfile] = useState(null);
+  const [loadedProfile, setProfile] = useState(null);
+  const [sourceView, setSourceView] = useState('filing');
+  const profile = sourceView === 'trendlyne' && loadedProfile?.trendlyneSnapshot ? loadedProfile.trendlyneSnapshot : loadedProfile;
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
@@ -44,7 +46,7 @@ export default function InvestorPortfolioPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    setProfile(null); setSummary(category==='institutional'?(country==='US'?usaInstitutionalInvestors:indiaInstitutionalInvestors).find(row=>investorSlug(row.name)===investorId)||null:null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
+    setProfile(null); setSourceView('filing'); setSummary(category==='institutional'?(country==='US'?usaInstitutionalInvestors:indiaInstitutionalInvestors).find(row=>investorSlug(row.name)===investorId)||null:null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
     if (!country) return () => { active = false; controller.abort(); };
     const load = snapshots[`../data/investorProfiles/holdings/${country.toLowerCase()}-${investorId}.json`];
     if (load) load().then(module => { if (active) setProfile(module.default); }).catch(() => { if (active) setError('The holdings snapshot could not load. Please retry.'); });
@@ -70,7 +72,7 @@ export default function InvestorPortfolioPage() {
   const periods = (currentProfile?.periods || []).slice(0, history ? undefined : 1);
   const changeQuery = value => { setQuery(value); setPage(0); };
   const download = () => {
-    const blob = new Blob(['\uFEFF', portfolioCsv({ ...currentProfile, rows: holdings, sourceUrl: '', sourceLabel: '' })], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF', portfolioCsv({ ...currentProfile, rows: holdings })], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
     anchor.href = url; anchor.download = `${country.toLowerCase()}-${investorId}-holdings.csv`; anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -88,9 +90,10 @@ export default function InvestorPortfolioPage() {
     <div className="rk-container ip-content">
       {error ? <div className="ip-notice" role="alert">{error} <button onClick={() => setRetry(x => x + 1)}>Retry</button></div> : entry && !currentProfile ? <p role="status">Loading disclosed holdings…</p> : null}
       {currentProfile && <>
+        {loadedProfile?.trendlyneSnapshot && <label className="ip-history">Holdings source <select value={sourceView} onChange={e => { setSourceView(e.target.value); setPage(0); setStatus('all'); }}><option value="filing">Retained official filing · {loadedProfile.reportPeriod}</option><option value="trendlyne">Trendlyne · checked 15 Oct 2026</option></select></label>}
         <div className="ip-metrics"><div><span>Holdings rows available</span><strong>{holdings.length.toLocaleString()}</strong></div><div><span>Reporting period</span><strong>{currentProfile.reportPeriod || 'Not available'}</strong></div><div><span>Retrieved</span><strong>{currentProfile.retrievedAt}</strong></div></div>
         <aside className="ip-notice"><strong>Daily price-based valuation</strong><p>{valuation?.pricedCount ? `${valuationMoney(valuation.value, country)} · ${valuation.pricedCount} of ${holdings.length} listed rows priced. ${valuation.pricedCount < holdings.length ? 'Partial subtotal; unpriced holdings are excluded.' : 'Value of the disclosed rows only.'}` : 'Price-based valuation is not available yet. Reported values remain visible below.'}</p>{valuation?.pricedCount > 0 && <p>{valuation.dayChangePct != null && `Price movement: ${valuation.dayChangePct > 0 ? '+' : ''}${valuation.dayChangePct.toFixed(2)}% versus prior trading-session close, using the same disclosed quantities. `}Last successful refresh: {valuationTime(valuations.updatedAt)}. {valuationStale(valuations) ? 'Refresh overdue; showing the last successful snapshot. ' : ''}Oldest included quote: {valuationTime(valuation.oldestPriceAt)}.</p>}<p>Scheduled daily at 2:00 AM IST. Yahoo Finance regular-session prices may be delayed; US prices can be intraday at this time. This estimates disclosed holdings, not personal net worth. Share counts remain as reported; unsupported securities and unresolved corporate actions are excluded.</p></aside>
-        <aside className="ip-notice"><strong>{currentProfile.coverageLabel}</strong><p>Publicly disclosed positions may cover different reporting dates and may not represent the complete portfolio.</p>{currentProfile.managerName && <p>Filing entity: <strong>{currentProfile.managerName}</strong>. This is the entity’s reported portfolio, not the named individual’s personal assets.</p>}
+        <aside className="ip-notice"><strong>{currentProfile.coverageLabel}</strong><p>{currentProfile.coverageNote}</p>{currentProfile.lastCheckedAt && <p>Source checked: {currentProfile.lastCheckedAt}. <a href={currentProfile.sourceUrl} target="_blank" rel="noreferrer">View source</a></p>}<p>Publicly disclosed positions may cover different reporting dates and may not represent the complete portfolio.</p>{currentProfile.managerName && <p>Filing entity: <strong>{currentProfile.managerName}</strong>. This is the entity’s reported portfolio, not the named individual’s personal assets.</p>}
         </aside>
         {holdings.length > 0 ? <>
           {country === 'IN' && <p className="rk-table-hint">{disclosures.data ? `Holdings checked ${valuationTime(disclosures.data.updatedAt)}. ` : ''}{disclosures.unavailable ? 'Latest refresh unavailable; retained holdings remain visible. ' : ''}Daily checks at 2 AM IST. Dated holder details appear within each company; missing disclosures do not establish a sale.</p>}
