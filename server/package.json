@@ -25,6 +25,7 @@
     "node-fetch": "^3.3.2",
     "parse5": "7.3.0",
     "pdfjs-dist": "^4.10.38",
+    "playwright": "1.64.1",
     "protobufjs": "^7.6.5",
     "ws": "^8.21.1"
   },

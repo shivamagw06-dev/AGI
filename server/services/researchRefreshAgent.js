@@ -1,3 +1,4 @@
+import {collectTrendlyneBrowser,browserConfigured} from '../collectors/trendlyneBrowser.js';
 import {randomUUID,createHash} from 'node:crypto';
 import {createSupabaseAdmin} from '../lib/supabaseAdmin.js';
 import {createPortfolioStore} from './portfolioCatalog.js';
@@ -10,6 +11,7 @@ import {latestPromoterSnapshot,parsePromoterTables,publishPromoterSnapshot} from
 const adapters={momentum:[parseMomentumTables,latestMomentumSnapshot,publishMomentumSnapshot],'low-pe':[parseLowPeTables,latestLowPeSnapshot,publishLowPeSnapshot],piotroski:[parsePiotroskiTables,latestPiotroskiSnapshot,publishPiotroskiSnapshot],'cash-flow':[parseCashFlowTables,latestCashFlowSnapshot,publishCashFlowSnapshot],'promoter-holdings':[parsePromoterTables,latestPromoterSnapshot,publishPromoterSnapshot]};
 const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 export async function readApprovedFeed({env=process.env,fetcher=fetch}={}) {
+ if(env.RESEARCH_REFRESH_SOURCE==='browser')return collectTrendlyneBrowser({env});
  if(!env.RESEARCH_REFRESH_FEED_URL)throw Error('SOURCE_NOT_CONFIGURED: connect an approved Trendlyne export feed');
  const url=new URL(env.RESEARCH_REFRESH_FEED_URL);
  if(url.protocol!=='https:'||url.username||url.password)throw Error('Source must use HTTPS without embedded credentials');
@@ -30,7 +32,7 @@ export function createResearchRefreshAgent({client,engineFetch,feed=readApproved
    const c=db(),{data:state,error}=await c.from('agi_research_refresh_state').select('enabled,next_due_at,lease_until,last_report').eq('id',true).single();
    const {data:runs,error:e}=await c.from('agi_research_refresh_runs').select('*').order('started_at',{ascending:false}).limit(20);
    if(error||e)throw Error('Agent database migration not installed');
-   return {state,runs,sourceConfigured:Boolean(process.env.RESEARCH_REFRESH_FEED_URL),intervalDays:15,portfolioMode:'review_only',holdingsDetailMode:'not_connected'};
+   return {state,runs,sourceConfigured:process.env.RESEARCH_REFRESH_SOURCE==='browser'?browserConfigured():Boolean(process.env.RESEARCH_REFRESH_FEED_URL),sourceMode:process.env.RESEARCH_REFRESH_SOURCE==='browser'?'browser':'feed',intervalDays:15,portfolioMode:'review_only',holdingsDetailMode:'not_connected'};
   },
   async setEnabled(enabled){if(typeof enabled!=='boolean')throw Error('enabled must be boolean');const {error}=await db().from('agi_research_refresh_state').update({enabled,updated_at:now().toISOString()}).eq('id',true);if(error)throw Error('Unable to change schedule');return this.status();},
   async run({force=false}={}){
