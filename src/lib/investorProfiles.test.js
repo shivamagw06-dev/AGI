@@ -63,8 +63,8 @@ test('CSV includes provenance and security class, escapes quotes and neutralizes
 
 test('October refresh checks all source profiles and preserves official US filings', () => {
  const audit = JSON.parse(fs.readFileSync(new URL('../../docs/investor-holdings-refresh-2026-10-15.json', import.meta.url)));
- assert.equal(audit.length, 271);
- assert.equal(audit.filter(p => p.result === 'refreshed').length, 257);
+ assert.equal(audit.length, 273);
+ assert.equal(audit.filter(p => p.result === 'refreshed').length, 259);
  assert.equal(audit.filter(p => p.result === 'no-latest-table').length, 14);
  for (const p of profiles) {
   const latest = p.trendlyneSnapshot || p;

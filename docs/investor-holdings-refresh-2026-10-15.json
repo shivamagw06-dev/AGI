@@ -2166,5 +2166,21 @@
     "result": "refreshed",
     "rows": 131,
     "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158614/latest/tom-gayner-portfolio/"
+  },
+  {
+    "name": "Sanjay Kumar Agarwal",
+    "country": "IN",
+    "category": "individual",
+    "result": "refreshed",
+    "rows": 10,
+    "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53788/latest/sanjay-kumar-agarwal/"
+  },
+  {
+    "name": "Urjita Master",
+    "country": "IN",
+    "category": "individual",
+    "result": "refreshed",
+    "rows": 3,
+    "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584327/latest/urjita-master/"
   }
 ]
