@@ -62,6 +62,7 @@ const authorNavItems = [
 
 const navItems = [
   { to: '/admin/portfolios', label: 'Portfolios', icon: Briefcase },
+  { to: '/admin/research-refresh', label: 'Research update agent', icon: Briefcase },
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/data-warehouse', label: 'Data Warehouse', icon: Database },
   { to: '/admin/sector-evidence-audit', label: 'Sector Missing Data', icon: FileSpreadsheet },

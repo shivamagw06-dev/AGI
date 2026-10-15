@@ -1,4 +1,6 @@
 import { createPaperDashboardReader } from '../services/paperDashboardRead.js';
+import {createResearchRefreshAgent,startResearchRefreshScheduler} from '../services/researchRefreshAgent.js';
+import researchRefreshRouter from './researchRefresh.js';
 import financeTools from './financeTools.js';
 /**
  * AGI Intelligence Engine proxy — frontend never talks to Python directly.
@@ -243,6 +245,9 @@ export default function createIntelligenceRouter() {
 
   // Soft daily CMS → KIP/KF/KC learner (IST learning_date calendar)
   startCmsArticleLearningScheduler(engineFetch);
+  const researchRefreshAgent=createResearchRefreshAgent({engineFetch});
+  router.use('/research-refresh',researchRefreshRouter(researchRefreshAgent));
+  startResearchRefreshScheduler(researchRefreshAgent);
   // Async CMS ingest job worker (HTTP enqueues; worker wakes engine + retries)
   startCmsIngestJobWorker(engineFetch);
 
