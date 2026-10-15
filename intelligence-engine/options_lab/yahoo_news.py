@@ -69,7 +69,7 @@ def poll(*, now=None, get=fetch):
     if previous.get('next_attempt_at') and at < p.timestamp(previous['next_attempt_at']):
         return previous
     snapshot=dict(previous,last_attempt_at=at.isoformat(),refresh_seconds=INTERVAL,source='Yahoo Finance',
-                  feed_url=URL,scope='Global top stories; not complete India coverage',mode='display_only')
+                  feed_url=URL,scope='General finance news; not complete India coverage',mode='display_only')
     try:
         articles=parse(get(),at)
         completed=now or datetime.now(timezone.utc)
@@ -81,8 +81,8 @@ def poll(*, now=None, get=fetch):
             article['updated_at']=completed.isoformat() if saved and any(saved.get(k)!=article[k] for k in ('heading','published_at')) else saved.get('updated_at')
         snapshot.update(available=True,error=None,last_success_at=completed.isoformat(),articles=articles,next_attempt_at=None)
     except Exception as error:
-        code=getattr(getattr(error,'response',None),'status_code',None)
-        snapshot.update(available=False,next_attempt_at=(at+timedelta(minutes=30)).isoformat(),error='Yahoo refresh failed ('+('HTTP '+str(code) if code else type(error).__name__)+'); retained headlines may be stale')
+        code=getattr(getattr(error,'response',None),'status_code',None) or getattr(error,'code',None)
+        snapshot.update(available=False,next_attempt_at=(at+(timedelta(hours=24) if code in (404,410) else timedelta(minutes=30))).isoformat(),error='Yahoo refresh failed ('+('HTTP '+str(code) if code else type(error).__name__)+'); retained headlines may be stale')
     with closing(p.database()) as db, db:
         schema(db)
         db.execute('INSERT OR REPLACE INTO paper_yahoo_news VALUES(1,?)',(json.dumps(snapshot),))

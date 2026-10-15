@@ -46,18 +46,41 @@ def select(rows,today,spot):
     return result[:42]+future[:1]
 
 
+def stage(name):
+    state=e.read('groww_stream')
+    state.update(status='starting',stage=name,heartbeat_at=datetime.now(timezone.utc).isoformat(),
+                 error=None,connection_verified_at=None,last_received_at=None,
+                 messages=0,fresh_messages=0,stale_messages=0,automatic_failover=False)
+    e.write('groww_stream',state)
+
+
+def record_failure(error):
+    state=e.read('groww_stream')
+    code=getattr(error,'code',None)
+    detail=('HTTP '+str(code)) if isinstance(code,int) else type(error).__name__
+    state.update(status='retry_pending',connection_verified_at=None,
+        error=f"Groww {state.get('stage','startup')} failed ({detail}); observation unavailable; no automatic failover.",
+        retry_after=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat())
+    e.write('groww_stream',state)
+
+
 def observe(probe_seconds=0):
+    stage('sdk_import')
     from growwapi import GrowwFeed
     from .groww_bridge import FeedAuthorization
     auth=None;day=datetime.now(p.IST).date().isoformat()
+    stage('index_quote')
     quote=groww('/live-data/quote',auth,exchange='NSE',segment='CASH',trading_symbol='NIFTY')
     spot=float(quote['last_price'])
+    stage('instrument_mapping')
     with urllib.request.urlopen('https://growwapi-assets.groww.in/instruments/instrument.csv',timeout=60) as r:
         mapping=select(list(csv.DictReader(io.StringIO(r.read().decode()))),day,spot)
     if not mapping:raise ValueError('No verified NIFTY derivative mapping')
     e.write('groww_mapping',dict(day=day,instruments=mapping))
+    stage('socket_authorization_or_connection')
     feed=GrowwFeed(FeedAuthorization()); state=dict(status='subscribing',mode='observation_only',mapped_contracts=len(mapping),messages=0,fresh_messages=0,stale_messages=0,
-        started_at=datetime.now(timezone.utc).isoformat(),connection_verified_at=datetime.now(timezone.utc).isoformat(),probe_day=day,automatic_failover=False)
+        started_at=datetime.now(timezone.utc).isoformat(),connection_verified_at=None,stage='subscriptions',probe_day=day,automatic_failover=False)
+    e.write('groww_stream',state)
     lock=threading.Lock();last={};pending={}
     def callback(kind,getter):
         def receive(_meta):
@@ -65,6 +88,7 @@ def observe(probe_seconds=0):
             stamps=[timestamp(x.get('tsInMillis')) for x in leaves(data)]
             valid=bool(stamps) and all(t is not None and -1000<=now-t<=5000 for t in stamps)
             with lock:
+                if valid:state['connection_verified_at']=datetime.now(timezone.utc).isoformat()
                 state['messages']+=1;state['fresh_messages' if valid else 'stale_messages']+=1
                 state['last_received_at']=datetime.now(timezone.utc).isoformat()
                 state['last_exchange_at']=datetime.fromtimestamp(max(t for t in stamps if t)/1000,timezone.utc).isoformat() if any(stamps) else None
@@ -83,7 +107,10 @@ def observe(probe_seconds=0):
         now=datetime.now(timezone.utc)
         with lock:
             batch=list(pending.values());pending.clear()
-            state.update(status='observing' if batch else 'waiting_for_updates',heartbeat_at=now.isoformat())
+            state.update(status='observing' if batch else 'waiting_for_updates',stage='receiving',heartbeat_at=now.isoformat())
+            last_receipt=p.timestamp(state['last_received_at']).timestamp() if state.get('last_received_at') else p.timestamp(state['started_at']).timestamp()
+            if not probe_seconds and now.timestamp()-last_receipt>120:
+                raise TimeoutError('No stream messages for 120 seconds')
             if e.storage()['free_bytes']<2*1024**3:raise ValueError('Storage reserve reached')
             if batch:
                 with gzip.open(e.root()/f'groww-{day}.jsonl.gz','at') as out:
@@ -108,9 +135,8 @@ if __name__=='__main__':
         elif e.read('groww_stream').get('probe_day')!=now.date().isoformat():observe(probe_seconds=15)
         else:
             state=e.read('groww_stream');state.update(status='outside_market_hours',mode='observation_only',heartbeat_at=now.isoformat(),automatic_failover=False);e.write('groww_stream',state)
-    except Exception:
-        state=e.read('groww_stream');state.update(status='retry_pending',error='Groww stream/auth/mapping unavailable; no automatic failover.',
-            retry_after=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat());e.write('groww_stream',state)
+    except Exception as error:
+        record_failure(error)
 
     finally:
         # SDK owns non-daemon networking threads; this isolated child renews daily.
