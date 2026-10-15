@@ -34,3 +34,8 @@ og-config.php
 # personal data into git history, where removing it means rewriting published
 # commits. It was committed once, empty, in #1062 and removed here.
 server/data/newsletter/
+
+# Dedicated browser authentication and private collector configuration
+**/.auth/
+**/trendlyne-session*.json
+**/trendlyne-manifest.local.json
