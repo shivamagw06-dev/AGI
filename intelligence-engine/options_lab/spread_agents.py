@@ -177,7 +177,8 @@ def advance(state, rows, now, allow_entries, recover_gaps=False):
     exit_quotes={r['instrument_key']:r for r in rows if usable(r,now,entry=False)}
     spots=[p.number(r.get('spot')) for r in rows if r.get('spot_at') and 0<=(now-p.timestamp(r['spot_at'])).total_seconds()<=5]
     spots=[s for s in spots if s and s>0]
-    valid=active and bool(quotes) and bool(spots) and (max(spots)-min(spots))/min(spots)<.002
+    market_valid=active and bool(spots) and (max(spots)-min(spots))/min(spots)<.002
+    valid=market_valid and bool(quotes)
     if new_day or gap or not valid:
         state.update(minute=None,minutes=[],candles=[],last_bar=None)
     completed=candle_sample(state,now,spots[0]) if valid else None
@@ -186,7 +187,7 @@ def advance(state, rows, now, allow_entries, recover_gaps=False):
             a.update(daily_start=a['equity'],daily_entries=0,last_signal_bar=None,pending=None)
         pos=a['position']
         a['evaluated_at']=at
-        if pos and not a['blocked'] and (gap or new_day or not valid):
+        if pos and not a['blocked'] and (gap or new_day or not market_valid):
             a['blocked']=True;a['pending']=None
             p.event(a,at,'data_gap','Spread unresolved across data gap; both legs preserved, agent halted')
         if a['blocked']:
@@ -203,7 +204,23 @@ def advance(state, rows, now, allow_entries, recover_gaps=False):
         if pos:
             fills=execution(pos['legs'],exit_quotes,now,entry=False)
             if not fills:
-                a['blocked']=True;p.event(a,at,'data_gap','Both spread exit quotes unavailable or unsynchronised; agent halted');continue
+                # Quote skew is not a disconnect: wait without marking/filling at
+                # mismatched prices. Missing, stale, thin or mismatched legs still halt.
+                complete=all(q and usable(q,now,entry=False) and
+                    all(q.get(k)==leg.get(k) for k in ('expiry','lot_size','strike','option_type'))
+                    for leg in pos['legs'] for q in [exit_quotes.get(leg['instrument_key'])])
+                elapsed=(now-p.timestamp(pos.get('last_executable_at',pos['entry_at']))).total_seconds()
+                if recover_gaps and complete and elapsed<=5:
+                    a['status']='Waiting for synchronised exit quotes; last mark unchanged (maximum 5 seconds)'
+                    if not a.get('quote_wait_since'):
+                        a['quote_wait_since']=at
+                        p.event(a,at,'quote_wait',a['status'])
+                    continue
+                cause='Exit quote skew exceeded five seconds' if complete else 'Held exit quote missing, stale, thin or contract mismatch'
+                a['blocked']=True;p.event(a,at,'data_gap',cause+'; both legs preserved, agent halted');continue
+            pos['last_executable_at']=at
+            if a.pop('quote_wait_since',None):
+                p.event(a,at,'quote_resumed','Synchronised exit quotes restored; no fill inferred during wait')
             equity=a['cash']+cashflow(fills);pnl=equity-pos['equity_before'];a['equity']=equity
             reason=('Session exit' if minute>=915 else 'Daily loss limit' if equity<=a['daily_start']-2000
                     else 'Spread stop' if pnl<=-pos['stop_loss'] else 'Spread target' if pnl>=pos['target_profit'] else None)
