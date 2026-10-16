@@ -231,6 +231,10 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
     if (/international markets/i.test(about)) strengths.push('Operations span India and international markets, providing geographic diversification.');
   }
   const risks = [];
+  const latestPat = financials.rows.profit_after_tax?.[0] ?? null;
+  const priorPat = financials.rows.profit_after_tax?.[1] ?? null;
+  if (latestPat != null && latestPat < 0) risks.push(`The latest reported period shows a net loss of INR ${Math.abs(latestPat)} crore. Profitability has not been established for that period.`);
+  if (latestPat != null && priorPat != null && latestPat >= 0 && priorPat > latestPat) risks.push(`Reported profit after tax declined from INR ${priorPat} crore to INR ${latestPat} crore.`);
   if (exportShare != null) risks.push(`Export concentration is high at ${exportShare}% of revenue, increasing geographic, currency and external-demand sensitivity.`);
   if (latestDebtEquity != null && latestDebtEquity >= 1) risks.push(`Leverage remains meaningful with debt/equity of ${latestDebtEquity.toFixed(2)}x despite the reported improvement.`);
   if (latestBorrowing != null && priorBorrowing != null && latestBorrowing > priorBorrowing * 1.25) {
@@ -269,7 +273,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
     || (latestDebtEquity != null && priorDebtEquity != null && latestDebtEquity > priorDebtEquity * 1.2)) financialQuality -= 8;
   const suggestedScores = {
     business_quality: businessQuality,
-    financial_quality: Math.max(0, Math.min(100, financialQuality)),
+    financial_quality: latestPat == null || latestPat < 0 ? '' : Math.max(0, Math.min(100, financialQuality)),
     valuation: '',
     governance: '',
     issue_structure: debtRepaymentShare != null && debtRepaymentShare >= 0.75
