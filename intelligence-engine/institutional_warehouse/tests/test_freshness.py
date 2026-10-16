@@ -10,6 +10,8 @@ import pytest
 os.environ.setdefault("INSTITUTIONAL_WAREHOUSE_ROOT",
                       tempfile.mkdtemp(prefix="wh_fresh_"))
 
+from datetime import date
+
 from institutional_warehouse import freshness
 
 
@@ -141,3 +143,51 @@ def test_a_price_row_with_no_close_does_not_count(warehouse):
 
     out = freshness.report(today="2026-08-23")
     assert _status(out, "daily_market_history")["newest"] == "2026-08-21"
+
+
+
+# --- both ends of the series ------------------------------------------------
+#
+# The newest row answers one question, the oldest answers a different one. A
+# table truncated from behind keeps a perfectly fresh newest row and reports
+# healthy while its past quietly disappears, and nothing was asking. It took a
+# deploy to learn whether four days of option quotes meant four days old or
+# four days retained -- two very different situations, indistinguishable from
+# the outside.
+
+def _ends(monkeypatch, newest, oldest, rows):
+    monkeypatch.setattr(freshness, "_newest",
+                        lambda *a, **k: (newest, oldest, rows))
+    return freshness.report(today="2026-08-27")["tables"][0]
+
+
+def test_a_declared_table_reports_both_ends(monkeypatch):
+    row = _ends(monkeypatch, date(2026, 8, 26), date(2026, 1, 2), 500)
+    assert row["newest"] == "2026-08-26"
+    assert row["oldest"] == "2026-01-02"
+
+
+def test_the_span_says_how_much_past_is_actually_held(monkeypatch):
+    row = _ends(monkeypatch, date(2026, 8, 26), date(2026, 1, 2), 500)
+    assert row["span_days"] == (date(2026, 8, 26) - date(2026, 1, 2)).days
+
+
+def test_a_truncated_table_still_looks_fresh_but_its_span_collapses(monkeypatch):
+    # The whole point: both of these report age_days = 1 and status ok.
+    full = _ends(monkeypatch, date(2026, 8, 26), date(2026, 1, 2), 500)
+    cut = _ends(monkeypatch, date(2026, 8, 26), date(2026, 8, 24), 12)
+    assert full["age_days"] == cut["age_days"] == 1
+    assert full["span_days"] > cut["span_days"]
+
+
+def test_an_empty_table_reports_neither_end(monkeypatch):
+    row = _ends(monkeypatch, None, None, 0)
+    assert row["newest"] is None
+    assert row["oldest"] is None
+    assert row["span_days"] is None
+
+
+def test_a_single_row_has_a_span_of_zero_not_null(monkeypatch):
+    # Zero span is a measurement: one day of history.
+    one = date(2026, 8, 26)
+    assert _ends(monkeypatch, one, one, 1)["span_days"] == 0
