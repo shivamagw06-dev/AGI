@@ -123,19 +123,19 @@ export default function IpoDetailPage() {
   const confidence = meta ? panel.confidence : 0;
   const demand = demandScore(ipo?.subscriptionRate);
   const listedReturn = listingReturn(ipo);
-  const automaticGmp = ipo?.gmp && Number.isFinite(Number(ipo.gmp.value)) ? ipo.gmp : null;
-  const manualGmp = meta?.ipo_gmp && Number.isFinite(Number(meta.ipo_gmp.value))
+  const automaticGmp = ipo?.gmp && hasVerifiedScore(ipo.gmp.value) ? ipo.gmp : null;
+  const manualGmp = meta?.ipo_gmp && hasVerifiedScore(meta.ipo_gmp.value)
     ? { value: Number(meta.ipo_gmp.value), source: meta.ipo_gmp.source || 'AGI manual verification', updatedAt: meta.ipo_gmp.updated_at || null, unofficial: true }
     : null;
   const gmp = automaticGmp || manualGmp;
   const gmpValue = gmp ? Number(gmp.value) : null;
   const gmpIssuePrice = Number(ipo?.cutOffPrice || ipo?.maxPrice);
-  const gmpPercentage = gmp && Number.isFinite(Number(gmp.percentage))
+  const gmpPercentage = gmp && hasVerifiedScore(gmp.percentage)
     ? Number(gmp.percentage)
     : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice) && gmpIssuePrice > 0
       ? (gmpValue / gmpIssuePrice) * 100
       : null;
-  const indicativeListingPrice = gmp && Number.isFinite(Number(gmp.indicativeListingPrice))
+  const indicativeListingPrice = gmp && hasVerifiedScore(gmp.indicativeListingPrice)
     ? Number(gmp.indicativeListingPrice)
     : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice)
       ? gmpIssuePrice + gmpValue
