@@ -1,3 +1,5 @@
+import { isMainboardIpo, mainboardPlatform } from './ipoScope.js';
+
 function apiBase() {
   if (typeof window !== 'undefined' && window.API_URL) return String(window.API_URL).replace(/\/$/, '');
   return (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
@@ -13,10 +15,11 @@ async function request(path) {
 }
 
 export function getIpoSummary() {
-  return request('/summary');
+  return request('/summary').then(mainboardPlatform);
 }
 
-function asPlatform(payload = {}) {
+function asPlatform(input = {}) {
+  const payload = mainboardPlatform(input);
   const active = payload.active || [];
   const upcoming = payload.upcoming || [];
   const closed = payload.closed || [];
@@ -58,5 +61,7 @@ export async function getIpoPlatform() {
 }
 
 export function getIpoDetail(symbol) {
-  return request(`/${encodeURIComponent(symbol)}`);
+  return request(`/${encodeURIComponent(symbol)}`).then(payload => ({
+    ...payload, ipo: isMainboardIpo(payload.ipo || {}) ? payload.ipo : null,
+  }));
 }

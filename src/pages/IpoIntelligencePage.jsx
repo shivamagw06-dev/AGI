@@ -80,7 +80,7 @@ function EmptyState({ filtered }) {
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#edf3f5] text-[#173a4d]"><Search className="h-5 w-5" /></div>
       <h3 className="mt-4 font-serif text-xl font-semibold text-[#132a38]">{filtered ? 'No IPOs match these filters' : 'No IPOs in this stage'}</h3>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#66737d]">
-        {filtered ? 'Try another company name or switch between Mainboard and SME.' : 'This view will update automatically when a new issue enters this stage.'}
+        {filtered ? 'Try another mainboard company name.' : 'This view will update automatically when a new issue enters this stage.'}
       </p>
     </div>
   );
@@ -191,7 +191,6 @@ function ComparePanel({ items, onRemove, onClear }) {
 export default function IpoIntelligencePage() {
   const { loading, platform, error, research } = useIpoPlatform();
   const [status, setStatus] = useState('open');
-  const [market, setMarket] = useState('all');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('closing');
   const [saved, setSaved] = useState(() => {
@@ -210,14 +209,13 @@ export default function IpoIntelligencePage() {
     const needle = query.trim().toLowerCase();
     return allIpos
       .filter((ipo) => ipo.lifecycle === status)
-      .filter((ipo) => market === 'all' || (market === 'sme' ? ipo.isSme : !ipo.isSme))
       .filter((ipo) => !needle || `${ipo.name} ${ipo.symbol}`.toLowerCase().includes(needle))
       .sort((a, b) => {
         if (sort === 'subscription') return Number(b.subscriptionRate || 0) - Number(a.subscriptionRate || 0);
         if (sort === 'investment') return Number(minimumInvestment(a) || Infinity) - Number(minimumInvestment(b) || Infinity);
         return (parseDate(a.biddingEndDate)?.getTime() || Infinity) - (parseDate(b.biddingEndDate)?.getTime() || Infinity);
       });
-  }, [allIpos, status, market, query, sort]);
+  }, [allIpos, status, query, sort]);
 
   const counts = {
     open: platform?.counts?.active ?? platform?.active?.length ?? 0,
@@ -265,7 +263,7 @@ export default function IpoIntelligencePage() {
           </div>
           <div className="mt-3 grid gap-3 border-t border-[#edf0f1] pt-3 md:grid-cols-[1fr_auto_auto]">
             <label className="relative block"><Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#89949b]" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search company or symbol" className="h-11 w-full rounded-full border border-[#dfe5e8] bg-[#fafbfa] pl-11 pr-4 text-sm outline-none transition placeholder:text-[#9aa4aa] focus:border-[#b47d52] focus:bg-white" /></label>
-            <div className="flex rounded-full bg-[#f2f4f3] p-1">{[['all', 'All'], ['mainboard', 'Mainboard'], ['sme', 'SME']].map(([id, label]) => <button key={id} type="button" onClick={() => setMarket(id)} className={`rounded-full px-4 py-2 text-xs font-bold transition ${market === id ? 'bg-white text-[#173a4d] shadow-sm' : 'text-[#66737d]'}`}>{label}</button>)}</div>
+            <span className="rounded-full bg-[#f2f4f3] px-4 py-2 text-xs font-bold text-[#173a4d]">Mainboard IPOs only</span>
             <select value={sort} onChange={(event) => setSort(event.target.value)} className="h-11 rounded-full border border-[#dfe5e8] bg-white px-4 text-xs font-bold text-[#4e5d66] outline-none focus:border-[#b47d52]"><option value="closing">Closing soon</option><option value="subscription">Highest subscription</option><option value="investment">Lowest investment</option></select>
           </div>
         </section>
@@ -277,7 +275,7 @@ export default function IpoIntelligencePage() {
             <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#a06b43]">Indian primary markets</p><h2 className="mt-2 font-serif text-3xl font-semibold tracking-tight">{STATUS_TABS.find((item) => item.id === status)?.label}</h2></div><p className="text-xs font-semibold text-[#78858d]">{visible.length} issue{visible.length === 1 ? '' : 's'}</p></div>
             {loading ? <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-[430px] animate-pulse rounded-[24px] border border-[#dfe5e8] bg-white" />)}</div>
               : error && !platform ? <div className="rounded-[24px] border border-[#ead4ce] bg-white px-6 py-12 text-center"><p className="font-serif text-xl font-semibold">IPO data is temporarily unavailable</p><p className="mt-2 text-sm text-[#66737d]">Research coverage remains available below.</p></div>
-              : <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{visible.map((ipo) => <IpoCard key={`${ipo.lifecycle}-${ipo.symbol}`} ipo={ipo} saved={saved.includes(ipo.symbol)} compared={compare.includes(ipo.symbol)} onSave={toggleSaved} onCompare={toggleCompare} researchArticles={research?.articles || []} />)}{!visible.length && <EmptyState filtered={Boolean(query || market !== 'all')} />}</div>}
+              : <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">{visible.map((ipo) => <IpoCard key={`${ipo.lifecycle}-${ipo.symbol}`} ipo={ipo} saved={saved.includes(ipo.symbol)} compared={compare.includes(ipo.symbol)} onSave={toggleSaved} onCompare={toggleCompare} researchArticles={research?.articles || []} />)}{!visible.length && <EmptyState filtered={Boolean(query)} />}</div>}
           </section>
 
           <aside className="space-y-5">

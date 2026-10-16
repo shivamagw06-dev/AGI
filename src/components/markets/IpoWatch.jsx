@@ -1,3 +1,4 @@
+import { isMainboardIpo } from '@/lib/ipoScope';
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Rocket, ExternalLink, Calendar } from "lucide-react";
@@ -68,7 +69,7 @@ function IpoCard({ ipo }) {
 export default function IpoWatch() {
   const { ipo, loading } = useMarketOverviewContext();
   const [tab, setTab] = useState("upcoming");
-  const items = ipo[tab] || [];
+  const items = (ipo[tab] || []).filter(isMainboardIpo);
 
   return (
     <section className="bg-slate-950 py-24">
@@ -76,7 +77,7 @@ export default function IpoWatch() {
         <SectionHeader
           label="IPO Watch"
           title="Primary Market Tracker"
-          subtitle="Upcoming, open, and recently listed IPOs with SEBI filings and subscription data."
+          subtitle="Upcoming, open, and recently listed mainboard IPOs with SEBI filings and subscription data."
         />
 
         <div className="flex gap-2 mb-8">
