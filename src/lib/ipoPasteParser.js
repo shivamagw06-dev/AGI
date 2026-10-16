@@ -182,6 +182,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const lotSize = numberFrom(firstMatch(text, [/Lot Size\s*([\d,]+)\s*Shares/i, /lot size for an application is\s*([\d,]+)\s*shares/i]));
   const financials = parseThreePeriodRows(text);
   const kpis = parseKpis(text);
+  const financialPeriod = financials.periods[0] ? `period ending ${financials.periods[0]}` : 'reported period';
   const valuationBlock = sectionBetween(text, /IPO Valuation/i, /Shareholding Structure/i);
   const peRow = valuationBlock.match(/P\/E \(x\)[ \t]+([-\d,.]+)(?:[ \t]+([-\d,.]+))?/i);
   const epsRow = valuationBlock.match(/EPS \(₹\)[ \t]+([-\d,.]+)(?:[ \t]+([-\d,.]+))?/i);
@@ -224,9 +225,9 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const marginPrior = kpis['EBITDA Margin']?.[1] ?? null;
   const strengths = [...explicitStrengths];
   if (!strengths.length) {
-    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% in FY2026.`);
-    if (latestDebtEquity != null && latestDebtEquity <= 0.5) strengths.push(`Low reported leverage, with debt/equity of ${latestDebtEquity.toFixed(2)}x in FY2026.`);
-    if (latestRoce != null && latestRoce >= 20) strengths.push(`Strong reported capital efficiency, with ROCE of ${latestRoce}% in FY2026.`);
+    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% in the ${financialPeriod}.`);
+    if (latestDebtEquity != null && latestDebtEquity <= 0.5) strengths.push(`Low reported leverage, with debt/equity of ${latestDebtEquity.toFixed(2)}x in the ${financialPeriod}.`);
+    if (latestRoce != null && latestRoce >= 20) strengths.push(`Strong reported capital efficiency, with ROCE of ${latestRoce}% in the ${financialPeriod}.`);
     if (completedProjects != null) strengths.push(`Execution track record of more than ${completedProjects} completed projects as of the reported date.`);
     if (/international markets/i.test(about)) strengths.push('Operations span India and international markets, providing geographic diversification.');
   }
@@ -236,7 +237,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   if (latestPat != null && latestPat < 0) risks.push(`The latest reported period shows a net loss of INR ${Math.abs(latestPat)} crore. Profitability has not been established for that period.`);
   if (latestPat != null && priorPat != null && latestPat >= 0 && priorPat > latestPat) risks.push(`Reported profit after tax declined from INR ${priorPat} crore to INR ${latestPat} crore.`);
   if (exportShare != null) risks.push(`Export concentration is high at ${exportShare}% of revenue, increasing geographic, currency and external-demand sensitivity.`);
-  if (latestDebtEquity != null && latestDebtEquity >= 1) risks.push(`Leverage remains meaningful with debt/equity of ${latestDebtEquity.toFixed(2)}x despite the reported improvement.`);
+  if (latestDebtEquity != null && latestDebtEquity >= 1) risks.push(`Leverage remains meaningful with debt/equity of ${latestDebtEquity.toFixed(2)}x.`);
   if (latestBorrowing != null && priorBorrowing != null && latestBorrowing > priorBorrowing * 1.25) {
     const debtGrowth = Math.round((latestBorrowing / priorBorrowing - 1) * 100);
     const ratioContext = latestDebtEquity != null && priorDebtEquity != null
