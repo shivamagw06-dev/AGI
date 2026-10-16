@@ -1,3 +1,4 @@
+import { startDailyGmp } from './services/ipoGmp.js';
 import {startPortfolioLedgerScheduler} from './services/portfolioRebalanceLedger.js';
 import { startUSHistoryScheduler } from './services/usaPortfolioHistory.js';
 import { startIndiaPortfolioScheduler } from './services/indiaPortfolioTracking.js';
@@ -89,6 +90,7 @@ let server = app.listen(PORT, HOST, () => {
   console.log(`🚀 IndianAPI Proxy listening on ${HOST}:${PORT}`);
 });
 
+startDailyGmp();
 startInstitutionalHoldingsAutomation();
 startInstitutionalResearchLayerAutomation();
 
