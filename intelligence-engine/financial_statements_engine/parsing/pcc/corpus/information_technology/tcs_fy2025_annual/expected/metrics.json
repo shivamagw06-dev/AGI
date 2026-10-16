@@ -1,0 +1,14 @@
+{
+  "expected_metrics": [
+    "cash",
+    "finance_cost",
+    "net_income",
+    "operating_cash_flow",
+    "other_income",
+    "revenue",
+    "total_assets",
+    "total_equity"
+  ],
+  "expected_missing_metrics": [],
+  "forbid_extra_metrics": false
+}

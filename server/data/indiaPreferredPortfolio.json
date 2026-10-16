@@ -1,0 +1,136 @@
+{
+  "id": "in-preferred",
+  "name": "Preferred",
+  "market": "india",
+  "category": "Preferred picks",
+  "description": "17 preferred picks from the supplied September 2026 India equity research summary. AGI uses an approximately equal-weight allocation; these weights are not prescribed by J.P. Morgan.",
+  "asOf": "2026-10-03",
+  "holdings": [
+    {
+      "symbol": "LT",
+      "name": "Larsen & Toubro",
+      "sector": "Industrials",
+      "weight": 5.89,
+      "instrumentKey": "NSE_EQ|INE018A01030"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "name": "ICICI Bank",
+      "sector": "Financials",
+      "weight": 5.89,
+      "instrumentKey": "NSE_EQ|INE090A01021"
+    },
+    {
+      "symbol": "SBIN",
+      "name": "State Bank of India",
+      "sector": "Financials",
+      "weight": 5.89,
+      "instrumentKey": "NSE_EQ|INE062A01020"
+    },
+    {
+      "symbol": "AUBANK",
+      "name": "AU Small Finance Bank",
+      "sector": "Financials",
+      "weight": 5.89,
+      "instrumentKey": "NSE_EQ|INE949L01017"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "name": "Bajaj Finance",
+      "sector": "Financials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE296A01032"
+    },
+    {
+      "symbol": "PNBHOUSING",
+      "name": "PNB Housing Finance",
+      "sector": "Financials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE572E01012"
+    },
+    {
+      "symbol": "IIFL",
+      "name": "IIFL Finance",
+      "sector": "Financials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE530B01024"
+    },
+    {
+      "symbol": "TITAN",
+      "name": "Titan Company",
+      "sector": "Consumer Discretionary",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE280A01028"
+    },
+    {
+      "symbol": "LENSKART",
+      "name": "Lenskart Solutions",
+      "sector": "Consumer Discretionary",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE956O01016"
+    },
+    {
+      "symbol": "PIDILITIND",
+      "name": "Pidilite Industries",
+      "sector": "Materials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE318A01026"
+    },
+    {
+      "symbol": "TATACONSUM",
+      "name": "Tata Consumer Products",
+      "sector": "Consumer Staples",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE192A01025"
+    },
+    {
+      "symbol": "MARICO",
+      "name": "Marico",
+      "sector": "Consumer Staples",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE196A01026"
+    },
+    {
+      "symbol": "DIXON",
+      "name": "Dixon Technologies",
+      "sector": "Consumer Discretionary",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE935N01020"
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "name": "JSW Steel",
+      "sector": "Materials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE019A01038"
+    },
+    {
+      "symbol": "HINDALCO",
+      "name": "Hindalco Industries",
+      "sector": "Materials",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE038A01020"
+    },
+    {
+      "symbol": "EXIDEIND",
+      "name": "Exide Industries",
+      "sector": "Consumer Discretionary",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE302A01020"
+    },
+    {
+      "symbol": "AEGISLOG",
+      "name": "Aegis Logistics",
+      "sector": "Energy",
+      "weight": 5.88,
+      "instrumentKey": "NSE_EQ|INE208C01025"
+    }
+  ],
+  "cashWeight": 0,
+  "incomplete": false,
+  "customized": true,
+  "trackingStart": "2026-10-05",
+  "weightMethod": "Approximately equal weights across 17 stocks: four at 5.89% and thirteen at 5.88%, totaling 100%. Rounding residual assigned in supplied list order. No factor-ranking or sector caps are applied. Financials represent 35.31%. Fixed units from launch; subsequent changes require a dated rebalance.",
+  "sourceName": "User-supplied summary of September 2026 J.P. Morgan India equity research; allocation by AGI",
+  "sourceAsOf": "2026-09-30"
+}

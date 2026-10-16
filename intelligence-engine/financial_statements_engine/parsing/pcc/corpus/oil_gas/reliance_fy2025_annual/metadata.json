@@ -1,0 +1,22 @@
+{
+  "case_id": "reliance_fy2025_annual",
+  "company_id": "nse:RELIANCE",
+  "company_name": "Reliance Industries",
+  "currency": "INR",
+  "document_hash": "baeddbb7ee3cde338303cf456fe695cd78bb1c270188f272fdd90b5a88d90a63",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Oil & Gas / Conglomerate",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "oil_gas",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "RELIANCE",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

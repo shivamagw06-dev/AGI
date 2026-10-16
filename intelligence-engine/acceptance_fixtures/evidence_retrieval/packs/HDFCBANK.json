@@ -1,0 +1,741 @@
+{
+  "as_of": null,
+  "assembled_at": "2026-07-28T17:18:12Z",
+  "avg_confidence": 0.75,
+  "citations": [
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "market_expectations_intelligence",
+      "confidence": 0.65,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "exp_HDFCBANK",
+      "fabricated": false,
+      "knowledge_object": "ExpectationObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:12Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_HDFCBANK",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:12Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_INFY",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:12Z",
+      "version": "1"
+    }
+  ],
+  "companies": [
+    "HDFCBANK",
+    "INFY"
+  ],
+  "conclusions": null,
+  "fabricated": false,
+  "item_count": 3,
+  "items": [
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "market_expectations_intelligence",
+        "confidence": 0.65,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "exp_HDFCBANK",
+        "fabricated": false,
+        "knowledge_object": "ExpectationObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:12Z",
+        "version": "1"
+      },
+      "evidence_id": "exp_HDFCBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "as_of": null,
+        "expectations": [
+          {
+            "announcement_date": "2024-04-20",
+            "available_from": "2024-04-20",
+            "collector": "imei.fixtures.guidance",
+            "confidence": 0.85,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 15.0,
+              "median": 15.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "HDFCBANK",
+            "evidence": [
+              "HDFCBANK-investor-day-loan-growth-commentary"
+            ],
+            "expectation_id": "EXP-2D8158C47B43EBBA",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 15.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "guidance",
+            "licensed_consensus": false,
+            "metric": "growth",
+            "notes": null,
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.fixtures.guidance",
+              "confidence": 0.85,
+              "derived_from": [
+                "HDFCBANK-investor-day-loan-growth-commentary"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "investor_presentation",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "investor_presentation",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-20",
+            "available_from": "2024-07-20",
+            "collector": "imei.fixtures.guidance",
+            "confidence": 0.85,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 14.0,
+              "median": 14.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "HDFCBANK",
+            "evidence": [
+              "HDFCBANK-Q1FY25-growth-commentary-revision"
+            ],
+            "expectation_id": "EXP-A22C25CB951DF539",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 14.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "guidance",
+            "licensed_consensus": false,
+            "metric": "growth",
+            "notes": null,
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.fixtures.guidance",
+              "confidence": 0.85,
+              "derived_from": [
+                "HDFCBANK-Q1FY25-growth-commentary-revision"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "company_guidance",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 1,
+            "source": "company_guidance",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-06-20",
+            "available_from": "2024-06-20",
+            "collector": "imei.fixtures.agib_forecast",
+            "confidence": 0.75,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 22.5,
+              "median": 22.5,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "HDFCBANK",
+            "evidence": [
+              "AGIB-forecast-HDFCBANK-FY25Q1-EPS"
+            ],
+            "expectation_id": "EXP-B542058DE0FBFDB1",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 22.5,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "internal_forecast",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.agib_forecast",
+              "confidence": 0.75,
+              "derived_from": [
+                "AGIB-forecast-HDFCBANK-FY25Q1-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "agib_internal_forecast",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "agib_internal_forecast",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-06-20",
+            "available_from": "2024-06-20",
+            "collector": "imei.fixtures.agib_forecast",
+            "confidence": 0.7,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 16.5,
+              "median": 16.5,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "HDFCBANK",
+            "evidence": [
+              "AGIB-forecast-HDFCBANK-FY25Q1-ROE"
+            ],
+            "expectation_id": "EXP-BF354FFDD036486C",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 16.5,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "internal_forecast",
+            "licensed_consensus": false,
+            "metric": "roe",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.agib_forecast",
+              "confidence": 0.7,
+              "derived_from": [
+                "AGIB-forecast-HDFCBANK-FY25Q1-ROE"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "agib_internal_forecast",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "agib_internal_forecast",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-20",
+            "available_from": "2024-07-20",
+            "collector": "imei.fixtures.actuals",
+            "confidence": 0.95,
+            "consensus": null,
+            "entity": "HDFCBANK",
+            "evidence": [
+              "HDFCBANK-Q1FY25-reported-EPS"
+            ],
+            "expectation_id": "EXP-1CD4A36ED68CB960",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 21.8,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "actual",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.actuals",
+              "confidence": 0.95,
+              "derived_from": [
+                "HDFCBANK-Q1FY25-reported-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "company_earnings_release",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_earnings_release",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-20",
+            "available_from": "2024-07-20",
+            "collector": "imei.fixtures.actuals",
+            "confidence": 0.9,
+            "consensus": null,
+            "entity": "HDFCBANK",
+            "evidence": [
+              "HDFCBANK-Q1FY25-reported-ROE"
+            ],
+            "expectation_id": "EXP-17D2A095DD420F96",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 16.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "actual",
+            "licensed_consensus": false,
+            "metric": "roe",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.actuals",
+              "confidence": 0.9,
+              "derived_from": [
+                "HDFCBANK-Q1FY25-reported-ROE"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T17:15:04Z",
+              "source": "company_earnings_release",
+              "validated_at": "2026-07-28T17:15:04Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_earnings_release",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "fabricated": false,
+        "licensed_consensus_assumed": false,
+        "links": {
+          "alternative_data": {
+            "datasets": [
+              {
+                "confidence": 0.92,
+                "dataset_id": "upi_transactions",
+                "domain": "payments",
+                "latest_available": "2024-12-01",
+                "link_basis": "registry_supported_company_link",
+                "name": "UPI Transaction Volumes",
+                "provider": "NPCI",
+                "trends": {
+                  "acceleration": 0.010249,
+                  "derived_from_observations_only": true,
+                  "fabricated": false,
+                  "historical_extremes": {
+                    "max": 119.75,
+                    "min": 86.3
+                  },
+                  "historical_percentile": 87.5,
+                  "latest_date": "2024-12-01",
+                  "latest_value": 114.5,
+                  "momentum": 0.018774,
+                  "n": 72,
+                  "prediction": false,
+                  "rolling_average": 115.45,
+                  "rolling_window": 12,
+                  "seasonality": "present",
+                  "status": "ok",
+                  "trend": "rising",
+                  "version": "institutional-alternative-data-intelligence-v2.0.0",
+                  "volatility": 8.0632
+                }
+              },
+              {
+                "confidence": 0.92,
+                "dataset_id": "bank_credit_growth",
+                "domain": "banking",
+                "latest_available": "2024-12-01",
+                "link_basis": "registry_supported_company_link",
+                "name": "Scheduled Bank Credit Growth",
+                "provider": "RBI",
+                "trends": {
+                  "acceleration": -0.006885,
+                  "derived_from_observations_only": true,
+                  "fabricated": false,
+                  "historical_extremes": {
+                    "max": 15.26,
+                    "min": 2.76
+                  },
+                  "historical_percentile": 62.5,
+                  "latest_date": "2024-12-01",
+                  "latest_value": 12.55,
+                  "momentum": -0.045627,
+                  "n": 72,
+                  "prediction": false,
+                  "rolling_average": 14.4658,
+                  "rolling_window": 12,
+                  "seasonality": "present",
+                  "status": "ok",
+                  "trend": "stable",
+                  "version": "institutional-alternative-data-intelligence-v2.0.0",
+                  "volatility": 4.1599
+                }
+              }
+            ],
+            "fabricated": false,
+            "n": 2,
+            "note": "Links from Phase-1 registry only \u2014 no invented company mapping.",
+            "ticker": "HDFCBANK",
+            "version": "institutional-alternative-data-intelligence-v2.0.0"
+          },
+          "government_policy_ids": [
+            "RBI-BANKING-REG-CORPUS",
+            "SEBI-LODR",
+            "RBI-MASTER-DIRECTIONS-BANKS",
+            "RBI-REPO-2020-03"
+          ],
+          "industry_id": "private_banks"
+        },
+        "n_expectations": 6,
+        "narratives": [
+          {
+            "name": "Banking Credit Cycle",
+            "narrative_id": "banking_credit_cycle"
+          },
+          {
+            "name": "Digitalisation",
+            "narrative_id": "digitalisation"
+          }
+        ],
+        "revisions": [
+          {
+            "available_from": "2024-07-20",
+            "confidence": 0.85,
+            "direction": "downgrade",
+            "entity": "HDFCBANK",
+            "fabricated": false,
+            "from_expectation_id": "EXP-2D8158C47B43EBBA",
+            "from_value": 15.0,
+            "magnitude": -1.0,
+            "magnitude_pct": -0.066667,
+            "metric": "growth",
+            "period": "FY25",
+            "prediction": false,
+            "revision_id": "REV-EXP-A22C25CB951DF539",
+            "revision_velocity": "sequential_observed",
+            "source": "company_guidance",
+            "to_expectation_id": "EXP-A22C25CB951DF539",
+            "to_value": 14.0,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "surprises": [
+          {
+            "actual_expectation_id": "EXP-17D2A095DD420F96",
+            "actual_source": "company_earnings_release",
+            "actual_value": 16.0,
+            "available_from": "2024-07-20",
+            "beat_miss": "miss",
+            "beat_miss_history": [
+              "miss",
+              "miss"
+            ],
+            "difference": -0.5,
+            "entity": "HDFCBANK",
+            "expectation_id": "EXP-BF354FFDD036486C",
+            "expectation_source": "agib_internal_forecast",
+            "expected_value": 16.5,
+            "fabricated": false,
+            "historical_percentile": 100.0,
+            "magnitude": 0.030303,
+            "metric": "roe",
+            "note": "Observed comparison against stored Phase-1 expectation only.",
+            "period": "FY25Q1",
+            "persistence": 0,
+            "prediction": false,
+            "surprise_id": "SUR-31384457040560",
+            "surprise_pct": -0.030303,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "actual_expectation_id": "EXP-1CD4A36ED68CB960",
+            "actual_source": "company_earnings_release",
+            "actual_value": 21.8,
+            "available_from": "2024-07-20",
+            "beat_miss": "miss",
+            "beat_miss_history": [
+              "miss",
+              "miss"
+            ],
+            "difference": -0.7,
+            "entity": "HDFCBANK",
+            "expectation_id": "EXP-B542058DE0FBFDB1",
+            "expectation_source": "agib_internal_forecast",
+            "expected_value": 22.5,
+            "fabricated": false,
+            "historical_percentile": 25.0,
+            "magnitude": 0.031111,
+            "metric": "eps",
+            "note": "Observed comparison against stored Phase-1 expectation only.",
+            "period": "FY25Q1",
+            "persistence": 0,
+            "prediction": false,
+            "surprise_id": "SUR-507C4C6251536E",
+            "surprise_pct": -0.031111,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "ticker": "HDFCBANK",
+        "version": "institutional-market-expectations-intelligence-v2.0.0"
+      },
+      "rank": 1,
+      "rank_score": 0.86,
+      "title": "HDFCBANK expectations"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_HDFCBANK",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:12Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_HDFCBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 2,
+      "rank_score": 0.851,
+      "title": "HDFCBANK company intelligence"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_INFY",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:12Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_INFY",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 4,
+      "rank_score": 0.829,
+      "title": "INFY company intelligence"
+    }
+  ],
+  "kind": "COMPANY_EVIDENCE_PACK",
+  "pack_id": "iere_company_evidence_pack_iere_0094e75dc36c",
+  "reasoning": false,
+  "recommendation": null,
+  "retrieval_id": "iere_0094e75dc36c"
+}

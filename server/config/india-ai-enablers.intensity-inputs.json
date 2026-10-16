@@ -1,0 +1,871 @@
+{
+  "asOf": "2026-09-18",
+  "purpose": "Stage 3 of the screen (investment intensity) for members and candidates. Context beside each company; it does not decide membership, which is decided by filed evidence.",
+  "method": {
+    "tests": "A company passes if any one test is at or above the median of the companies screened here: three-year revenue CAGR (FY23 to FY26, total revenue to total revenue), capex growth (FY26 vs FY25), capex to sales (FY26, revenue from operations), R&D to sales (FY26, where disclosed).",
+    "medians": "Medians are of the members and candidates screened here, a group already selected for AI-infrastructure exposure, not of the NSE universe. Below the median means less intensive than these peers, not that a company is not investing.",
+    "missing": "A figure that could not be read is null. A company with no figure for a test is not tested on it; a company with no figures at all is not screened. Neither counts as a fail."
+  },
+  "sources": {
+    "revenue": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue). Total FY26 was checked to equal operating revenue plus other income for every company used.",
+    "capex": "Each company's FY2025-26 cash flow statement, investing activities, the purchase of property, plant and equipment line; read via Trendlyne document search, with the excerpt recorded per company. POWERINDIA and CLEANMAX are AGI's own primary reads.",
+    "rnd": "Board's report technology-absorption annexure or the R&D note, where disclosed. A stated nil is 0; an undisclosed figure is null. Usually a standalone (company-level) figure."
+  },
+  "rows": [
+    {
+      "symbol": "POWERINDIA",
+      "kind": "member",
+      "revenue": {
+        "FY26": 8147.71,
+        "FY26_total": 8387.63,
+        "FY23_total": 4483.65,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 509.83,
+        "FY25": 129.09,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26 (primary read)",
+        "excerpt": "capex 509.83 cr, prior 129.09 cr",
+        "note": "From disclosed-facts; R&D not disclosed (royalty is not R&D)."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "ADANIENT",
+      "kind": "member",
+      "revenue": {
+        "FY26": 100468.61,
+        "FY26_total": 102943.24,
+        "FY23_total": 138175.12,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 33369.12,
+        "FY25": 29879.14,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Capital Expenditure on Property, Plant & Equipment; Intangible Assets ... Capital Work-in-Progress, Capital Advances, Capital Creditors and Intangible assets under development) | (33,369.12) | (29,879.14)",
+        "note": "Line includes intangibles, CWIP, capital advances and creditors. R&D stated Not Applicable (standalone): recorded as not disclosed."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "CLEANMAX",
+      "kind": "member",
+      "revenue": {
+        "FY26": 1912.87,
+        "FY26_total": 2075.21,
+        "FY23_total": 960.98,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 5754.32,
+        "FY25": 2910.62,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26 (primary read, p140; R&D p40)",
+        "excerpt": "capex 57,543.18 mn, prior 29,106.17 mn; R&D Nil",
+        "note": "Rs million in source. R&D stated Nil."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "kind": "member",
+      "revenue": {
+        "FY26": 2511.6,
+        "FY26_total": 2579.08,
+        "FY23_total": 1004.86,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 141.92,
+        "FY25": 49.94,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Acquisition of property; plant and equipment | (14,192.03) | (4,993.99)",
+        "note": "Rs lakh. Investment property (116.41 cr FY26), CWIP and ROU on separate lines, excluded — understates a developer's build spend."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "NETWEB",
+      "kind": "member",
+      "revenue": {
+        "FY26": 2183.56,
+        "FY26_total": 2202.4,
+        "FY23_total": 445.65,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 11.98,
+        "FY25": 25.48,
+        "basis": "standalone",
+        "source": "Annual Report 2025-26, Statement of Cash Flows (p.196; Rs million in source)",
+        "excerpt": "Purchase of property, plant and equipments and intangible assets | (119.79) | (254.75)",
+        "note": "Rs million in source. PP&E and intangibles in one line. R&D is one stated total 'including capex' (Directors' Report, p.99), so it overlaps the capex line."
+      },
+      "rnd": {
+        "FY26": 13.14,
+        "FY25": 10.02
+      }
+    },
+    {
+      "symbol": "CGPOWER",
+      "kind": "member",
+      "revenue": {
+        "FY26": 12417.95,
+        "FY26_total": 12662.22,
+        "FY23_total": 7040.3,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 777.76,
+        "FY25": 427.32,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property; plant and equipment (including capital work-in-progress, capital (net of government grant received) | (777.76) | (427.32)",
+        "note": "Net of government grant. R&D standalone (capital 21.86 + revenue 38.70)."
+      },
+      "rnd": {
+        "FY26": 60.56,
+        "FY25": 63.62
+      }
+    },
+    {
+      "symbol": "KAYNES",
+      "kind": "member",
+      "revenue": {
+        "FY26": 3626.35,
+        "FY26_total": 3783.18,
+        "FY23_total": 1137.51,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 1240.3,
+        "FY25": 948.75,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of fixed assets | (12,403.01) | (9,487.47)",
+        "note": "Rs million in source. R&D gross (mostly capitalised); scope standalone/consolidated not stated."
+      },
+      "rnd": {
+        "FY26": 13.86,
+        "FY25": 14.94
+      }
+    },
+    {
+      "symbol": "STLTECH",
+      "kind": "member",
+      "revenue": {
+        "FY26": 4745.0,
+        "FY26_total": 4804.0,
+        "FY23_total": 6966.0,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 193,
+        "FY25": 133,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipments | (193) | (133)",
+        "note": "R&D standalone total."
+      },
+      "rnd": {
+        "FY26": 42,
+        "FY25": 28
+      }
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "kind": "member",
+      "revenue": {
+        "FY26": 12143.19,
+        "FY26_total": 12660.53,
+        "FY23_total": 8080.24,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 251.71,
+        "FY25": 226.04,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipment; intangible assets and investment property | (251.71) | (226.04)",
+        "note": "Line includes intangibles and investment property. R&D standalone."
+      },
+      "rnd": {
+        "FY26": 10.54,
+        "FY25": 10.51
+      }
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "kind": "member",
+      "revenue": {
+        "FY26": 210972.8,
+        "FY26_total": 213790.1,
+        "FY23_total": 140081.4,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 45175.6,
+        "FY25": 37907.7,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipment and capital work-in-progress | (451,756) | (379,077)",
+        "note": "Rs million. Intangibles and spectrum on separate lines, excluded."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "LT",
+      "kind": "member",
+      "revenue": {
+        "FY26": 285874.36,
+        "FY26_total": 291635.04,
+        "FY23_total": 186269.87,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 4809.19,
+        "FY25": 4418.83,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of Property, plant and equipment, Investment property and Intangible assets | (4809.19) | (4418.83)",
+        "note": "Line includes investment property and intangibles. R&D standalone, FY26 only."
+      },
+      "rnd": {
+        "FY26": 177.73,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "POWERGRID",
+      "kind": "member",
+      "revenue": {
+        "FY26": 46732.87,
+        "FY26_total": 47684.43,
+        "FY23_total": 46605.64,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 37279.14,
+        "FY25": 24134.04,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of Property, Plant & Equipment, Intangible Assets, Capital Work in Progress etc. (Including Advances for Capital Expenditure) | (37,279.14) | (24,134.04)",
+        "note": "Line includes intangibles, CWIP, advances. R&D is 'R&D and innovation', standalone; rupee sign OCR-ambiguous, read as Rs 321.19 cr."
+      },
+      "rnd": {
+        "FY26": 321.19,
+        "FY25": 311.85
+      }
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "kind": "member",
+      "revenue": {
+        "FY26": 12401.99,
+        "FY26_total": 12463.9,
+        "FY23_total": 8008.19,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 329.03,
+        "FY25": 372.03,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipments and other intangible assets [including capital work in progress ...] | (329.03) | (372.03)",
+        "note": "Includes intangibles. R&D consolidated (capital 72.16 + recurring 75.40)."
+      },
+      "rnd": {
+        "FY26": 147.56,
+        "FY25": 139.5
+      }
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "kind": "member",
+      "revenue": {
+        "FY26": 2890.63,
+        "FY26_total": 2908.61,
+        "FY23_total": 1789.38,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 104.3,
+        "FY25": 63.09,
+        "basis": "standalone",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipment including capital work-in-progress and capital advances | (10,430) | (6,309)",
+        "note": "Rs lakh in source; no subsidiaries. R&D stated Nil plant-by-plant."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "TDPOWERSYS",
+      "kind": "member",
+      "revenue": {
+        "FY26": 1856.23,
+        "FY26_total": 1877.53,
+        "FY23_total": 892.05,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 104.18,
+        "FY25": 52.19,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Payment for property, plant and equipment & Capital Work in progress ... | (10,418.02) | (5,219.15)",
+        "note": "Rs lakh; reconciled to net investing. Intangibles separate, excluded. R&D total not disclosed in retrieved text."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "SANSERA",
+      "kind": "member",
+      "revenue": {
+        "FY26": 3497.92,
+        "FY26_total": 3557.37,
+        "FY23_total": 2356.11,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 511.32,
+        "FY25": 590.7,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Payments towards purchase of property, plant and equipment | (5,113.22) | (5,906.96)",
+        "note": "Rs million. Intangibles separate, excluded."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "GVT&D",
+      "kind": "member",
+      "revenue": {
+        "FY26": 6206.31,
+        "FY26_total": 6297.15,
+        "FY23_total": 2807.15,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 188.42,
+        "FY25": 87.37,
+        "basis": "standalone",
+        "source": "Annual Report 2025-26",
+        "excerpt": "(Acquisition) of property, plant and equipment, capital work in progress and intangible assets including capital advance and capital creditors | (1,884.2) | (873.7)",
+        "note": "Rs million; no subsidiaries. R&D stated Nil."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "HFCL",
+      "kind": "member",
+      "revenue": {
+        "FY26": 4949.27,
+        "FY26_total": 5014.52,
+        "FY23_total": 4790.49,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 230.18,
+        "FY25": 230.17,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, Consolidated Statement of Cash Flow (p.298)",
+        "excerpt": "Payments for property, plant and equipment including CWIP & capital advances | (230.18) | (230.17)",
+        "note": "PP&E only; intangibles are a separate line (115.13 / 179.03), not added. R&D is standalone (Directors' Report p.113: capital 80.63 + recurring 1.71)."
+      },
+      "rnd": {
+        "FY26": 82.34,
+        "FY25": 177.44
+      }
+    },
+    {
+      "symbol": "MTARTECH",
+      "kind": "member",
+      "revenue": {
+        "FY26": 876.21,
+        "FY26_total": 899.3,
+        "FY23_total": 593.23,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 133.6,
+        "FY25": 100.31,
+        "basis": "consolidated",
+        "source": "Audited FY26 results filing (annual report not indexed)",
+        "excerpt": "Purchase of property, plant and equipment; including intangible assets, capital work in progress, capital creditors and capital advances | ... | (1,336.03) | (1,003.12)",
+        "note": "Rs million; consolidated columns. Line includes intangibles, CWIP, creditors and advances."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "POLYCAB",
+      "kind": "member",
+      "revenue": {
+        "FY26": 28883.79,
+        "FY26_total": 29120.04,
+        "FY23_total": 14241.1,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 1480.33,
+        "FY25": 969.63,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property plant and equipment (including CWIP) | (14,803.29) | (9,696.34)",
+        "note": "Rs million."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "APARINDS",
+      "kind": "member",
+      "revenue": {
+        "FY26": 22902.12,
+        "FY26_total": 22966.89,
+        "FY23_total": 14389.62,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 736.66,
+        "FY25": 509.69,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Acquisition of property plant and equipment including interest capitalized | (736.66) | (509.69)",
+        "note": "FY25 OCR '(509.691', confirmed by segment note 509.70. R&D split by centre, total not confirmable."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "KIRLOSENG",
+      "kind": "member",
+      "revenue": {
+        "FY26": 7701.01,
+        "FY26_total": 7771.17,
+        "FY23_total": 5051.99,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 339.82,
+        "FY25": 308.25,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property; plant and equipment (PPE) and intangible assets | (339.82) | (308.25)",
+        "note": "Includes intangibles. R&D company-level."
+      },
+      "rnd": {
+        "FY26": 116.48,
+        "FY25": 209.59
+      }
+    },
+    {
+      "symbol": "DIACABS",
+      "kind": "member",
+      "revenue": {
+        "FY26": 1910.1,
+        "FY26_total": 1918.1,
+        "FY23_total": null,
+        "FY23_total_filed": 15.72,
+        "FY23_excluded": "FY23 total income was Rs 15.72 crore because operations had just restarted after the NCLT resolution; a three-year growth rate from that base measures the restart, not growth, so the test is not run.",
+        "source": "Annual Report 2025-26, consolidated P&L (p.219; Rs lakh in source); FY23 from the FY2023-24 annual report, standalone P&L (p.111), confirmed by the FY2022-23 report"
+      },
+      "capex": {
+        "FY26": 81.22,
+        "FY25": 67.67,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, Consolidated Cash Flow Statement (p.220; Rs lakh in source)",
+        "excerpt": "Purchase of Fixed Assets | (8,122.20) | (6,767.36)",
+        "note": "Rs lakh in source. R&D: an NABL-approved high-voltage lab is described but no amount is disclosed."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "KEI",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 11747.76,
+        "FY26_total": 11906.32,
+        "FY23_total": 6939.95,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 1131.84,
+        "FY25": 691.22,
+        "basis": "consolidated",
+        "source": "Audited FY26 results filing (annual report not indexed)",
+        "excerpt": "Purchase of Property, Plant and Equipment (including Capital Work-In-Progress and Capital Advances) | (11,318.42) | (6,912.16)",
+        "note": "Rs million. Leasehold land and buildings (121.37 cr FY26) and intangibles are on separate lines, excluded."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "KEC",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 23505.54,
+        "FY26_total": 23555.87,
+        "FY23_total": 17313.03,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 328.68,
+        "FY25": 182.52,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Capital expenditure on property; plant and equipment and intangible assets (...) | (328.68) | (182.52)",
+        "note": "Includes intangibles. R&D standalone, FY26, line attribution uncertain in OCR."
+      },
+      "rnd": {
+        "FY26": 21.25,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "NTPCGREEN",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 2858.42,
+        "FY26_total": 3035.12,
+        "FY23_total": 170.63,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 15264.46,
+        "FY25": 12036.99,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of property, plant and equipment & capital work-in progress | (15,264.46) | (12,036.99)",
+        "note": "Includes CWIP."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "ACMESOLAR",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 2023.38,
+        "FY26_total": null,
+        "FY23_total": 1361.37,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 5321.2,
+        "FY25": 3265.99,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Payment made for purchase of property, plant and equipment (including capital work-in-progress; capital creditors and capital advances | (53,212.04) | (32,659.93)",
+        "note": "INR million. R&D stated Nil for FY26."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "kind": "member",
+      "revenue": {
+        "FY26": 27588.03,
+        "FY26_total": 28325.16,
+        "FY23_total": 13840.46,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 14431.8,
+        "FY25": 9378.14,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of Property Plant and Equipment (including capital advance and contract assets under Service Concession arrangements) | (14,431.80) | (9,378.14)",
+        "note": "Includes service-concession contract assets."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "SIEMENS",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": null,
+        "FY23": null
+      },
+      "capex": {
+        "FY26": null,
+        "FY25": null
+      },
+      "rnd": {
+        "FY26": null
+      },
+      "excluded": "Latest period is 18 months (Oct 2024-Mar 2026) against a 12-month year, and spans a demerger; no growth or intensity figure is comparable."
+    },
+    {
+      "symbol": "RELIANCE",
+      "kind": "member",
+      "revenue": {
+        "FY26": 1057035.0,
+        "FY26_total": 1085997.0,
+        "FY23_total": 889569.0,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 122916,
+        "FY25": 139967,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Expenditure for Property, Plant and Equipment; Spectrum and Other Intangible Assets | (1,22,916) | (1,39,967)",
+        "note": "Includes spectrum and intangibles. R&D unit not visible in chunk (taken as crore), basis likely standalone."
+      },
+      "rnd": {
+        "FY26": 4682,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "SYRMA",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 4819.06,
+        "FY26_total": 4856.87,
+        "FY23_total": 2092.14,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 183.51,
+        "FY25": 236.54,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Capital expenditure towards tangible assets (including capital advances capital work-in- progress net of capital creditors) | (1,835.10) | (2,365.39)",
+        "note": "Rs million. R&D from consolidated note 45."
+      },
+      "rnd": {
+        "FY26": 6.71,
+        "FY25": 5.46
+      }
+    },
+    {
+      "symbol": "PARAS",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 476.58,
+        "FY26_total": 492.56,
+        "FY23_total": 230.65,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 37.79,
+        "FY25": 35.23,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of Property, Plant and Equipment; Intangible Assets, Capital Work-in-Progress and Intangible Assets under development | (3,778.56) | (3,523.22)",
+        "note": "Rs lakh; includes intangibles."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "FLUOROCHEM",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 4996.03,
+        "FY26_total": 5126.27,
+        "FY23_total": 5856.96,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 1206,
+        "FY25": 819,
+        "basis": "consolidated",
+        "source": "Audited results filing FY26",
+        "excerpt": "Purchase of property, plant and equipment (including changes in capital work in progress and capital creditors/capital advances) | (1,206) | (819)",
+        "note": "Annual report not indexed; consolidated inferred from subsidiary lines."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "WAAREERTL",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 3331.42,
+        "FY26_total": 3351.85,
+        "FY23_total": 352.48,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 122.5,
+        "FY25": 101.41,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Purchase of Property, Plant and Equipment | (12,249.89) | (10,141.33)",
+        "note": "Rs lakh."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "NAVINFLUOR",
+      "kind": "candidate",
+      "revenue": {
+        "FY26": 3313.9,
+        "FY26_total": 3379.19,
+        "FY23_total": 2113.13,
+        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+      },
+      "capex": {
+        "FY26": 485.34,
+        "FY25": 561.14,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Payments for property, plant and equipment (including capital work-in-progress and capital advances) | (485.34) | (561.14)",
+        "note": "Intangibles separate (3.92), excluded. R&D likely standalone."
+      },
+      "rnd": {
+        "FY26": 48.71,
+        "FY25": 54.69
+      }
+    },
+    {
+      "symbol": "ABB",
+      "kind": "member",
+      "periodNote": "Calendar-year reporter: CY2025 in the FY26 slots, CY2024 in FY25, CY2022 in FY23.",
+      "revenue": {
+        "FY26": 13202.73,
+        "FY26_total": 13555.09,
+        "FY23_total": 8747.0,
+        "source": "Integrated Annual Report 2025, consolidated P&L (PDF p.288); CY2022 from the 2022 annual report, standalone P&L, continuing operations (PDF p.182; no subsidiary then)"
+      },
+      "capex": {
+        "FY26": 239.95,
+        "FY25": 213.95,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report 2025, consolidated cash flow (PDF p.289)",
+        "excerpt": "Purchase of property, plant and equipment | (239.95) | (213.95)",
+        "note": "R&D is pooled at ABB Group level and no amount is disclosed; royalty and technology fees (430.92 cr) are a licence payment, not R&D, and are not used."
+      },
+      "rnd": {
+        "FY26": null,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "ADANIGREEN",
+      "kind": "member",
+      "revenue": {
+        "FY26": 12928,
+        "FY26_total": 13819,
+        "FY23_total": 8633,
+        "source": "Integrated Annual Report FY2025-26, consolidated P&L (PDF p.253); FY23 from the FY2022-23 annual report as originally reported (restated to 8,617 in FY24)"
+      },
+      "capex": {
+        "FY26": 26097,
+        "FY25": 24776,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report FY2025-26, consolidated cash flow (PDF p.255)",
+        "excerpt": "Payment made for acquisition of Property, Plant and Equipment and Intangible assets (including for capital advances, capital work in progress and capital creditors) | (26,097) | (24,776)",
+        "note": "Line includes intangibles, capital advances, CWIP and capital creditors. R&D stated 'Not applicable': recorded as 0."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "TATAPOWER",
+      "kind": "member",
+      "revenue": {
+        "FY26": 62428.59,
+        "FY26_total": 64171.66,
+        "FY23_total": 56547.1,
+        "source": "Integrated Annual Report 2025-26, consolidated P&L (printed p.483); FY23 from the 2022-23 annual report, consolidated P&L (printed p.395), as originally reported"
+      },
+      "capex": {
+        "FY26": 13694.83,
+        "FY25": 17272.84,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report 2025-26, consolidated cash flow",
+        "excerpt": "Purchase of Capital Assets* | (13,694.83) | (17,272.84)",
+        "note": "The line's footnote: includes PP&E, other intangible assets, CWIP, capital advances and payables for capital. R&D from the Board's Report annexure: capital 61.21 + revenue 12.40."
+      },
+      "rnd": {
+        "FY26": 73.61,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "kind": "member",
+      "revenue": {
+        "FY26": 8069.27,
+        "FY26_total": 8130.63,
+        "FY23_total": 3195.14,
+        "source": "Annual Report 2025-26, consolidated P&L (Rs lakh in source); FY23 from the 2022-23 annual report, consolidated P&L"
+      },
+      "capex": {
+        "FY26": 1181.01,
+        "FY25": 988.78,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, consolidated cash flow (Rs lakh in source)",
+        "excerpt": "Purchase of property, plant and equipment | (1,18,101) | (98,878)",
+        "note": "Rs lakh in source. Intangibles are a separate line (735 / 282 lakh), not added; business-combination consideration (14,585 / 43,624 lakh) is not capex. The Board's Report states no expenditure on R&D: recorded as 0."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
+    }
+  ]
+}

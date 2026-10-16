@@ -1,0 +1,12 @@
+-- Official company location pages checked 2026-10-01 IST.
+-- Markers represent towns/areas, not surveyed facility locations or hazard boundaries.
+-- Additive and repeatable: preserve any existing analyst-maintained record.
+insert into public.gi_assets
+(symbol,company,name,sector,relationship,evidence_note,source_url,confidence,latitude,longitude,location_precision)
+values
+('IOC','Indian Oil Corporation','Panipat refinery area','Oil & gas','Refinery listed by Indian Oil','Indian Oil lists its Panipat refinery in Haryana. Marker represents the wider Panipat area, not the plant footprint; current operating status is not independently verified.','https://www.iocl.com/our-locations','confirmed',29.39,76.97,'Approximate town marker; not a facility boundary'),
+('IOC','Indian Oil Corporation','Paradip refinery area','Oil & gas','Refinery listed by Indian Oil','Indian Oil describes its Paradip refinery in Odisha. Marker represents the wider Paradip area, not the plant footprint; current operating status is not independently verified.','https://iocl.com/paradip-refinery','confirmed',20.32,86.61,'Approximate town marker; not a facility boundary'),
+('HINDALCO','Hindalco Industries','Renukoot aluminium area','Aluminium & copper','Manufacturing facility listed by Hindalco','Hindalco describes its Renukoot aluminium facility. Marker represents the town area, not the plant footprint; current operating status is not independently verified.','https://www.hindalco.com/about-us/manufacturing/renukoot','confirmed',24.22,83.04,'Approximate town marker; not a facility boundary'),
+('HINDALCO','Hindalco Industries','Dahej copper area','Aluminium & copper','Birla Copper division listed by Hindalco','Hindalco lists its Birla Copper division at Dahej, Lakhigam, Gujarat. Marker represents the wider Dahej area, not the smelter footprint; current operating status is not independently verified.','https://www.hindalco.com/investors/shareholder-centre/listing-details/plant-locations','confirmed',21.70,72.58,'Approximate area marker; not a facility boundary'),
+('JSWSTEEL','JSW Steel','Vijayanagar steelworks area','Steel','Steelworks listed by JSW Steel','JSW Steel lists Vijayanagar Works at Toranagallu, Karnataka. Marker represents the village area; it does not distinguish subsidiary facilities within the complex or verify current operations.','https://www.jswsteel.in/facility/vijayanagar-works','confirmed',15.17,76.65,'Approximate village marker; not a facility boundary')
+on conflict(symbol,name) do nothing;

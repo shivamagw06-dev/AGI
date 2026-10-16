@@ -1,0 +1,80 @@
+{
+  "entity": "INFY",
+  "hd_version": "historical-depth-v1.0.0",
+  "kind": "valuation",
+  "n": 3,
+  "records": [
+    {
+      "available_from": "2026-07-31",
+      "confidence": 0.95,
+      "entity": "INFY",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 4680874200000.0,
+        "ev_ebitda": 10.9205,
+        "forward_pe": null,
+        "market_cap": 4680874200000.0,
+        "pb": 5.2915,
+        "pe": 15.2572,
+        "pe_premium_pct": -36.5,
+        "peer_median_pe": 24.02,
+        "peg": 0.8876,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-07-31",
+      "period_end": "2026-07-31",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-04",
+      "confidence": 0.95,
+      "entity": "INFY",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 4835785000000.0,
+        "ev_ebitda": 11.282,
+        "forward_pe": null,
+        "market_cap": 4835785000000.0,
+        "pb": 5.4666,
+        "pe": 15.7621,
+        "pe_premium_pct": -36.0,
+        "peer_median_pe": 24.63,
+        "peg": 0.9169,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-04",
+      "period_end": "2026-08-04",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-05",
+      "confidence": 0.95,
+      "entity": "INFY",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 4839927000000.0,
+        "ev_ebitda": 11.2916,
+        "forward_pe": null,
+        "market_cap": 4839927000000.0,
+        "pb": 5.4713,
+        "pe": 15.7756,
+        "pe_premium_pct": -35.5,
+        "peer_median_pe": 24.46,
+        "peg": 0.9177,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-05",
+      "period_end": "2026-08-05",
+      "source": "valuation_intelligence_p22"
+    }
+  ]
+}

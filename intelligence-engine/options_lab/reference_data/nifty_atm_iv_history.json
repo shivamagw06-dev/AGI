@@ -1,0 +1,1259 @@
+{
+  "schema": 1,
+  "underlying": "NIFTY",
+  "generated_at": "2026-09-29T09:16:06.275790+00:00",
+  "observations": [
+    {
+      "day": "2026-07-21",
+      "at": "2026-07-21T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:06.275061+00:00",
+      "iv": 11.87085,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260721_F_0000.csv.zip",
+      "source_rows_sha256": "77a5c545a5ecdc3c07c0e20e16337c9027d28d3e40df5f6c7dee31a16ba89604",
+      "expiry": "2026-07-28",
+      "dte": 7,
+      "strike": 24200.0,
+      "spot": 24187.7,
+      "rate_pct": 5.25,
+      "forward": 24180.6,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 147.7,
+          "volume": 615450.0,
+          "open_interest": 11291410.0,
+          "iv": 11.7745,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 169.65,
+          "volume": 551230.0,
+          "open_interest": 9399455.0,
+          "iv": 11.9672,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-07-22",
+      "at": "2026-07-22T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:05.112808+00:00",
+      "iv": 12.60635,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260722_F_0000.csv.zip",
+      "source_rows_sha256": "45c3606673ebcf5dd44e3b9c41f6bfc270013706a2893c7cf0441c7e0e0530da",
+      "expiry": "2026-07-28",
+      "dte": 6,
+      "strike": 24000.0,
+      "spot": 23996.25,
+      "rate_pct": 5.25,
+      "forward": 23988.4,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 147.5,
+          "volume": 2528049.0,
+          "open_interest": 13445965.0,
+          "iv": 12.4958,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 161.8,
+          "volume": 3186486.0,
+          "open_interest": 12214930.0,
+          "iv": 12.7169,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-07-23",
+      "at": "2026-07-23T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:03.984651+00:00",
+      "iv": 11.41155,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260723_F_0000.csv.zip",
+      "source_rows_sha256": "c5d7cc59a318ebfd6ec39ef95d0d7deab3eca0b7460a50a9f6e57812c4e01b24",
+      "expiry": "2026-07-28",
+      "dte": 5,
+      "strike": 23850.0,
+      "spot": 23869.6,
+      "rate_pct": 5.25,
+      "forward": 23873.6,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 115.95,
+          "volume": 1523849.0,
+          "open_interest": 4027075.0,
+          "iv": 11.4423,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 138.85,
+          "volume": 1019175.0,
+          "open_interest": 3462225.0,
+          "iv": 11.3808,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-07-24",
+      "at": "2026-07-24T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:02.988714+00:00",
+      "iv": 11.73605,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260724_F_0000.csv.zip",
+      "source_rows_sha256": "4bf2d3d2b35a7f4ca751d6dcdee79ba31adf2ac6198e8895a0fcd37954e0bf88",
+      "expiry": "2026-07-28",
+      "dte": 4,
+      "strike": 23750.0,
+      "spot": 23767.45,
+      "rate_pct": 5.25,
+      "forward": 23806.5,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 91.8,
+          "volume": 3425179.0,
+          "open_interest": 3893110.0,
+          "iv": 11.8781,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 145.5,
+          "volume": 2899548.0,
+          "open_interest": 1767220.0,
+          "iv": 11.594,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-07-29",
+      "at": "2026-07-29T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.842927+00:00",
+      "iv": 10.48135,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260729_F_0000.csv.zip",
+      "source_rows_sha256": "1d8c42b02e194ff45a7f6db1c609aa3ba144d97422f85db32bce3fedc42ad4bd",
+      "expiry": "2026-08-04",
+      "dte": 6,
+      "strike": 24250.0,
+      "spot": 24250.2,
+      "rate_pct": 5.25,
+      "forward": 24238.0122,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 51,
+      "forward_dispersion_bp": 22.32,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 124.15,
+          "volume": 1678731.0,
+          "open_interest": 3112265.0,
+          "iv": 10.4966,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 135.75,
+          "volume": 1375726.0,
+          "open_interest": 3007420.0,
+          "iv": 10.4661,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-03",
+      "at": "2026-08-03T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.673977+00:00",
+      "iv": 9.605,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260803_F_0000.csv.zip",
+      "source_rows_sha256": "a5a1b49649a36f4b84a4c2df8157a6103f508b21e760090d3a0d59cf10e9baac",
+      "expiry": "2026-08-11",
+      "dte": 8,
+      "strike": 24750.0,
+      "spot": 24774.3,
+      "rate_pct": 5.25,
+      "forward": 24595.187,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 51,
+      "forward_dispersion_bp": 20.1,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 228.5,
+          "volume": 5374.0,
+          "open_interest": 55770.0,
+          "iv": 9.4522,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 77.9,
+          "volume": 44121.0,
+          "open_interest": 495235.0,
+          "iv": 9.7578,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-06",
+      "at": "2026-08-06T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.487594+00:00",
+      "iv": 10.8812,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260806_F_0000.csv.zip",
+      "source_rows_sha256": "8b9bd95269f9f28ea8eae84be1c696f42e8ab353838a7fd147c80948f1a6f670",
+      "expiry": "2026-08-11",
+      "dte": 5,
+      "strike": 24650.0,
+      "spot": 24636.0,
+      "rate_pct": 5.25,
+      "forward": 24687.7927,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 50,
+      "forward_dispersion_bp": 20.46,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 145.25,
+          "volume": 2292202.0,
+          "open_interest": 4397640.0,
+          "iv": 10.9002,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 107.05,
+          "volume": 2301248.0,
+          "open_interest": 3746470.0,
+          "iv": 10.8622,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-07",
+      "at": "2026-08-07T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.424910+00:00",
+      "iv": 10.5858,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260807_F_0000.csv.zip",
+      "source_rows_sha256": "b601ff888095d0f1c31dad52326c246586fed9ac83add2266a2ce4a1e5ce9497",
+      "expiry": "2026-08-11",
+      "dte": 4,
+      "strike": 24550.0,
+      "spot": 24570.65,
+      "rate_pct": 5.25,
+      "forward": 24606.5037,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 50,
+      "forward_dispersion_bp": 23.66,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 138.85,
+          "volume": 2455353.0,
+          "open_interest": 3838380.0,
+          "iv": 10.5549,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 83.0,
+          "volume": 4067445.0,
+          "open_interest": 3446365.0,
+          "iv": 10.6167,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-10",
+      "at": "2026-08-10T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.362852+00:00",
+      "iv": 11.17245,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260810_F_0000.csv.zip",
+      "source_rows_sha256": "33a39a2c9a07c5e6d82b9deac972dfb3c1c42ad325cc1af8c57e163eeba00a7d",
+      "expiry": "2026-08-18",
+      "dte": 8,
+      "strike": 24600.0,
+      "spot": 24583.8,
+      "rate_pct": 5.25,
+      "forward": 24635.5759,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 50,
+      "forward_dispersion_bp": 14.07,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 145.25,
+          "volume": 193421.0,
+          "open_interest": 2280005.0,
+          "iv": 11.1823,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 180.5,
+          "volume": 198329.0,
+          "open_interest": 2319330.0,
+          "iv": 11.1626,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-11",
+      "at": "2026-08-11T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.295425+00:00",
+      "iv": 10.4177,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260811_F_0000.csv.zip",
+      "source_rows_sha256": "5d924c7df215cd8ae398af9ed7d40d050bd2602d3c5784c782bea12b16d1863e",
+      "expiry": "2026-08-18",
+      "dte": 7,
+      "strike": 24450.0,
+      "spot": 24471.7,
+      "rate_pct": 5.25,
+      "forward": 24507.4071,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 47,
+      "forward_dispersion_bp": 9.82,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 113.7,
+          "volume": 184223.0,
+          "open_interest": 1573325.0,
+          "iv": 10.4008,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 171.5,
+          "volume": 139682.0,
+          "open_interest": 1608295.0,
+          "iv": 10.4346,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-17",
+      "at": "2026-08-17T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.068403+00:00",
+      "iv": 9.93145,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260817_F_0000.csv.zip",
+      "source_rows_sha256": "87dcec96f850ae0c5ca74b4ab68aa8f9f4e1a2ff27fce46647bff317016dcf01",
+      "expiry": "2026-08-25",
+      "dte": 8,
+      "strike": 24300.0,
+      "spot": 24287.65,
+      "rate_pct": 5.25,
+      "forward": 24392.7,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 101.05,
+          "volume": 329235.0,
+          "open_interest": 3856450.0,
+          "iv": 9.9276,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 193.75,
+          "volume": 294554.0,
+          "open_interest": 3152565.0,
+          "iv": 9.9353,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-18",
+      "at": "2026-08-18T15:30:00+05:30",
+      "available_at": "2026-09-29T09:16:00.005713+00:00",
+      "iv": 9.8394,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260818_F_0000.csv.zip",
+      "source_rows_sha256": "2503e93a61065c0aea2efeba541f0d3a3465002e0105f55601bfc573308409ea",
+      "expiry": "2026-08-25",
+      "dte": 7,
+      "strike": 24150.0,
+      "spot": 24154.9,
+      "rate_pct": 5.25,
+      "forward": 24230.1,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 173.0,
+          "volume": 76758.0,
+          "open_interest": 751205.0,
+          "iv": 9.667,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 97.45,
+          "volume": 150127.0,
+          "open_interest": 1247090.0,
+          "iv": 10.0118,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-19",
+      "at": "2026-08-19T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.953980+00:00",
+      "iv": 9.51565,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260819_F_0000.csv.zip",
+      "source_rows_sha256": "877b9e4f91d237e5e55f23c5fb25ac980260b9b7fd1cc4124d043d647629778b",
+      "expiry": "2026-08-25",
+      "dte": 6,
+      "strike": 24100.0,
+      "spot": 24078.3,
+      "rate_pct": 5.25,
+      "forward": 24117.6,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 109.1,
+          "volume": 2995866.0,
+          "open_interest": 6843460.0,
+          "iv": 9.5516,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 125.8,
+          "volume": 2462931.0,
+          "open_interest": 9864725.0,
+          "iv": 9.4797,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-20",
+      "at": "2026-08-20T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.894955+00:00",
+      "iv": 8.32875,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260820_F_0000.csv.zip",
+      "source_rows_sha256": "20e72b251a8a00db6281728a2f5fd2938f9fbe0eaa54c04be8eb9c3d3cb7b01d",
+      "expiry": "2026-08-25",
+      "dte": 5,
+      "strike": 24250.0,
+      "spot": 24231.85,
+      "rate_pct": 5.25,
+      "forward": 24293.0,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 117.55,
+          "volume": 1627325.0,
+          "open_interest": 4170595.0,
+          "iv": 8.3458,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 74.2,
+          "volume": 1633659.0,
+          "open_interest": 4977505.0,
+          "iv": 8.3117,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-21",
+      "at": "2026-08-21T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.836223+00:00",
+      "iv": 7.897,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260821_F_0000.csv.zip",
+      "source_rows_sha256": "d402bd33a3444103206f63bc834887a6aa5263b29fb3e98b2726e33272526937",
+      "expiry": "2026-08-25",
+      "dte": 4,
+      "strike": 24250.0,
+      "spot": 24252.0,
+      "rate_pct": 5.25,
+      "forward": 24286.0,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 62.9,
+          "volume": 4213154.0,
+          "open_interest": 6855290.0,
+          "iv": 7.8583,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 99.65,
+          "volume": 3351257.0,
+          "open_interest": 6769880.0,
+          "iv": 7.9357,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-24",
+      "at": "2026-08-24T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.775162+00:00",
+      "iv": 9.78445,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260824_F_0000.csv.zip",
+      "source_rows_sha256": "b1f2ac47524309efab5fd9067e123e292da84d6df0ed4e977b209d5f7bfcbea5",
+      "expiry": "2026-09-01",
+      "dte": 8,
+      "strike": 24200.0,
+      "spot": 24219.05,
+      "rate_pct": 5.25,
+      "forward": 24239.2677,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 45,
+      "forward_dispersion_bp": 16.65,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 121.35,
+          "volume": 228579.0,
+          "open_interest": 2512705.0,
+          "iv": 9.8046,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 160.0,
+          "volume": 184806.0,
+          "open_interest": 2969200.0,
+          "iv": 9.7643,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-28",
+      "at": "2026-08-28T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.562069+00:00",
+      "iv": 8.65735,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260828_F_0000.csv.zip",
+      "source_rows_sha256": "e9f1f50258be461e63b2568e6808ff4c1ddae864930358dd2bbf77ef287c3f37",
+      "expiry": "2026-09-01",
+      "dte": 4,
+      "strike": 24200.0,
+      "spot": 24175.65,
+      "rate_pct": 5.25,
+      "forward": 24231.8634,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 46,
+      "forward_dispersion_bp": 24.89,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 104.75,
+          "volume": 5461657.0,
+          "open_interest": 9089990.0,
+          "iv": 8.6976,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 72.1,
+          "volume": 4914187.0,
+          "open_interest": 7979010.0,
+          "iv": 8.6171,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-08-31",
+      "at": "2026-08-31T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.507623+00:00",
+      "iv": 10.10285,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260831_F_0000.csv.zip",
+      "source_rows_sha256": "38bb91bc5c0fe95927a7665651cee856a76e74ee3e39ed789c63c59023d23019",
+      "expiry": "2026-09-08",
+      "dte": 8,
+      "strike": 24100.0,
+      "spot": 24080.4,
+      "rate_pct": 5.25,
+      "forward": 24176.9885,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 46,
+      "forward_dispersion_bp": 20.85,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 184.45,
+          "volume": 192289.0,
+          "open_interest": 1962805.0,
+          "iv": 10.022,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 109.8,
+          "volume": 215641.0,
+          "open_interest": 2276300.0,
+          "iv": 10.1837,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-04",
+      "at": "2026-09-04T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.279634+00:00",
+      "iv": 8.84105,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260904_F_0000.csv.zip",
+      "source_rows_sha256": "5792ddd21310ac846f7985e486572ebb420336572b660bde078975a125f00c55",
+      "expiry": "2026-09-08",
+      "dte": 4,
+      "strike": 23900.0,
+      "spot": 23897.7,
+      "rate_pct": 5.25,
+      "forward": 23962.6896,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 46,
+      "forward_dispersion_bp": 16.1,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 59.85,
+          "volume": 7170241.0,
+          "open_interest": 11118835.0,
+          "iv": 8.7735,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 123.8,
+          "volume": 3733592.0,
+          "open_interest": 5027750.0,
+          "iv": 8.9086,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-08",
+      "at": "2026-09-08T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.166763+00:00",
+      "iv": 9.66685,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260908_F_0000.csv.zip",
+      "source_rows_sha256": "d079073730f38591dc116da510118e42bb6072028a1e60ee70aebcb91d4f8eda",
+      "expiry": "2026-09-15",
+      "dte": 7,
+      "strike": 23650.0,
+      "spot": 23635.1,
+      "rate_pct": 5.25,
+      "forward": 23696.7458,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 45,
+      "forward_dispersion_bp": 19.37,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 104.4,
+          "volume": 281825.0,
+          "open_interest": 1731340.0,
+          "iv": 9.6726,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 150.95,
+          "volume": 183588.0,
+          "open_interest": 2350920.0,
+          "iv": 9.6611,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-10",
+      "at": "2026-09-10T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.061261+00:00",
+      "iv": 9.34945,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260910_F_0000.csv.zip",
+      "source_rows_sha256": "e79d4af232f39c2e3f333776b8727968028b0abe4627c6588d237bd0d9f97b0f",
+      "expiry": "2026-09-15",
+      "dte": 5,
+      "strike": 23500.0,
+      "spot": 23477.8,
+      "rate_pct": 5.25,
+      "forward": 23443.0208,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 46,
+      "forward_dispersion_bp": 17.92,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 77.0,
+          "volume": 2977798.0,
+          "open_interest": 11709555.0,
+          "iv": 9.4027,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 132.8,
+          "volume": 2701551.0,
+          "open_interest": 6244680.0,
+          "iv": 9.2962,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-11",
+      "at": "2026-09-11T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:59.003096+00:00",
+      "iv": 10.48435,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260911_F_0000.csv.zip",
+      "source_rows_sha256": "f15c75ea1e01101e0ca4d6c1811fdab0353d17abd2b3e0fd7edf8188849f243f",
+      "expiry": "2026-09-15",
+      "dte": 4,
+      "strike": 23400.0,
+      "spot": 23398.1,
+      "rate_pct": 5.25,
+      "forward": 23447.528,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 48,
+      "forward_dispersion_bp": 14.83,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 127.8,
+          "volume": 5962887.0,
+          "open_interest": 6159140.0,
+          "iv": 10.4635,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 80.7,
+          "volume": 4302778.0,
+          "open_interest": 8989695.0,
+          "iv": 10.5052,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-15",
+      "at": "2026-09-15T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:58.406458+00:00",
+      "iv": 13.7297,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260915_F_0000.csv.zip",
+      "source_rows_sha256": "5c4f24394b5e27c10759183573cd493740bea5cfad3c7abd315c677a5ba14a49",
+      "expiry": "2026-09-22",
+      "dte": 7,
+      "strike": 23100.0,
+      "spot": 23118.6,
+      "rate_pct": 5.25,
+      "forward": 23195.8693,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 52,
+      "forward_dispersion_bp": 15.66,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 226.8,
+          "volume": 45372.0,
+          "open_interest": 797095.0,
+          "iv": 13.6787,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 132.3,
+          "volume": 195571.0,
+          "open_interest": 2190305.0,
+          "iv": 13.7807,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-18",
+      "at": "2026-09-18T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:58.239962+00:00",
+      "iv": 9.08245,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260918_F_0000.csv.zip",
+      "source_rows_sha256": "61fd8c5ec00318eb34104a05e1b545473799a5567e6ee08e55d44508d46d1fd0",
+      "expiry": "2026-09-22",
+      "dte": 4,
+      "strike": 23350.0,
+      "spot": 23346.4,
+      "rate_pct": 5.25,
+      "forward": 23355.0091,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 49,
+      "forward_dispersion_bp": 23.72,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 85.6,
+          "volume": 4033979.0,
+          "open_interest": 5143060.0,
+          "iv": 9.0366,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 91.5,
+          "volume": 5297934.0,
+          "open_interest": 4955600.0,
+          "iv": 9.1283,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-21",
+      "at": "2026-09-21T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:58.177328+00:00",
+      "iv": 10.1981,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260921_F_0000.csv.zip",
+      "source_rows_sha256": "c916d5e99fb7467f1ebbc673e6be44e1bd3c28375878ba5c281dbb1f4b0ced9d",
+      "expiry": "2026-09-29",
+      "dte": 8,
+      "strike": 23400.0,
+      "spot": 23414.3,
+      "rate_pct": 5.25,
+      "forward": 23446.3,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 119.65,
+          "volume": 191206.0,
+          "open_interest": 3885960.0,
+          "iv": 10.2454,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 164.6,
+          "volume": 217057.0,
+          "open_interest": 4008485.0,
+          "iv": 10.1508,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-22",
+      "at": "2026-09-22T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:58.112312+00:00",
+      "iv": 9.97115,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260922_F_0000.csv.zip",
+      "source_rows_sha256": "28684c02bfae78cb4fbf26c83dea47f09b26e8230111680ab37b95c41bfdd737",
+      "expiry": "2026-09-29",
+      "dte": 7,
+      "strike": 23350.0,
+      "spot": 23329.0,
+      "rate_pct": 5.25,
+      "forward": 23394.6,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 149.6,
+          "volume": 266229.0,
+          "open_interest": 2319395.0,
+          "iv": 9.7733,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 110.1,
+          "volume": 273914.0,
+          "open_interest": 1925625.0,
+          "iv": 10.169,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-23",
+      "at": "2026-09-23T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:58.056801+00:00",
+      "iv": 8.8326,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260923_F_0000.csv.zip",
+      "source_rows_sha256": "675f8dac4880a08ae02c2e7802f8a6f61f65f8a8618d50bdd6f618cdd2bc6d4b",
+      "expiry": "2026-09-29",
+      "dte": 6,
+      "strike": 23450.0,
+      "spot": 23446.8,
+      "rate_pct": 5.25,
+      "forward": 23449.8,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 105.1,
+          "volume": 1777930.0,
+          "open_interest": 3733080.0,
+          "iv": 8.7617,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 106.6,
+          "volume": 2199764.0,
+          "open_interest": 3861715.0,
+          "iv": 8.9035,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-24",
+      "at": "2026-09-24T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:57.998431+00:00",
+      "iv": 11.8864,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260924_F_0000.csv.zip",
+      "source_rows_sha256": "846bda74343b6c94c091ede8b98e8f61ebfe67760c6bff56b6a434e1141ef0df",
+      "expiry": "2026-09-29",
+      "dte": 5,
+      "strike": 23050.0,
+      "spot": 23063.1,
+      "rate_pct": 5.25,
+      "forward": 23108.6,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 99.8,
+          "volume": 1149168.0,
+          "open_interest": 2790840.0,
+          "iv": 11.7876,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 160.45,
+          "volume": 302957.0,
+          "open_interest": 1351415.0,
+          "iv": 11.9852,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-25",
+      "at": "2026-09-25T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:57.934423+00:00",
+      "iv": 9.9286,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260925_F_0000.csv.zip",
+      "source_rows_sha256": "193c4706650c70ff92a859975da35175942e452646052d640ccd20db0ec3c6f8",
+      "expiry": "2026-09-29",
+      "dte": 4,
+      "strike": 23150.0,
+      "spot": 23140.5,
+      "rate_pct": 5.25,
+      "forward": 23186.7,
+      "forward_source": "future",
+      "forward_quality": "high",
+      "forward_pair_count": 0,
+      "forward_dispersion_bp": null,
+      "legs": [
+        {
+          "option_type": "CE",
+          "close": 116.7,
+          "volume": 3355329.0,
+          "open_interest": 3645655.0,
+          "iv": 10.0579,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "PE",
+          "close": 77.55,
+          "volume": 2725795.0,
+          "open_interest": 3978195.0,
+          "iv": 9.7993,
+          "iv_quality": "ok"
+        }
+      ]
+    },
+    {
+      "day": "2026-09-28",
+      "at": "2026-09-28T15:30:00+05:30",
+      "available_at": "2026-09-29T09:15:57.862447+00:00",
+      "iv": 13.23925,
+      "unit": "percent",
+      "source": "NSE F&O bhavcopy",
+      "method": "near-expiry-atm-ce-pe-black76-v1",
+      "source_url": "https://nsearchives.nseindia.com/content/fo/BhavCopy_NSE_FO_0_0_0_20260928_F_0000.csv.zip",
+      "source_rows_sha256": "f5a5bd0cba23ba27ea272e30bcc9c33626551f9bed52a57aeb258e42faac1e8c",
+      "expiry": "2026-10-06",
+      "dte": 8,
+      "strike": 22800.0,
+      "spot": 22780.25,
+      "rate_pct": 5.25,
+      "forward": 22850.3817,
+      "forward_source": "parity",
+      "forward_quality": "high",
+      "forward_pair_count": 48,
+      "forward_dispersion_bp": 20.76,
+      "legs": [
+        {
+          "option_type": "PE",
+          "close": 155.3,
+          "volume": 224919.0,
+          "open_interest": 1950585.0,
+          "iv": 13.3186,
+          "iv_quality": "ok"
+        },
+        {
+          "option_type": "CE",
+          "close": 203.5,
+          "volume": 139961.0,
+          "open_interest": 1480050.0,
+          "iv": 13.1599,
+          "iv_quality": "ok"
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "day": "2026-09-17",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-16",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-14",
+      "reason": "no bhavcopy for 2026-09-14"
+    },
+    {
+      "day": "2026-09-09",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-07",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-03",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-02",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-09-01",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-27",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-26",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-25",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-14",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-13",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-12",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-05",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-08-04",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-07-31",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-07-30",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-07-28",
+      "reason": "ATM quality gate"
+    },
+    {
+      "day": "2026-07-27",
+      "reason": "ATM quality gate"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+import {useState,useEffect} from 'react';
+import {API_ORIGIN} from '@/config';
+import {supabase} from '@/lib/supabaseClient';
+async function request(run=false){
+ const {data}=await supabase.auth.getSession();
+ if(!data?.session?.access_token)throw new Error('Admin session required');
+ const response=await fetch(`${API_ORIGIN}/api/market/provider-coverage${run?'/run':''}`,{method:run?'POST':'GET',headers:{Authorization:`Bearer ${data.session.access_token}`},signal:AbortSignal.timeout(20000)});
+ if(!response.ok)throw new Error(`Coverage request failed (${response.status})`);
+ return response.json();
+}
+export default function ProviderCoverage(){
+ const [data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[open,setOpen]=useState(false),[note,setNote]=useState('');
+ useEffect(()=>{if(!open)return;let active=true;let pending=false;const refresh=async()=>{if(pending)return;pending=true;try{const d=await request();if(active){setData(d);setError('');}}catch(e){if(active)setError(e.message);}finally{pending=false;}};refresh();const timer=setInterval(refresh,10000);return()=>{active=false;clearInterval(timer);};},[open]);
+ async function run(){setBusy(true);setError('');try{const result=await request(true);setNote(result.cooldown?'Please wait five minutes between audits.':'Read-only audit started; results update automatically.');setData(await request());}catch(e){setError(e.message);}finally{setBusy(false);}}
+ return <details className="np-stream" onToggle={e=>setOpen(e.currentTarget.open)}><summary><strong>Provider data coverage · Upstox + Groww</strong></summary><p>Capability tests, saved samples and strategy integration are separate. A passed sample does not prove continuous collection, freshness or complete history.</p>{error&&<p role="alert">{error}</p>}<button onClick={run} disabled={busy||data?.running}>{data?.running?'Audit running…':'Run read-only data audit'}</button>{note&&<p role="status">{note}</p>}<p>Storage: {data?.storage||'Loading…'} · Last completed: {data?.report?.finished_at?new Date(data.report.finished_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}):'No completed audit'}</p>{data?.report?.error&&<p role="alert">Audit interrupted; unfinished rows are not verified.</p>}<div className="np-scroll"><table><thead><tr><th>Dataset</th><th>Groww</th><th>Upstox</th></tr></thead><tbody>{data?.catalog?.map(item=><tr key={item.id}><td><strong>{item.label}</strong><small>{item.note}</small></td>{['groww','upstox'].map(provider=>{const row=data.report?.providers?.[provider]?.[item.id];return <td key={provider}><strong>{(row?.status||'not_tested').replaceAll('_',' ')}</strong><small>{row?.error||''}</small>{row?.count!=null&&<small>{row.count} records · {row.invalid||0} invalid</small>}{row?.first&&<small>{row.first} — {row.last}</small>}<small>Saved sample: {row?.recorded?'Yes':'No'}</small><small>{row?.used_by_agents||'Integration not audited yet'}</small>{row?.checked_at&&<small>Checked {new Date(row.checked_at).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata'})} IST</small>}</td>;})}</tr>)}</tbody></table></div><p>Streaming, full-universe coverage, basket margins, calendar review and durable retention need separate evidence. This audit does not place orders, clear halted positions or switch providers.</p></details>;
+}

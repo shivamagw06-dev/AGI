@@ -1,0 +1,34 @@
+name: Investor Portfolio Nightly Valuation
+on:
+  schedule:
+    # 20:30 UTC = 02:00 IST the following day. GitHub can queue scheduled jobs.
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: investor-nightly-valuation
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate valuation and publication rules
+        run: python -m unittest discover -s scripts/investor_valuation -p 'test_*.py'
+      - name: Refresh Yahoo prices and value disclosed shares
+        run: python scripts/investor_valuation/refresh.py /tmp/investor-valuations/latest.json
+      - name: Preserve the validated snapshot for publication diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: investor-valuation-snapshot
+          path: /tmp/investor-valuations/latest.json
+          retention-days: 2
+      - name: Publish public snapshot atomically to the data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/investor_valuation/publish.py /tmp/investor-valuations/latest.json

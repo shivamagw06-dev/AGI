@@ -1,0 +1,19 @@
+{
+  "industry_id": "automobile",
+  "name": "Automobile",
+  "demand_drivers": ["gdp_per_capita", "rates", "fuel", "replacement_demand", "ev_transition"],
+  "supply_drivers": ["capacity", "semiconductor", "commodity_costs"],
+  "capacity": "plant_utilisation",
+  "pricing": "model_mix_and_discounts",
+  "margins": {"ebit": "cycle_dependent"},
+  "competition": "oem_and_ev_entrants",
+  "regulation": ["emission_norms", "safety", "ev_incentives"],
+  "capital_intensity": "high",
+  "typical_risks": ["cycle", "commodity", "technology_transition", "channel"],
+  "important_kpis": ["volumes", "asp", "market_share", "ebit_margin", "working_capital"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "dcf_fcff", "relative_pe"],
+  "historical_cycles": ["bs_transition", "covid_volume_shock"],
+  "industry_structure": "oligopoly_with_regional_leaders",
+  "business_characteristics": ["cyclical", "dealer_network"],
+  "capital_cycle": "capacity_and_platform_investment"
+}

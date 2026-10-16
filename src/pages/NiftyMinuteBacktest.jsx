@@ -1,0 +1,28 @@
+import {useEffect,useState} from 'react';
+import {getMinuteBacktest,runMinuteBacktest} from '@/lib/optionsLabAdminApi';
+import {researchNames} from './NiftyResearchSuite';
+import {parseReplayCalendar} from './NiftyReplayReport';
+const names={trend_pullback:'Trend-pullback debit spread',volatility_credit:'Volatility-filtered credit spread',...researchNames};
+const day=n=>new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+const money=n=>n==null?'Not testable / incomplete':Number(n).toLocaleString('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2});
+export default function NiftyMinuteBacktest(){
+ const [data,setData]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [start,setStart]=useState(day(61)),[end,setEnd]=useState(day(1)),[calendar,setCalendar]=useState(''),[reviewed,setReviewed]=useState(false);
+ useEffect(()=>{let alive=true,inflight=false;async function load(){if(inflight||document.hidden)return;inflight=true;try{const x=await getMinuteBacktest();if(alive){setData(x);setError('');}}catch(e){if(alive)setError(e.message);}finally{inflight=false;}}load();const timer=setInterval(load,10000);return()=>{alive=false;clearInterval(timer);};},[]);
+ const job=data?.job,result=data?.result,retention=data?.retention,running=['queued','running'].includes(job?.status);
+ async function run(){setBusy(true);setError('');try{if(calendar.trim()&&!reviewed)throw new Error('Confirm the historical event review.');await runMinuteBacktest(start,end,parseReplayCalendar(calendar));setData(await getMinuteBacktest());}catch(e){setError(e.message);}finally{setBusy(false);}}
+ function download(){const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`nifty-APPROXIMATE-minute-${result.start}-${result.end}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ return <section className="np-agent" aria-label="One-minute approximate backtest"><p className="np-eyebrow">SEPARATE EXPERIMENT · ONE-MINUTE APPROXIMATION</p><h2>Backtest past months with candles</h2>
+ <p>Downloads available Upstox spot and expired-contract candles. Nine independent ₹1 lakh experiments. Five-minute signals, next-minute open fills and minute-close stop checks. These results do not validate one-second execution or the shared live-paper portfolio.</p>
+ <p>No historical bid/ask or depth. IV, delta and futures VWAP are estimates. Historical access requires the appropriate Upstox plan; unavailable data stays missing. The job runs in the background and caches completed downloads.</p>
+ {error&&<p role="alert" className="np-error">{error}</p>}
+ <div className="np-calendar"><label>From<input type="date" value={start} max={end} onChange={e=>setStart(e.target.value)}/></label><label>Through<input type="date" value={end} max={day(1)} min={start} onChange={e=>setEnd(e.target.value)}/></label></div>
+ <details><summary>Historical event reviews for the seven research strategies</summary><p>Enter YYYY-MM-DD CLEAR or YYYY-MM-DD HH:MM-HH:MM, one per line, with times in IST. Leave unreviewed dates out; those dates cannot admit research entries. Reviews here are retrospective assumptions and never change forward trading.</p><textarea aria-label="Minute backtest historical events" rows={4} value={calendar} onChange={e=>{setCalendar(e.target.value);setReviewed(false);}}/><label><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)}/> I reviewed the events for these dates.</label></details>
+ <button disabled={busy||running||!start||!end} onClick={run}>{busy?'Submitting…':running?'Approximate backtest running…':'Download history & run approximate backtest'}</button>
+ {job&&<p role="status">Run #{job.id}: {job.status} · {job.config?.start} to {job.config?.end} · {job.progress?.phase}{job.progress?.contracts?` · ${job.progress.contracts} contracts processed`:''}{job.error?` · ${job.error}`:''}</p>}
+ {result&&<><p><strong>Approximate results: {result.start} to {result.end}</strong> · {result.observed_days.length} observed spot sessions · {result.complete_bars} complete five-minute bars · {result.missing_minute_gaps} spot gaps. Last completed result remains visible during a new run.</p><p>{result.coverage.universe}</p>
+ <div className="np-scroll"><table><thead><tr><th>Strategy</th><th>Status</th><th>Trades</th><th>Approximate net P&amp;L</th><th>Double slippage &amp; fees</th><th>Drawdown</th></tr></thead><tbody>{Object.entries(result.strategies).map(([key,a])=><tr key={key}><th>{names[key]}<small>{Object.entries(a.reasons).sort((x,y)=>y[1]-x[1])[0]?.[0]}</small></th><td>{a.status}</td><td>{a.closed_trades??'—'}</td><td>{money(a.net_pnl)}</td><td>{money(a.stress_net_pnl)}</td><td>{money(a.max_drawdown)}</td></tr>)}</tbody></table></div><button onClick={download}>Download approximate results &amp; trades</button></>}
+ <details><summary>Method, missing inputs and costs</summary>{data?.assumptions?.map(x=><p key={x}>{x}</p>)}</details>
+ <h3>Recorded evidence retention</h3>{retention?<><p><strong>{retention.retention_days} days</strong> retained · {retention.hot_days} days in the live database, older sessions in verified compressed archives · {retention.archived_days} archived days · {(retention.archive_bytes/1048576).toFixed(1)} MiB archived · {(retention.free_bytes/1073741824).toFixed(1)} GiB disk space available.</p><p>Previously deleted history cannot be recovered. Archives use the evidence storage volume and need an independent backup. Detailed replay still runs in bounded date windows.</p>{retention.error&&<p role="alert" className="np-error">{retention.error}</p>}</>:<p>Loading retention status…</p>}
+ </section>;
+}

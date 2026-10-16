@@ -1,0 +1,139 @@
+{
+  "pre": {
+    "pass_pct": 88.2,
+    "framework_accuracy_pct": 75.3,
+    "intent_accuracy_pct": 84.7
+  },
+  "post": {
+    "pass_pct": 92.6,
+    "mean_score": 87.23,
+    "framework_accuracy_pct": 96.3,
+    "intent_accuracy_pct": 84.7,
+    "n_hard_failures": 74,
+    "n_actionable": 168
+  },
+  "delta": {
+    "pass_pct": 4.4,
+    "framework_accuracy_pct": 21.0,
+    "intent_accuracy_pct": 0.0
+  },
+  "cio_frozen_25": {
+    "pass_pct": 100.0,
+    "mean_score": 89.22
+  },
+  "top_clusters": [
+    {
+      "count": 14,
+      "impact": "14 questions \u2193 intent_mismatch \u2193 generic \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 banks \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 fmcg \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 industrials \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 it_services \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 metals \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 7,
+      "impact": "7 questions \u2193 intent_mismatch \u2193 nbfc \u2193 PORTFOLIO \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 6,
+      "impact": "6 questions \u2193 intent_mismatch \u2193 banks \u2193 ACCOUNTING \u2193 one patch",
+      "root_cause": "intent_mismatch"
+    },
+    {
+      "count": 5,
+      "impact": "5 questions \u2193 future_leakage \u2193 generic \u2193 HISTORICAL \u2193 one patch",
+      "root_cause": "future_leakage"
+    },
+    {
+      "count": 5,
+      "impact": "5 questions \u2193 future_leakage \u2193 generic \u2193 HISTORICAL \u2193 one patch",
+      "root_cause": "future_leakage"
+    }
+  ],
+  "highest_roi_brief": {
+    "format": "patch_brief_v1",
+    "pi_version": "patch-intelligence-v1.0.0",
+    "cluster_id": "clu-915967a8fe",
+    "cluster_key": "intent_mismatch|generic|PORTFOLIO|portfolio|PB_IC_POSITION",
+    "root_cause": "intent_mismatch",
+    "sector": "generic",
+    "framework_family": "PORTFOLIO",
+    "category": "portfolio",
+    "affected_questions": 14,
+    "question_ids_sample": [
+      "GEN-PF-02-01",
+      "GEN-PF-02-02",
+      "GEN-PF-02-03",
+      "GEN-PF-02-04",
+      "GEN-PF-02-05",
+      "GEN-PF-02-06",
+      "GEN-PF-02-07",
+      "GEN-PF-08-01",
+      "GEN-PF-08-02",
+      "GEN-PF-08-03",
+      "GEN-PF-08-04",
+      "GEN-PF-08-05"
+    ],
+    "expected_gain": {
+      "framework_accuracy": "+0.0%",
+      "intent_accuracy": "+1.4%",
+      "overall_benchmark": "+0.49%",
+      "projected_pass_pct": 93.09,
+      "projected_framework_accuracy": 96.3,
+      "heuristic": true
+    },
+    "files_to_review": [
+      "intelligence-engine/ask_pipeline/intent_resolution/resolver.py",
+      "intelligence-engine/ask_pipeline/intent_resolution/tests/test_intent_resolution.py"
+    ],
+    "tests_to_run": [
+      "intelligence-engine/framework_selection/tests",
+      "intelligence-engine/institutional_evaluation_lab/tests",
+      "intelligence-engine/root_cause_intelligence/tests",
+      "cio_frozen_25 soft"
+    ],
+    "risk": "medium",
+    "risk_rationale": "Routing changes can cascade into framework/playbook selection",
+    "must_not_regress": [
+      "cio_frozen_25 soft pass_pct",
+      "banks forbid FW_EV_EBITDA",
+      "replay available_from <= as_of",
+      "IEL institutional_1000 pass_pct vs baseline"
+    ],
+    "recommended_pr": "cursor/fix-intent-mismatch-generic-4cc0",
+    "recommended_title": "fix(intent_mismatch): generic / PORTFOLIO (14 Q)",
+    "human_actions": [
+      "Review files_to_review \u2014 do not apply blindly",
+      "Implement minimal selector/mapping change for this cluster only",
+      "Run tests_to_run",
+      "Re-run IEL institutional_1000 + RCI",
+      "Accept only if pass_pct and target dimension improve without CIO-25 regression"
+    ],
+    "auto_code_written": false,
+    "fabricated": false
+  },
+  "ifse_version": "framework-selection-v1.1.0"
+}

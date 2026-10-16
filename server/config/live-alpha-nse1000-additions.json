@@ -1,0 +1,3529 @@
+{
+  "name": "agi_nse1000",
+  "selectionAsOf": "2026-10-07",
+  "method": "Existing Nifty 500 plus 500 other active NSE EQ companies ranked by five-session average traded value; traded in all five sessions; exact ISIN and symbol confirmed against Upstox master. Not an official index.",
+  "sources": [
+    {
+      "url": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260930_F_0000.csv.zip",
+      "sha256": "0ece4833d287f504885258a40edc21fd6368632849b87add88d288f1ef0d4a59"
+    },
+    {
+      "url": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261001_F_0000.csv.zip",
+      "sha256": "ccc5fb27872716bbcc99d2d87e522ab304f6620e11c3a5045c30e1ff25cbfb73"
+    },
+    {
+      "url": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261005_F_0000.csv.zip",
+      "sha256": "43913a4ef72663e2d3fbb0c3b9c686ed8c3d23e5df6ee6b756f8a5c954559ceb"
+    },
+    {
+      "url": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261006_F_0000.csv.zip",
+      "sha256": "f444e5ba9821fe09ac3bff69f53144369ce536be6481acc78ab00d175ae55b56"
+    },
+    {
+      "url": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261007_F_0000.csv.zip",
+      "sha256": "e11ec2f3c54236e4fae5fc19e88f45d2a2159a31308c77c5ff5dcf051b632b95"
+    }
+  ],
+  "members": [
+    {
+      "symbol": "HEROMOTORS",
+      "instrumentKey": "NSE_EQ|INE012G01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 14087045120.93
+    },
+    {
+      "symbol": "CUPID",
+      "instrumentKey": "NSE_EQ|INE509F01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 11028128422.94
+    },
+    {
+      "symbol": "KANOHAR",
+      "instrumentKey": "NSE_EQ|INE877D01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 10973013814.74
+    },
+    {
+      "symbol": "SSRETAIL",
+      "instrumentKey": "NSE_EQ|INE1EQW01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 6914263460.28
+    },
+    {
+      "symbol": "MOBIKWIK",
+      "instrumentKey": "NSE_EQ|INE0HLU01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 6668656372.9
+    },
+    {
+      "symbol": "AZAD",
+      "instrumentKey": "NSE_EQ|INE02IJ01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 5823486002.66
+    },
+    {
+      "symbol": "MOLBIO",
+      "instrumentKey": "NSE_EQ|INE869T01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 5102229826.38
+    },
+    {
+      "symbol": "DELTACORP",
+      "instrumentKey": "NSE_EQ|INE124G01033",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 4913153683.74
+    },
+    {
+      "symbol": "ELEVATE",
+      "instrumentKey": "NSE_EQ|INE147X01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 4254608915.0
+    },
+    {
+      "symbol": "TDPOWERSYS",
+      "instrumentKey": "NSE_EQ|INE419M01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 4234389850.63
+    },
+    {
+      "symbol": "RENTOMOJO",
+      "instrumentKey": "NSE_EQ|INE08T701025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 3957987818.81
+    },
+    {
+      "symbol": "MOREPENLAB",
+      "instrumentKey": "NSE_EQ|INE083A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 3363043536.79
+    },
+    {
+      "symbol": "VAML",
+      "instrumentKey": "NSE_EQ|INE1CDF01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 3197060359.87
+    },
+    {
+      "symbol": "SMCGLOBAL",
+      "instrumentKey": "NSE_EQ|INE103C01036",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 3022845742.14
+    },
+    {
+      "symbol": "PCJEWELLER",
+      "instrumentKey": "NSE_EQ|INE785M01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2651081974.13
+    },
+    {
+      "symbol": "CELLO",
+      "instrumentKey": "NSE_EQ|INE0LMW01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2428124269.37
+    },
+    {
+      "symbol": "OPTIEMUS",
+      "instrumentKey": "NSE_EQ|INE350C01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2391358490.99
+    },
+    {
+      "symbol": "BLEL",
+      "instrumentKey": "NSE_EQ|INE1EEM01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2276865908.54
+    },
+    {
+      "symbol": "TFCILTD",
+      "instrumentKey": "NSE_EQ|INE305A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2201201085.02
+    },
+    {
+      "symbol": "KARAMTARA",
+      "instrumentKey": "NSE_EQ|INE590T01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2186262862.65
+    },
+    {
+      "symbol": "RAYMOND",
+      "instrumentKey": "NSE_EQ|INE301A01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2175449133.91
+    },
+    {
+      "symbol": "GLASSWALL",
+      "instrumentKey": "NSE_EQ|INE644Q01039",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2166285510.5
+    },
+    {
+      "symbol": "APOLLO",
+      "instrumentKey": "NSE_EQ|INE713T01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 2072979125.31
+    },
+    {
+      "symbol": "LALITHAA",
+      "instrumentKey": "NSE_EQ|INE0K9O01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1933615146.67
+    },
+    {
+      "symbol": "RATNAVEER",
+      "instrumentKey": "NSE_EQ|INE05CZ01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1919713020.16
+    },
+    {
+      "symbol": "MVELECTRO",
+      "instrumentKey": "NSE_EQ|INE0OWZ01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1905180153.8
+    },
+    {
+      "symbol": "AUGMONT",
+      "instrumentKey": "NSE_EQ|INE16W401027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1857376659.03
+    },
+    {
+      "symbol": "SYMBIOTEC",
+      "instrumentKey": "NSE_EQ|INE899I01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1804651165.55
+    },
+    {
+      "symbol": "GKSL",
+      "instrumentKey": "NSE_EQ|INE0V0W01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1788680402.76
+    },
+    {
+      "symbol": "FEDDERSHOL",
+      "instrumentKey": "NSE_EQ|INE417D01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1772158481.49
+    },
+    {
+      "symbol": "EMIL",
+      "instrumentKey": "NSE_EQ|INE02YR01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1766335205.24
+    },
+    {
+      "symbol": "BALAMINES",
+      "instrumentKey": "NSE_EQ|INE050E01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1730988938.76
+    },
+    {
+      "symbol": "DHOOTTRANS",
+      "instrumentKey": "NSE_EQ|INE01NH01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1685420872.96
+    },
+    {
+      "symbol": "AEQUS",
+      "instrumentKey": "NSE_EQ|INE947N01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1684117098.31
+    },
+    {
+      "symbol": "SHADOWFAX",
+      "instrumentKey": "NSE_EQ|INE12UN01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1669772139.63
+    },
+    {
+      "symbol": "SBC",
+      "instrumentKey": "NSE_EQ|INE04AK01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1664713563.74
+    },
+    {
+      "symbol": "AVALON",
+      "instrumentKey": "NSE_EQ|INE0LCL01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1632998572.32
+    },
+    {
+      "symbol": "TEMPSENS",
+      "instrumentKey": "NSE_EQ|INE1KZI01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1600502503.17
+    },
+    {
+      "symbol": "FCL",
+      "instrumentKey": "NSE_EQ|INE045J01034",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1596549619.98
+    },
+    {
+      "symbol": "DEEPA",
+      "instrumentKey": "NSE_EQ|INE1M2N01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1572098410.39
+    },
+    {
+      "symbol": "LLOYDSENGG",
+      "instrumentKey": "NSE_EQ|INE093R01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1567505788.14
+    },
+    {
+      "symbol": "SKYGOLD",
+      "instrumentKey": "NSE_EQ|INE01IU01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1471287365.23
+    },
+    {
+      "symbol": "SHUKRAPHAR",
+      "instrumentKey": "NSE_EQ|INE551C01044",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1391656127.28
+    },
+    {
+      "symbol": "ARMEE",
+      "instrumentKey": "NSE_EQ|INE0TWE01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1372940578.3
+    },
+    {
+      "symbol": "ALKYLAMINE",
+      "instrumentKey": "NSE_EQ|INE150B01039",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1354778407.28
+    },
+    {
+      "symbol": "DPABHUSHAN",
+      "instrumentKey": "NSE_EQ|INE266Y01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1325343635.6
+    },
+    {
+      "symbol": "RSYSTEMS",
+      "instrumentKey": "NSE_EQ|INE411H01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1236355270.8
+    },
+    {
+      "symbol": "SANSERA",
+      "instrumentKey": "NSE_EQ|INE953O01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1198611834.54
+    },
+    {
+      "symbol": "TRANSRAILL",
+      "instrumentKey": "NSE_EQ|INE454P01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1136482058.49
+    },
+    {
+      "symbol": "UJJIVANSFB",
+      "instrumentKey": "NSE_EQ|INE551W01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1117476861.31
+    },
+    {
+      "symbol": "AXISCADES",
+      "instrumentKey": "NSE_EQ|INE555B01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1099226953.78
+    },
+    {
+      "symbol": "SYNCOMF",
+      "instrumentKey": "NSE_EQ|INE312C01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1087533490.91
+    },
+    {
+      "symbol": "MARINE",
+      "instrumentKey": "NSE_EQ|INE01JE01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1086214827.14
+    },
+    {
+      "symbol": "INDOMIM",
+      "instrumentKey": "NSE_EQ|INE084101034",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1067473385.64
+    },
+    {
+      "symbol": "STEAMHOUSE",
+      "instrumentKey": "NSE_EQ|INE0FRO01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1052260005.72
+    },
+    {
+      "symbol": "RAYMONDREL",
+      "instrumentKey": "NSE_EQ|INE1SY401010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1051842999.21
+    },
+    {
+      "symbol": "SHANTIGOLD",
+      "instrumentKey": "NSE_EQ|INE06ZD01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1049785248.62
+    },
+    {
+      "symbol": "KSB",
+      "instrumentKey": "NSE_EQ|INE999A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1033607989.55
+    },
+    {
+      "symbol": "V2RETAIL",
+      "instrumentKey": "NSE_EQ|INE945H01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 1026562545.79
+    },
+    {
+      "symbol": "VISL",
+      "instrumentKey": "NSE_EQ|INE1CLE01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 981709250.63
+    },
+    {
+      "symbol": "BBOX",
+      "instrumentKey": "NSE_EQ|INE676A01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 971957905.78
+    },
+    {
+      "symbol": "PAISALO",
+      "instrumentKey": "NSE_EQ|INE420C01059",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 933177763.46
+    },
+    {
+      "symbol": "OMNI",
+      "instrumentKey": "NSE_EQ|INE0UH301010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 932066170.86
+    },
+    {
+      "symbol": "JAYKAY",
+      "instrumentKey": "NSE_EQ|INE903A01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 914746425.41
+    },
+    {
+      "symbol": "WABAG",
+      "instrumentKey": "NSE_EQ|INE956G01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 914175957.58
+    },
+    {
+      "symbol": "AETHER",
+      "instrumentKey": "NSE_EQ|INE0BWX01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 904683043.14
+    },
+    {
+      "symbol": "IOLCP",
+      "instrumentKey": "NSE_EQ|INE485C01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 878316996.04
+    },
+    {
+      "symbol": "PACEDIGITK",
+      "instrumentKey": "NSE_EQ|INE0S3G01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 869768241.97
+    },
+    {
+      "symbol": "SHILPAMED",
+      "instrumentKey": "NSE_EQ|INE790G01031",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 865679509.2
+    },
+    {
+      "symbol": "SHREEJISPG",
+      "instrumentKey": "NSE_EQ|INE1B6101010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 846846025.74
+    },
+    {
+      "symbol": "KRISHNADEF",
+      "instrumentKey": "NSE_EQ|INE0J5601015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 845964032.94
+    },
+    {
+      "symbol": "LUMINO",
+      "instrumentKey": "NSE_EQ|INE185Q01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 840367959.23
+    },
+    {
+      "symbol": "PARAGMILK",
+      "instrumentKey": "NSE_EQ|INE883N01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 824891718.37
+    },
+    {
+      "symbol": "MANALIPETC",
+      "instrumentKey": "NSE_EQ|INE201A01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 823405833.0
+    },
+    {
+      "symbol": "MARKSANS",
+      "instrumentKey": "NSE_EQ|INE750C01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 822004798.19
+    },
+    {
+      "symbol": "VESUVIUS",
+      "instrumentKey": "NSE_EQ|INE386A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 800667558.31
+    },
+    {
+      "symbol": "MANIPALHOS",
+      "instrumentKey": "NSE_EQ|INE459N01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 798728154.23
+    },
+    {
+      "symbol": "SSWL",
+      "instrumentKey": "NSE_EQ|INE802C01033",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 784389888.35
+    },
+    {
+      "symbol": "ESDS",
+      "instrumentKey": "NSE_EQ|INE0DRI01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 768606110.28
+    },
+    {
+      "symbol": "TEXRAIL",
+      "instrumentKey": "NSE_EQ|INE621L01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 763330741.59
+    },
+    {
+      "symbol": "MPIMANIPAL",
+      "instrumentKey": "NSE_EQ|INE241U01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 761050264.97
+    },
+    {
+      "symbol": "SBIFUNDS",
+      "instrumentKey": "NSE_EQ|INE640G01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 757261323.59
+    },
+    {
+      "symbol": "INDIAGLYCO",
+      "instrumentKey": "NSE_EQ|INE560A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 754346062.49
+    },
+    {
+      "symbol": "AEROFLEX",
+      "instrumentKey": "NSE_EQ|INE024001021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 746367958.98
+    },
+    {
+      "symbol": "PARAS",
+      "instrumentKey": "NSE_EQ|INE045601023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 737151246.74
+    },
+    {
+      "symbol": "KPIGREEN",
+      "instrumentKey": "NSE_EQ|INE542W01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 732187199.12
+    },
+    {
+      "symbol": "ORIENTTECH",
+      "instrumentKey": "NSE_EQ|INE0PPK01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 726845972.12
+    },
+    {
+      "symbol": "INOXINDIA",
+      "instrumentKey": "NSE_EQ|INE616N01034",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 711488396.26
+    },
+    {
+      "symbol": "ITDC",
+      "instrumentKey": "NSE_EQ|INE353K01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 703743218.88
+    },
+    {
+      "symbol": "SGFIN",
+      "instrumentKey": "NSE_EQ|INE618R01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 695331424.6
+    },
+    {
+      "symbol": "EDELWEISS",
+      "instrumentKey": "NSE_EQ|INE532F01054",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 693717762.92
+    },
+    {
+      "symbol": "RAIN",
+      "instrumentKey": "NSE_EQ|INE855B01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 686897856.87
+    },
+    {
+      "symbol": "JAMNAAUTO",
+      "instrumentKey": "NSE_EQ|INE039C01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 686490128.07
+    },
+    {
+      "symbol": "MARSONS",
+      "instrumentKey": "NSE_EQ|INE415B01044",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 684364705.14
+    },
+    {
+      "symbol": "KISSHT",
+      "instrumentKey": "NSE_EQ|INE12F801023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 683715287.23
+    },
+    {
+      "symbol": "ARCIL",
+      "instrumentKey": "NSE_EQ|INE148G01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 680142617.03
+    },
+    {
+      "symbol": "PRASOLCHEM",
+      "instrumentKey": "NSE_EQ|INE455U01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 674366190.78
+    },
+    {
+      "symbol": "JSLL",
+      "instrumentKey": "NSE_EQ|INE0J5801029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 668800044.18
+    },
+    {
+      "symbol": "PNGSREVA",
+      "instrumentKey": "NSE_EQ|INE1RDG01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 663096003.21
+    },
+    {
+      "symbol": "SOTL",
+      "instrumentKey": "NSE_EQ|INE035D01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 639468678.89
+    },
+    {
+      "symbol": "AARTIPHARM",
+      "instrumentKey": "NSE_EQ|INE0LRU01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 634714267.3
+    },
+    {
+      "symbol": "SOUTHBANK",
+      "instrumentKey": "NSE_EQ|INE683A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 631421950.7
+    },
+    {
+      "symbol": "MIDHANI",
+      "instrumentKey": "NSE_EQ|INE099Z01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 610793123.1
+    },
+    {
+      "symbol": "STLNETWORK",
+      "instrumentKey": "NSE_EQ|INE1VXE01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 610456266.09
+    },
+    {
+      "symbol": "TI",
+      "instrumentKey": "NSE_EQ|INE133E01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 610141448.19
+    },
+    {
+      "symbol": "GENUSPOWER",
+      "instrumentKey": "NSE_EQ|INE955D01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 609789947.38
+    },
+    {
+      "symbol": "MANINDS",
+      "instrumentKey": "NSE_EQ|INE993A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 607591408.58
+    },
+    {
+      "symbol": "PRICOLLTD",
+      "instrumentKey": "NSE_EQ|INE726V01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 596708393.18
+    },
+    {
+      "symbol": "EBGNG",
+      "instrumentKey": "NSE_EQ|INE18JU01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 593490668.32
+    },
+    {
+      "symbol": "VOGL",
+      "instrumentKey": "NSE_EQ|INE704J01044",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 586895872.08
+    },
+    {
+      "symbol": "SAMBHV",
+      "instrumentKey": "NSE_EQ|INE12NJ01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 586259524.36
+    },
+    {
+      "symbol": "PIXTRANS",
+      "instrumentKey": "NSE_EQ|INE751B01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 584555279.34
+    },
+    {
+      "symbol": "BLUESTONE",
+      "instrumentKey": "NSE_EQ|INE304W01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 576306889.26
+    },
+    {
+      "symbol": "KTKBANK",
+      "instrumentKey": "NSE_EQ|INE614B01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 572534069.87
+    },
+    {
+      "symbol": "GNFC",
+      "instrumentKey": "NSE_EQ|INE113A01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 566584955.25
+    },
+    {
+      "symbol": "ASTRAMICRO",
+      "instrumentKey": "NSE_EQ|INE386C01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 558701326.4
+    },
+    {
+      "symbol": "SEDEMAC",
+      "instrumentKey": "NSE_EQ|INE00XB01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 555674301.58
+    },
+    {
+      "symbol": "CLEANMAX",
+      "instrumentKey": "NSE_EQ|INE647U01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 550867953.44
+    },
+    {
+      "symbol": "VARMORA",
+      "instrumentKey": "NSE_EQ|INE0M5301040",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 544330685.87
+    },
+    {
+      "symbol": "SJS",
+      "instrumentKey": "NSE_EQ|INE284S01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 541901139.94
+    },
+    {
+      "symbol": "NAZARA",
+      "instrumentKey": "NSE_EQ|INE418L01047",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 531621589.1
+    },
+    {
+      "symbol": "CYIENTDLM",
+      "instrumentKey": "NSE_EQ|INE055S01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 528586540.79
+    },
+    {
+      "symbol": "DYNAMATECH",
+      "instrumentKey": "NSE_EQ|INE221B01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 527993730.4
+    },
+    {
+      "symbol": "IBULLSLTD",
+      "instrumentKey": "NSE_EQ|INE126M01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 527560815.49
+    },
+    {
+      "symbol": "RPTECH",
+      "instrumentKey": "NSE_EQ|INE0J1F01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 523388806.41
+    },
+    {
+      "symbol": "ATLANTAELE",
+      "instrumentKey": "NSE_EQ|INE0Z4F01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 521287725.68
+    },
+    {
+      "symbol": "UNIMECH",
+      "instrumentKey": "NSE_EQ|INE0U3I01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 520917263.38
+    },
+    {
+      "symbol": "YATHARTH",
+      "instrumentKey": "NSE_EQ|INE0JO301016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 513268158.42
+    },
+    {
+      "symbol": "QPOWER",
+      "instrumentKey": "NSE_EQ|INE0SII01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 508647163.5
+    },
+    {
+      "symbol": "PRIVISCL",
+      "instrumentKey": "NSE_EQ|INE959A01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 507160972.28
+    },
+    {
+      "symbol": "ROLEXRINGS",
+      "instrumentKey": "NSE_EQ|INE645S01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 505058055.67
+    },
+    {
+      "symbol": "KMEW",
+      "instrumentKey": "NSE_EQ|INE0CJD01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 502709173.92
+    },
+    {
+      "symbol": "MANORAMA",
+      "instrumentKey": "NSE_EQ|INE00VM01036",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 497591908.32
+    },
+    {
+      "symbol": "STYLEBAAZA",
+      "instrumentKey": "NSE_EQ|INE01FR01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 496241283.28
+    },
+    {
+      "symbol": "VIYASH",
+      "instrumentKey": "NSE_EQ|INE807F01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 494117102.7
+    },
+    {
+      "symbol": "SHIPROCKET",
+      "instrumentKey": "NSE_EQ|INE0FOO01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 476612311.1
+    },
+    {
+      "symbol": "KNACK",
+      "instrumentKey": "NSE_EQ|INE17QZ01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 473407097.42
+    },
+    {
+      "symbol": "JGCHEM",
+      "instrumentKey": "NSE_EQ|INE0MB501011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 472371282.73
+    },
+    {
+      "symbol": "GRWRHITECH",
+      "instrumentKey": "NSE_EQ|INE291A01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 470585073.0
+    },
+    {
+      "symbol": "LCL",
+      "instrumentKey": "NSE_EQ|INE0QJW01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 462973359.82
+    },
+    {
+      "symbol": "ROSSTECH",
+      "instrumentKey": "NSE_EQ|INE0OJW01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 461979466.14
+    },
+    {
+      "symbol": "ARFIN",
+      "instrumentKey": "NSE_EQ|INE784R01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 459432724.48
+    },
+    {
+      "symbol": "TIMETECHNO",
+      "instrumentKey": "NSE_EQ|INE508G01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 459207736.42
+    },
+    {
+      "symbol": "WALCHANNAG",
+      "instrumentKey": "NSE_EQ|INE711A01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 456587040.31
+    },
+    {
+      "symbol": "EPL",
+      "instrumentKey": "NSE_EQ|INE255A01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 455310118.02
+    },
+    {
+      "symbol": "ELLEN",
+      "instrumentKey": "NSE_EQ|INE236E01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 450016901.68
+    },
+    {
+      "symbol": "GUJENERGY",
+      "instrumentKey": "NSE_EQ|INE844O01030",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 440237803.88
+    },
+    {
+      "symbol": "PROTEAN",
+      "instrumentKey": "NSE_EQ|INE004A01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 438334327.76
+    },
+    {
+      "symbol": "INOXGREEN",
+      "instrumentKey": "NSE_EQ|INE510W01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 438317231.48
+    },
+    {
+      "symbol": "VEDPOWER",
+      "instrumentKey": "NSE_EQ|INE694L01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 432861439.71
+    },
+    {
+      "symbol": "MBEL",
+      "instrumentKey": "NSE_EQ|INE08N601015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 428600727.05
+    },
+    {
+      "symbol": "MOTISONS",
+      "instrumentKey": "NSE_EQ|INE0FRK01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 424976668.59
+    },
+    {
+      "symbol": "ONEPOINT",
+      "instrumentKey": "NSE_EQ|INE840Y01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 420376582.23
+    },
+    {
+      "symbol": "SHRIPISTON",
+      "instrumentKey": "NSE_EQ|INE526E01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 416287226.96
+    },
+    {
+      "symbol": "SUDARSCHEM",
+      "instrumentKey": "NSE_EQ|INE659A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 416155047.68
+    },
+    {
+      "symbol": "MAHSEAMLES",
+      "instrumentKey": "NSE_EQ|INE271B01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 408881562.68
+    },
+    {
+      "symbol": "RAMRAT",
+      "instrumentKey": "NSE_EQ|INE207E01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 387048242.74
+    },
+    {
+      "symbol": "SENORES",
+      "instrumentKey": "NSE_EQ|INE0RB801010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 384458426.86
+    },
+    {
+      "symbol": "GREAVESCOT",
+      "instrumentKey": "NSE_EQ|INE224A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 377902815.03
+    },
+    {
+      "symbol": "RAMBHAJO",
+      "instrumentKey": "NSE_EQ|INE1SJO01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 376679724.6
+    },
+    {
+      "symbol": "ANTELOPUS",
+      "instrumentKey": "NSE_EQ|INE818A01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 373824107.17
+    },
+    {
+      "symbol": "HTEL",
+      "instrumentKey": "NSE_EQ|INE0LEG01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 373653413.63
+    },
+    {
+      "symbol": "LUMAXTECH",
+      "instrumentKey": "NSE_EQ|INE872H01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 368103033.02
+    },
+    {
+      "symbol": "BAJAJHIND",
+      "instrumentKey": "NSE_EQ|INE306A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 362321099.95
+    },
+    {
+      "symbol": "ALICON",
+      "instrumentKey": "NSE_EQ|INE062D01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 359115488.6
+    },
+    {
+      "symbol": "EMUDHRA",
+      "instrumentKey": "NSE_EQ|INE01QM01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 353606902.72
+    },
+    {
+      "symbol": "CHEMPLASTS",
+      "instrumentKey": "NSE_EQ|INE488A01050",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 349714706.22
+    },
+    {
+      "symbol": "KRN",
+      "instrumentKey": "NSE_EQ|INE0Q3J01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 349176566.74
+    },
+    {
+      "symbol": "LXCHEM",
+      "instrumentKey": "NSE_EQ|INE576O01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 348076158.68
+    },
+    {
+      "symbol": "SATIN",
+      "instrumentKey": "NSE_EQ|INE836B01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 347879344.94
+    },
+    {
+      "symbol": "ELECTCAST",
+      "instrumentKey": "NSE_EQ|INE086A01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 346703969.91
+    },
+    {
+      "symbol": "CENTUM",
+      "instrumentKey": "NSE_EQ|INE320B01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 344897969.46
+    },
+    {
+      "symbol": "PTC",
+      "instrumentKey": "NSE_EQ|INE877F01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 334240826.18
+    },
+    {
+      "symbol": "JAYNECOIND",
+      "instrumentKey": "NSE_EQ|INE854B01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 332635605.86
+    },
+    {
+      "symbol": "SMLMAH",
+      "instrumentKey": "NSE_EQ|INE294B01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 331015759.9
+    },
+    {
+      "symbol": "TECHNOCRAF",
+      "instrumentKey": "NSE_EQ|INE1D0W01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 324554993.04
+    },
+    {
+      "symbol": "INDOAMIN",
+      "instrumentKey": "NSE_EQ|INE760F01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 321448176.37
+    },
+    {
+      "symbol": "ARIS",
+      "instrumentKey": "NSE_EQ|INE0H9P01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 319414577.19
+    },
+    {
+      "symbol": "GMMPFAUDLR",
+      "instrumentKey": "NSE_EQ|INE541A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 314324143.8
+    },
+    {
+      "symbol": "PANAMAPET",
+      "instrumentKey": "NSE_EQ|INE305C01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 313308169.53
+    },
+    {
+      "symbol": "SUNFLAG",
+      "instrumentKey": "NSE_EQ|INE947A01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 309872355.46
+    },
+    {
+      "symbol": "FILATEX",
+      "instrumentKey": "NSE_EQ|INE816B01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 309868662.47
+    },
+    {
+      "symbol": "TIMEX",
+      "instrumentKey": "NSE_EQ|INE064A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 303242855.87
+    },
+    {
+      "symbol": "LOKESHMACH",
+      "instrumentKey": "NSE_EQ|INE397H01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 302937037.97
+    },
+    {
+      "symbol": "RENUKA",
+      "instrumentKey": "NSE_EQ|INE087H01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 300991314.86
+    },
+    {
+      "symbol": "EPACKPEB",
+      "instrumentKey": "NSE_EQ|INE0MLS01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 296540891.05
+    },
+    {
+      "symbol": "GNA",
+      "instrumentKey": "NSE_EQ|INE934S01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 295562690.4
+    },
+    {
+      "symbol": "JTLIND",
+      "instrumentKey": "NSE_EQ|INE391J01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 293781568.05
+    },
+    {
+      "symbol": "BLUECLOUDS",
+      "instrumentKey": "NSE_EQ|INE373T01047",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 292187737.53
+    },
+    {
+      "symbol": "KWIL",
+      "instrumentKey": "NSE_EQ|INE2KCE01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 289567624.94
+    },
+    {
+      "symbol": "KERNEX",
+      "instrumentKey": "NSE_EQ|INE202H01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 289345633.14
+    },
+    {
+      "symbol": "SHANKESH",
+      "instrumentKey": "NSE_EQ|INE1WFC01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 285909464.7
+    },
+    {
+      "symbol": "SKIPPER",
+      "instrumentKey": "NSE_EQ|INE439E01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 285398712.9
+    },
+    {
+      "symbol": "RBA",
+      "instrumentKey": "NSE_EQ|INE07T201019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 284623285.25
+    },
+    {
+      "symbol": "LEAPIND",
+      "instrumentKey": "NSE_EQ|INE00GO01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 282940282.06
+    },
+    {
+      "symbol": "PRECWIRE",
+      "instrumentKey": "NSE_EQ|INE372C01037",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 281980047.47
+    },
+    {
+      "symbol": "AVADHSUGAR",
+      "instrumentKey": "NSE_EQ|INE349W01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 279771676.54
+    },
+    {
+      "symbol": "DMCC",
+      "instrumentKey": "NSE_EQ|INE505A01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 278791446.31
+    },
+    {
+      "symbol": "GPPL",
+      "instrumentKey": "NSE_EQ|INE517F01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 278786300.25
+    },
+    {
+      "symbol": "INNOVACAP",
+      "instrumentKey": "NSE_EQ|INE0DUT01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 278264703.6
+    },
+    {
+      "symbol": "VENUSPIPES",
+      "instrumentKey": "NSE_EQ|INE0JA001018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 275486712.28
+    },
+    {
+      "symbol": "KSHINTL",
+      "instrumentKey": "NSE_EQ|INE987S01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 274950559.0
+    },
+    {
+      "symbol": "THANGAMAYL",
+      "instrumentKey": "NSE_EQ|INE085J01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 274389740.4
+    },
+    {
+      "symbol": "STAR",
+      "instrumentKey": "NSE_EQ|INE939A01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 273568320.66
+    },
+    {
+      "symbol": "ICIL",
+      "instrumentKey": "NSE_EQ|INE483B01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 270116856.76
+    },
+    {
+      "symbol": "DEEPINDS",
+      "instrumentKey": "NSE_EQ|INE0FHS01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 269915047.74
+    },
+    {
+      "symbol": "DHAMPURSUG",
+      "instrumentKey": "NSE_EQ|INE041A01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 269286798.71
+    },
+    {
+      "symbol": "GANDHAR",
+      "instrumentKey": "NSE_EQ|INE717W01049",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 268316749.73
+    },
+    {
+      "symbol": "ARVIND",
+      "instrumentKey": "NSE_EQ|INE034A01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 268284969.23
+    },
+    {
+      "symbol": "GALAXYSURF",
+      "instrumentKey": "NSE_EQ|INE600K01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 266343280.98
+    },
+    {
+      "symbol": "TVSELECT",
+      "instrumentKey": "NSE_EQ|INE236G01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 265292630.38
+    },
+    {
+      "symbol": "BLACKBUCK",
+      "instrumentKey": "NSE_EQ|INE0UIZ01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 265262755.22
+    },
+    {
+      "symbol": "SHAREINDIA",
+      "instrumentKey": "NSE_EQ|INE932X01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 265170859.67
+    },
+    {
+      "symbol": "LLOYDSENT",
+      "instrumentKey": "NSE_EQ|INE080I01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 264364384.17
+    },
+    {
+      "symbol": "PANORAMA",
+      "instrumentKey": "NSE_EQ|INE258R01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 263899807.41
+    },
+    {
+      "symbol": "SHAILY",
+      "instrumentKey": "NSE_EQ|INE151G01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 263861128.18
+    },
+    {
+      "symbol": "KIRIINDUS",
+      "instrumentKey": "NSE_EQ|INE415I01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 263852297.14
+    },
+    {
+      "symbol": "HCC",
+      "instrumentKey": "NSE_EQ|INE549A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 263452336.83
+    },
+    {
+      "symbol": "RPEL",
+      "instrumentKey": "NSE_EQ|INE912T01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 262824605.76
+    },
+    {
+      "symbol": "NEOGEN",
+      "instrumentKey": "NSE_EQ|INE136S01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 260351099.24
+    },
+    {
+      "symbol": "WHEELS",
+      "instrumentKey": "NSE_EQ|INE715A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 257910680.74
+    },
+    {
+      "symbol": "DCBBANK",
+      "instrumentKey": "NSE_EQ|INE503A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 256628871.85
+    },
+    {
+      "symbol": "MUNJALAU",
+      "instrumentKey": "NSE_EQ|INE672B01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 255568784.46
+    },
+    {
+      "symbol": "JSFB",
+      "instrumentKey": "NSE_EQ|INE953L01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 255210926.61
+    },
+    {
+      "symbol": "ASTEC",
+      "instrumentKey": "NSE_EQ|INE563J01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 254227078.96
+    },
+    {
+      "symbol": "UNIVCABLES",
+      "instrumentKey": "NSE_EQ|INE279A01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 253545951.92
+    },
+    {
+      "symbol": "VOEPL",
+      "instrumentKey": "NSE_EQ|INE0I0T01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 252809014.54
+    },
+    {
+      "symbol": "JASH",
+      "instrumentKey": "NSE_EQ|INE039O01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 251316000.25
+    },
+    {
+      "symbol": "BALUFORGE",
+      "instrumentKey": "NSE_EQ|INE011E01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 251175053.97
+    },
+    {
+      "symbol": "MTNL",
+      "instrumentKey": "NSE_EQ|INE153A01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 250262907.56
+    },
+    {
+      "symbol": "QUADFUTURE",
+      "instrumentKey": "NSE_EQ|INE0LRY01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 250101070.56
+    },
+    {
+      "symbol": "AEROPLANE",
+      "instrumentKey": "NSE_EQ|INE05TO01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 248786319.73
+    },
+    {
+      "symbol": "FERMENTA",
+      "instrumentKey": "NSE_EQ|INE225B01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 247832349.55
+    },
+    {
+      "symbol": "VIKRAMSOLR",
+      "instrumentKey": "NSE_EQ|INE078V01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 245457316.33
+    },
+    {
+      "symbol": "CMPDI",
+      "instrumentKey": "NSE_EQ|INE05HV01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 244422284.53
+    },
+    {
+      "symbol": "RUBICON",
+      "instrumentKey": "NSE_EQ|INE506V01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 244297441.94
+    },
+    {
+      "symbol": "HAPPYFORGE",
+      "instrumentKey": "NSE_EQ|INE330T01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 240908170.68
+    },
+    {
+      "symbol": "JNPR",
+      "instrumentKey": "NSE_EQ|INE05C901015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 239511559.6
+    },
+    {
+      "symbol": "SHAKTIPUMP",
+      "instrumentKey": "NSE_EQ|INE908D01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 239413095.99
+    },
+    {
+      "symbol": "SUNSHINE",
+      "instrumentKey": "NSE_EQ|INE1B3O01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 236740891.01
+    },
+    {
+      "symbol": "FINEORG",
+      "instrumentKey": "NSE_EQ|INE686Y01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 234217341.4
+    },
+    {
+      "symbol": "RATEGAIN",
+      "instrumentKey": "NSE_EQ|INE0CLI01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 233373694.69
+    },
+    {
+      "symbol": "CONFIPET",
+      "instrumentKey": "NSE_EQ|INE552D01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 231881377.02
+    },
+    {
+      "symbol": "SENCO",
+      "instrumentKey": "NSE_EQ|INE602W01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 231294857.35
+    },
+    {
+      "symbol": "AHCL",
+      "instrumentKey": "NSE_EQ|INE0Y8W01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 230446447.22
+    },
+    {
+      "symbol": "SETL",
+      "instrumentKey": "NSE_EQ|INE0M4D01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 228783767.08
+    },
+    {
+      "symbol": "NRBBEARING",
+      "instrumentKey": "NSE_EQ|INE349A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 228083922.66
+    },
+    {
+      "symbol": "ARSSBL",
+      "instrumentKey": "NSE_EQ|INE549H01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 227907840.16
+    },
+    {
+      "symbol": "KRISHANA",
+      "instrumentKey": "NSE_EQ|INE506W01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 227595491.5
+    },
+    {
+      "symbol": "PNGJL",
+      "instrumentKey": "NSE_EQ|INE953R01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 226995308.42
+    },
+    {
+      "symbol": "SHRINGARMS",
+      "instrumentKey": "NSE_EQ|INE1B3L01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 225931157.71
+    },
+    {
+      "symbol": "AMAGI",
+      "instrumentKey": "NSE_EQ|INE121R01077",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 224168037.75
+    },
+    {
+      "symbol": "NORTHARC",
+      "instrumentKey": "NSE_EQ|INE850M01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 223997892.31
+    },
+    {
+      "symbol": "TATVA",
+      "instrumentKey": "NSE_EQ|INE0GK401011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 219370620.54
+    },
+    {
+      "symbol": "NELCAST",
+      "instrumentKey": "NSE_EQ|INE189I01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 219341825.0
+    },
+    {
+      "symbol": "MOSCHIP",
+      "instrumentKey": "NSE_EQ|INE935B01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 217745025.57
+    },
+    {
+      "symbol": "DALMIASUG",
+      "instrumentKey": "NSE_EQ|INE495A01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 216813649.02
+    },
+    {
+      "symbol": "PRIORITY",
+      "instrumentKey": "NSE_EQ|INE15EH01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 216735882.68
+    },
+    {
+      "symbol": "ALOKINDS",
+      "instrumentKey": "NSE_EQ|INE270A01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 213723462.35
+    },
+    {
+      "symbol": "POWERMECH",
+      "instrumentKey": "NSE_EQ|INE211R01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 213152911.26
+    },
+    {
+      "symbol": "SBCL",
+      "instrumentKey": "NSE_EQ|INE386D01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 210903020.02
+    },
+    {
+      "symbol": "VARROC",
+      "instrumentKey": "NSE_EQ|INE665L01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 209738900.69
+    },
+    {
+      "symbol": "SUPRIYA",
+      "instrumentKey": "NSE_EQ|INE07RO01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 207748634.36
+    },
+    {
+      "symbol": "DECNGOLD",
+      "instrumentKey": "NSE_EQ|INE945F01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 207683315.55
+    },
+    {
+      "symbol": "PARKHOSPS",
+      "instrumentKey": "NSE_EQ|INE119201023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 206969033.42
+    },
+    {
+      "symbol": "XTRANET",
+      "instrumentKey": "NSE_EQ|INE0NG701011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 206253361.94
+    },
+    {
+      "symbol": "VIDYAWIRES",
+      "instrumentKey": "NSE_EQ|INE14UN01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 206052722.43
+    },
+    {
+      "symbol": "GVPIL",
+      "instrumentKey": "NSE_EQ|INE878A01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 206036262.67
+    },
+    {
+      "symbol": "RELIGARE",
+      "instrumentKey": "NSE_EQ|INE621H01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 205950669.89
+    },
+    {
+      "symbol": "IDEAFORGE",
+      "instrumentKey": "NSE_EQ|INE349Y01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 204908535.07
+    },
+    {
+      "symbol": "LASERPOWER",
+      "instrumentKey": "NSE_EQ|INE17IR01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 203334808.94
+    },
+    {
+      "symbol": "MUKANDLTD",
+      "instrumentKey": "NSE_EQ|INE304A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 201335505.5
+    },
+    {
+      "symbol": "INDSWFTLAB",
+      "instrumentKey": "NSE_EQ|INE915B01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 200765876.44
+    },
+    {
+      "symbol": "PRANAV",
+      "instrumentKey": "NSE_EQ|INE0H4201019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 199684524.86
+    },
+    {
+      "symbol": "SUDEEPPHRM",
+      "instrumentKey": "NSE_EQ|INE0QPI01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 199682276.18
+    },
+    {
+      "symbol": "GCSL",
+      "instrumentKey": "NSE_EQ|INE199P01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 198979372.83
+    },
+    {
+      "symbol": "SPARC",
+      "instrumentKey": "NSE_EQ|INE232I01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 198279664.91
+    },
+    {
+      "symbol": "BECTORFOOD",
+      "instrumentKey": "NSE_EQ|INE495P01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 195475517.33
+    },
+    {
+      "symbol": "AVANTIFEED",
+      "instrumentKey": "NSE_EQ|INE871C01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 195332425.64
+    },
+    {
+      "symbol": "GMRP&UI",
+      "instrumentKey": "NSE_EQ|INE0CU601026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 194941020.17
+    },
+    {
+      "symbol": "KIRLOSBROS",
+      "instrumentKey": "NSE_EQ|INE732A01036",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 194633635.74
+    },
+    {
+      "symbol": "GOODLUCK",
+      "instrumentKey": "NSE_EQ|INE127I01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 194225202.35
+    },
+    {
+      "symbol": "TURTLEMINT",
+      "instrumentKey": "NSE_EQ|INE0OC301013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 193490418.06
+    },
+    {
+      "symbol": "SANGHVIMOV",
+      "instrumentKey": "NSE_EQ|INE989A01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 193211586.09
+    },
+    {
+      "symbol": "METROPOLIS",
+      "instrumentKey": "NSE_EQ|INE112L01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 192741251.39
+    },
+    {
+      "symbol": "IIFLCAPS",
+      "instrumentKey": "NSE_EQ|INE489L01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 192640797.98
+    },
+    {
+      "symbol": "ARTEMISMED",
+      "instrumentKey": "NSE_EQ|INE025R01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 192240064.58
+    },
+    {
+      "symbol": "VINDHYATEL",
+      "instrumentKey": "NSE_EQ|INE707A01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 191900628.64
+    },
+    {
+      "symbol": "APLLTD",
+      "instrumentKey": "NSE_EQ|INE901L01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 191480642.86
+    },
+    {
+      "symbol": "KROSS",
+      "instrumentKey": "NSE_EQ|INE0O6601022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 190691896.99
+    },
+    {
+      "symbol": "PGIL",
+      "instrumentKey": "NSE_EQ|INE940H01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 189424631.12
+    },
+    {
+      "symbol": "KMCSHIL",
+      "instrumentKey": "NSE_EQ|INE879K01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 189405925.86
+    },
+    {
+      "symbol": "RIR",
+      "instrumentKey": "NSE_EQ|INE302D01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 187978231.09
+    },
+    {
+      "symbol": "VALIANTORG",
+      "instrumentKey": "NSE_EQ|INE565V01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 187911926.53
+    },
+    {
+      "symbol": "SWSOLAR",
+      "instrumentKey": "NSE_EQ|INE00M201021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 187905023.26
+    },
+    {
+      "symbol": "SGMART",
+      "instrumentKey": "NSE_EQ|INE385F01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 186556289.02
+    },
+    {
+      "symbol": "VINCOFE",
+      "instrumentKey": "NSE_EQ|INE498Q01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 184755191.82
+    },
+    {
+      "symbol": "SKYWAYS",
+      "instrumentKey": "NSE_EQ|INE0PX301025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 183025379.11
+    },
+    {
+      "symbol": "TMB",
+      "instrumentKey": "NSE_EQ|INE668A01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 182808537.41
+    },
+    {
+      "symbol": "GENESYS",
+      "instrumentKey": "NSE_EQ|INE727B01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 182627565.33
+    },
+    {
+      "symbol": "RHETAN",
+      "instrumentKey": "NSE_EQ|INE0KKN01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 182450123.91
+    },
+    {
+      "symbol": "DHANBANK",
+      "instrumentKey": "NSE_EQ|INE680A01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 181558705.35
+    },
+    {
+      "symbol": "JISLJALEQS",
+      "instrumentKey": "NSE_EQ|INE175A01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 181325167.69
+    },
+    {
+      "symbol": "ASKAUTOLTD",
+      "instrumentKey": "NSE_EQ|INE491J01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 180963946.39
+    },
+    {
+      "symbol": "CCAVENUE",
+      "instrumentKey": "NSE_EQ|INE483S01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 179447752.14
+    },
+    {
+      "symbol": "MUFIN",
+      "instrumentKey": "NSE_EQ|INE08KJ01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 178800400.17
+    },
+    {
+      "symbol": "5PAISA",
+      "instrumentKey": "NSE_EQ|INE618L01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 178054136.73
+    },
+    {
+      "symbol": "FRACTAL",
+      "instrumentKey": "NSE_EQ|INE212S01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 176751093.29
+    },
+    {
+      "symbol": "BIRLACABLE",
+      "instrumentKey": "NSE_EQ|INE800A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 176707254.17
+    },
+    {
+      "symbol": "ALIVUS",
+      "instrumentKey": "NSE_EQ|INE03Q201024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 176255110.36
+    },
+    {
+      "symbol": "PREMEXPLN",
+      "instrumentKey": "NSE_EQ|INE863B01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 175991680.5
+    },
+    {
+      "symbol": "HORIZONIND",
+      "instrumentKey": "NSE_EQ|INE685T01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 175978077.05
+    },
+    {
+      "symbol": "WELENT",
+      "instrumentKey": "NSE_EQ|INE625G01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 175777636.27
+    },
+    {
+      "symbol": "TAALTECH",
+      "instrumentKey": "NSE_EQ|INE524T01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 175057717.66
+    },
+    {
+      "symbol": "SKFINDUS",
+      "instrumentKey": "NSE_EQ|INE2J8701016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 171377562.96
+    },
+    {
+      "symbol": "SMSPHARMA",
+      "instrumentKey": "NSE_EQ|INE812G01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 171281573.52
+    },
+    {
+      "symbol": "NEPHROPLUS",
+      "instrumentKey": "NSE_EQ|INE428V01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 168104997.32
+    },
+    {
+      "symbol": "LCCPROJECT",
+      "instrumentKey": "NSE_EQ|INE1FPN01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 167747983.12
+    },
+    {
+      "symbol": "KENNAMET",
+      "instrumentKey": "NSE_EQ|INE717A01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 167552618.56
+    },
+    {
+      "symbol": "ASHAPURMIN",
+      "instrumentKey": "NSE_EQ|INE348A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 167534601.84
+    },
+    {
+      "symbol": "CAPILLARY",
+      "instrumentKey": "NSE_EQ|INE0ILV01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 167441795.27
+    },
+    {
+      "symbol": "BORORENEW",
+      "instrumentKey": "NSE_EQ|INE666D01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 167268002.61
+    },
+    {
+      "symbol": "ENTERO",
+      "instrumentKey": "NSE_EQ|INE010601016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 166959386.76
+    },
+    {
+      "symbol": "MANYAVAR",
+      "instrumentKey": "NSE_EQ|INE825V01034",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 166372304.93
+    },
+    {
+      "symbol": "ETHOSLTD",
+      "instrumentKey": "NSE_EQ|INE04TZ01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 165844021.76
+    },
+    {
+      "symbol": "SUVEN",
+      "instrumentKey": "NSE_EQ|INE495B01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 164450728.08
+    },
+    {
+      "symbol": "AVANTEL",
+      "instrumentKey": "NSE_EQ|INE005B01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 160739086.7
+    },
+    {
+      "symbol": "GOKEX",
+      "instrumentKey": "NSE_EQ|INE887G01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 160057009.75
+    },
+    {
+      "symbol": "WSTCSTPAPR",
+      "instrumentKey": "NSE_EQ|INE976A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 159857631.49
+    },
+    {
+      "symbol": "BAJAJCON",
+      "instrumentKey": "NSE_EQ|INE933K01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 159597813.12
+    },
+    {
+      "symbol": "PRAJIND",
+      "instrumentKey": "NSE_EQ|INE074A01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 158929908.62
+    },
+    {
+      "symbol": "ULTRAMAR",
+      "instrumentKey": "NSE_EQ|INE405A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 156466570.26
+    },
+    {
+      "symbol": "KUSUMGAR",
+      "instrumentKey": "NSE_EQ|INE0ISX01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 154926662.08
+    },
+    {
+      "symbol": "IXIGO",
+      "instrumentKey": "NSE_EQ|INE0HV901016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 153766451.02
+    },
+    {
+      "symbol": "NPST",
+      "instrumentKey": "NSE_EQ|INE0FFK01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 153747655.28
+    },
+    {
+      "symbol": "ZAGGLE",
+      "instrumentKey": "NSE_EQ|INE07K301024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 152867530.62
+    },
+    {
+      "symbol": "TRIVENI",
+      "instrumentKey": "NSE_EQ|INE256C01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 151545862.82
+    },
+    {
+      "symbol": "KRBL",
+      "instrumentKey": "NSE_EQ|INE001B01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 151287091.01
+    },
+    {
+      "symbol": "BOSCH-HCIL",
+      "instrumentKey": "NSE_EQ|INE782A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 151150479.02
+    },
+    {
+      "symbol": "NELCO",
+      "instrumentKey": "NSE_EQ|INE045B01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 150673155.58
+    },
+    {
+      "symbol": "CMLL",
+      "instrumentKey": "NSE_EQ|INE11XY01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 150656750.88
+    },
+    {
+      "symbol": "NOVARTIND",
+      "instrumentKey": "NSE_EQ|INE234A01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 149924668.36
+    },
+    {
+      "symbol": "SUBEXLTD",
+      "instrumentKey": "NSE_EQ|INE754A01055",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 149740267.69
+    },
+    {
+      "symbol": "SOLARA",
+      "instrumentKey": "NSE_EQ|INE624Z01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 148970792.0
+    },
+    {
+      "symbol": "ICRA",
+      "instrumentKey": "NSE_EQ|INE725G01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 148694866.46
+    },
+    {
+      "symbol": "AWFIS",
+      "instrumentKey": "NSE_EQ|INE108V01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 148649973.48
+    },
+    {
+      "symbol": "WANBURY",
+      "instrumentKey": "NSE_EQ|INE107F01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 147723737.99
+    },
+    {
+      "symbol": "MANINFRA",
+      "instrumentKey": "NSE_EQ|INE949H01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 144410983.12
+    },
+    {
+      "symbol": "PREMIERPOL",
+      "instrumentKey": "NSE_EQ|INE309M01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 143563934.37
+    },
+    {
+      "symbol": "MASTEK",
+      "instrumentKey": "NSE_EQ|INE759A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 142559535.44
+    },
+    {
+      "symbol": "LANDMARK",
+      "instrumentKey": "NSE_EQ|INE559R01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 142377010.78
+    },
+    {
+      "symbol": "BHARATCOAL",
+      "instrumentKey": "NSE_EQ|INE05XR01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 142074693.74
+    },
+    {
+      "symbol": "CMSINFO",
+      "instrumentKey": "NSE_EQ|INE925R01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 141036876.51
+    },
+    {
+      "symbol": "VOLTAMP",
+      "instrumentKey": "NSE_EQ|INE540H01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 140888886.4
+    },
+    {
+      "symbol": "CARYSIL",
+      "instrumentKey": "NSE_EQ|INE482D01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 140652998.2
+    },
+    {
+      "symbol": "NOCIL",
+      "instrumentKey": "NSE_EQ|INE163A01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 140288143.06
+    },
+    {
+      "symbol": "PGHH",
+      "instrumentKey": "NSE_EQ|INE179A01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 139840906.6
+    },
+    {
+      "symbol": "WEBELSOLAR",
+      "instrumentKey": "NSE_EQ|INE855C01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 138321150.04
+    },
+    {
+      "symbol": "TIPSMUSIC",
+      "instrumentKey": "NSE_EQ|INE716B01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 137565410.24
+    },
+    {
+      "symbol": "PASHUPATI",
+      "instrumentKey": "NSE_EQ|INE124Y01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 137042981.46
+    },
+    {
+      "symbol": "RSL",
+      "instrumentKey": "NSE_EQ|INE313L01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 135358339.11
+    },
+    {
+      "symbol": "JSWHL",
+      "instrumentKey": "NSE_EQ|INE824G01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 135276234.2
+    },
+    {
+      "symbol": "AYE",
+      "instrumentKey": "NSE_EQ|INE501X01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 135081803.45
+    },
+    {
+      "symbol": "ZOTA",
+      "instrumentKey": "NSE_EQ|INE358U01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 134665505.64
+    },
+    {
+      "symbol": "FIEMIND",
+      "instrumentKey": "NSE_EQ|INE737H01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 133326375.5
+    },
+    {
+      "symbol": "BOROLTD",
+      "instrumentKey": "NSE_EQ|INE02PY01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 133168943.27
+    },
+    {
+      "symbol": "FREDUN",
+      "instrumentKey": "NSE_EQ|INE194R01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 133068867.62
+    },
+    {
+      "symbol": "EIEL",
+      "instrumentKey": "NSE_EQ|INE0LLY01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 132945706.17
+    },
+    {
+      "symbol": "YASHO",
+      "instrumentKey": "NSE_EQ|INE616Z01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 132007614.96
+    },
+    {
+      "symbol": "VGUARD",
+      "instrumentKey": "NSE_EQ|INE951I01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 131548376.27
+    },
+    {
+      "symbol": "RAYMONDLSL",
+      "instrumentKey": "NSE_EQ|INE02ID01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 131434380.36
+    },
+    {
+      "symbol": "HUBTOWN",
+      "instrumentKey": "NSE_EQ|INE703H01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 130798901.91
+    },
+    {
+      "symbol": "BEPL",
+      "instrumentKey": "NSE_EQ|INE922A01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 129904861.34
+    },
+    {
+      "symbol": "MSTCLTD",
+      "instrumentKey": "NSE_EQ|INE255X01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 128712536.14
+    },
+    {
+      "symbol": "AKUMS",
+      "instrumentKey": "NSE_EQ|INE09XN01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 128543878.7
+    },
+    {
+      "symbol": "DIVGIITTS",
+      "instrumentKey": "NSE_EQ|INE753U01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 128482749.0
+    },
+    {
+      "symbol": "AGARWALEYE",
+      "instrumentKey": "NSE_EQ|INE943P01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 127998842.68
+    },
+    {
+      "symbol": "MBAPL",
+      "instrumentKey": "NSE_EQ|INE900L01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 127259319.82
+    },
+    {
+      "symbol": "SUNDRMFAST",
+      "instrumentKey": "NSE_EQ|INE387A01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 126569332.36
+    },
+    {
+      "symbol": "CSBBANK",
+      "instrumentKey": "NSE_EQ|INE679A01013",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 126473589.09
+    },
+    {
+      "symbol": "HAPPSTMNDS",
+      "instrumentKey": "NSE_EQ|INE419U01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 126335191.21
+    },
+    {
+      "symbol": "DWARKESH",
+      "instrumentKey": "NSE_EQ|INE366A01041",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 125892211.96
+    },
+    {
+      "symbol": "KOPRAN",
+      "instrumentKey": "NSE_EQ|INE082A01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 125146790.11
+    },
+    {
+      "symbol": "DREDGECORP",
+      "instrumentKey": "NSE_EQ|INE506A01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 124827861.73
+    },
+    {
+      "symbol": "JKPAPER",
+      "instrumentKey": "NSE_EQ|INE789E01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 122653949.8
+    },
+    {
+      "symbol": "GSPCROP",
+      "instrumentKey": "NSE_EQ|INE713R01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 121357133.44
+    },
+    {
+      "symbol": "GODREJAGRO",
+      "instrumentKey": "NSE_EQ|INE850D01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 120989348.01
+    },
+    {
+      "symbol": "THYROCARE",
+      "instrumentKey": "NSE_EQ|INE594H01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 120933506.9
+    },
+    {
+      "symbol": "TANLA",
+      "instrumentKey": "NSE_EQ|INE483C01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 120611021.2
+    },
+    {
+      "symbol": "AVL",
+      "instrumentKey": "NSE_EQ|INE679V01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 120353158.36
+    },
+    {
+      "symbol": "FEDFINA",
+      "instrumentKey": "NSE_EQ|INE007N01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 119834282.45
+    },
+    {
+      "symbol": "SURYAROSNI",
+      "instrumentKey": "NSE_EQ|INE335A01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 119143950.22
+    },
+    {
+      "symbol": "63MOONS",
+      "instrumentKey": "NSE_EQ|INE111B01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 118481808.97
+    },
+    {
+      "symbol": "ACI",
+      "instrumentKey": "NSE_EQ|INE128X01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 118464097.78
+    },
+    {
+      "symbol": "GSFC",
+      "instrumentKey": "NSE_EQ|INE026A01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 117894979.02
+    },
+    {
+      "symbol": "MACPOWER",
+      "instrumentKey": "NSE_EQ|INE155Z01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 117581850.28
+    },
+    {
+      "symbol": "HITECH",
+      "instrumentKey": "NSE_EQ|INE106T01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 117314175.81
+    },
+    {
+      "symbol": "KNRCON",
+      "instrumentKey": "NSE_EQ|INE634I01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 117306368.73
+    },
+    {
+      "symbol": "PENIND",
+      "instrumentKey": "NSE_EQ|INE932A01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 115076329.23
+    },
+    {
+      "symbol": "AURIONPRO",
+      "instrumentKey": "NSE_EQ|INE132H01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 114398933.12
+    },
+    {
+      "symbol": "SAMHI",
+      "instrumentKey": "NSE_EQ|INE08U801020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 113489552.18
+    },
+    {
+      "symbol": "EIMCOELECO",
+      "instrumentKey": "NSE_EQ|INE158B01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 113301408.04
+    },
+    {
+      "symbol": "POWERICA",
+      "instrumentKey": "NSE_EQ|INE921L01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 113277462.3
+    },
+    {
+      "symbol": "GOLDIAM",
+      "instrumentKey": "NSE_EQ|INE025B01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 111916516.4
+    },
+    {
+      "symbol": "UTLSOLAR",
+      "instrumentKey": "NSE_EQ|INE12UR01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 111237133.72
+    },
+    {
+      "symbol": "HIKAL",
+      "instrumentKey": "NSE_EQ|INE475B01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 110933976.06
+    },
+    {
+      "symbol": "CORDELIA",
+      "instrumentKey": "NSE_EQ|INE0LZF01039",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 110775820.46
+    },
+    {
+      "symbol": "BHAGERIA",
+      "instrumentKey": "NSE_EQ|INE354C01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 110526129.19
+    },
+    {
+      "symbol": "RCF",
+      "instrumentKey": "NSE_EQ|INE027A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 110296924.79
+    },
+    {
+      "symbol": "GAEL",
+      "instrumentKey": "NSE_EQ|INE036B01030",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 110052141.6
+    },
+    {
+      "symbol": "ARDEE",
+      "instrumentKey": "NSE_EQ|INE0XNF01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 109685601.97
+    },
+    {
+      "symbol": "JINDWORLD",
+      "instrumentKey": "NSE_EQ|INE247D01039",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 109184549.38
+    },
+    {
+      "symbol": "SAIPARENT",
+      "instrumentKey": "NSE_EQ|INE0H9F01037",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 108816737.04
+    },
+    {
+      "symbol": "DEEDEV",
+      "instrumentKey": "NSE_EQ|INE841L01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 108636447.06
+    },
+    {
+      "symbol": "POCL",
+      "instrumentKey": "NSE_EQ|INE063E01061",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 108434251.4
+    },
+    {
+      "symbol": "TEMBO",
+      "instrumentKey": "NSE_EQ|INE869Y01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 108175669.49
+    },
+    {
+      "symbol": "QUESS",
+      "instrumentKey": "NSE_EQ|INE615P01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 108054949.52
+    },
+    {
+      "symbol": "KSCL",
+      "instrumentKey": "NSE_EQ|INE455I01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 107952503.49
+    },
+    {
+      "symbol": "DIFFNKG",
+      "instrumentKey": "NSE_EQ|INE184O01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 107229295.17
+    },
+    {
+      "symbol": "PNCINFRA",
+      "instrumentKey": "NSE_EQ|INE195J01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 105864489.14
+    },
+    {
+      "symbol": "ASTRAZEN",
+      "instrumentKey": "NSE_EQ|INE203A01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 105831468.7
+    },
+    {
+      "symbol": "TCIEXP",
+      "instrumentKey": "NSE_EQ|INE586V01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 104820044.68
+    },
+    {
+      "symbol": "TVSHLTD",
+      "instrumentKey": "NSE_EQ|INE105A01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 104506729.2
+    },
+    {
+      "symbol": "KINGFA",
+      "instrumentKey": "NSE_EQ|INE473D01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 104392015.8
+    },
+    {
+      "symbol": "KANSAINER",
+      "instrumentKey": "NSE_EQ|INE531A01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 104290105.77
+    },
+    {
+      "symbol": "GREENPLY",
+      "instrumentKey": "NSE_EQ|INE461C01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 103433129.58
+    },
+    {
+      "symbol": "RATNAMANI",
+      "instrumentKey": "NSE_EQ|INE703B01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 102502525.58
+    },
+    {
+      "symbol": "SAKAR",
+      "instrumentKey": "NSE_EQ|INE732S01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 102402580.4
+    },
+    {
+      "symbol": "CEINSYS",
+      "instrumentKey": "NSE_EQ|INE016Q01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 102353811.69
+    },
+    {
+      "symbol": "DYCL",
+      "instrumentKey": "NSE_EQ|INE600Y01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 102273821.96
+    },
+    {
+      "symbol": "HGINFRA",
+      "instrumentKey": "NSE_EQ|INE926X01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 101645540.94
+    },
+    {
+      "symbol": "IMFA",
+      "instrumentKey": "NSE_EQ|INE919H01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 100684913.98
+    },
+    {
+      "symbol": "SEAMECLTD",
+      "instrumentKey": "NSE_EQ|INE497B01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 100328718.32
+    },
+    {
+      "symbol": "INDOCO",
+      "instrumentKey": "NSE_EQ|INE873D01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 100155014.45
+    },
+    {
+      "symbol": "NIBE",
+      "instrumentKey": "NSE_EQ|INE149O01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 100061272.46
+    },
+    {
+      "symbol": "EMBDL",
+      "instrumentKey": "NSE_EQ|INE069I01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 98760273.42
+    },
+    {
+      "symbol": "MOIL",
+      "instrumentKey": "NSE_EQ|INE490G01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 98220017.19
+    },
+    {
+      "symbol": "ORCHPHARMA",
+      "instrumentKey": "NSE_EQ|INE191A01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 97874954.5
+    },
+    {
+      "symbol": "UTKARSHBNK",
+      "instrumentKey": "NSE_EQ|INE735W01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 96871705.34
+    },
+    {
+      "symbol": "STOVEKRAFT",
+      "instrumentKey": "NSE_EQ|INE00IN01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 96856542.25
+    },
+    {
+      "symbol": "STYLAMIND",
+      "instrumentKey": "NSE_EQ|INE239C01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 96759241.72
+    },
+    {
+      "symbol": "ALGOQUANT",
+      "instrumentKey": "NSE_EQ|INE598D01035",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 96758986.56
+    },
+    {
+      "symbol": "RISHABH",
+      "instrumentKey": "NSE_EQ|INE0N2P01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 96450814.43
+    },
+    {
+      "symbol": "COMSYN",
+      "instrumentKey": "NSE_EQ|INE073V01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95741715.84
+    },
+    {
+      "symbol": "GUJTHEM",
+      "instrumentKey": "NSE_EQ|INE942C01045",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95706157.4
+    },
+    {
+      "symbol": "ARVINDFASN",
+      "instrumentKey": "NSE_EQ|INE955V01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95686528.2
+    },
+    {
+      "symbol": "RICOAUTO",
+      "instrumentKey": "NSE_EQ|INE209B01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95536768.39
+    },
+    {
+      "symbol": "ESTER",
+      "instrumentKey": "NSE_EQ|INE778B01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95220187.17
+    },
+    {
+      "symbol": "TRUALT",
+      "instrumentKey": "NSE_EQ|INE0MWH01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 95165239.62
+    },
+    {
+      "symbol": "TNPETRO",
+      "instrumentKey": "NSE_EQ|INE148A01019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94398187.09
+    },
+    {
+      "symbol": "KDDL",
+      "instrumentKey": "NSE_EQ|INE291D01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94345805.42
+    },
+    {
+      "symbol": "EQUITASBNK",
+      "instrumentKey": "NSE_EQ|INE063P01018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94287067.42
+    },
+    {
+      "symbol": "HERITGFOOD",
+      "instrumentKey": "NSE_EQ|INE978A01027",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94130064.64
+    },
+    {
+      "symbol": "ASIANENE",
+      "instrumentKey": "NSE_EQ|INE276G01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94003913.91
+    },
+    {
+      "symbol": "KPL",
+      "instrumentKey": "NSE_EQ|INE552U01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 94003853.94
+    },
+    {
+      "symbol": "MIDWESTLTD",
+      "instrumentKey": "NSE_EQ|INE0XAD01024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 93907898.91
+    },
+    {
+      "symbol": "JAYBARMARU",
+      "instrumentKey": "NSE_EQ|INE571B01036",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 93453112.98
+    },
+    {
+      "symbol": "RESPONIND",
+      "instrumentKey": "NSE_EQ|INE688D01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 93426553.35
+    },
+    {
+      "symbol": "GPTINFRA",
+      "instrumentKey": "NSE_EQ|INE390G01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 92727131.82
+    },
+    {
+      "symbol": "WEWORK",
+      "instrumentKey": "NSE_EQ|INE085001019",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 92469925.73
+    },
+    {
+      "symbol": "GRINDWELL",
+      "instrumentKey": "NSE_EQ|INE536A01023",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 91926691.16
+    },
+    {
+      "symbol": "YATRA",
+      "instrumentKey": "NSE_EQ|INE0JR601024",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 91504531.13
+    },
+    {
+      "symbol": "INDORAMA",
+      "instrumentKey": "NSE_EQ|INE156A01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 91416643.56
+    },
+    {
+      "symbol": "SALSTEEL",
+      "instrumentKey": "NSE_EQ|INE658G01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 90736533.53
+    },
+    {
+      "symbol": "KSL",
+      "instrumentKey": "NSE_EQ|INE907A01026",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 90318974.09
+    },
+    {
+      "symbol": "JINDRILL",
+      "instrumentKey": "NSE_EQ|INE742C01031",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 89566518.29
+    },
+    {
+      "symbol": "ISGEC",
+      "instrumentKey": "NSE_EQ|INE858B01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 89299842.13
+    },
+    {
+      "symbol": "GYFTR",
+      "instrumentKey": "NSE_EQ|INE724A01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 88799440.74
+    },
+    {
+      "symbol": "EUREKAFORB",
+      "instrumentKey": "NSE_EQ|INE0KCE01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 88736933.84
+    },
+    {
+      "symbol": "UTTAMSUGAR",
+      "instrumentKey": "NSE_EQ|INE786F01031",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 87857069.11
+    },
+    {
+      "symbol": "MASFIN",
+      "instrumentKey": "NSE_EQ|INE348L01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 87710689.66
+    },
+    {
+      "symbol": "KLBRENG-B",
+      "instrumentKey": "NSE_EQ|INE338F01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 87312975.88
+    },
+    {
+      "symbol": "EXICOM",
+      "instrumentKey": "NSE_EQ|INE777F01014",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 86991838.69
+    },
+    {
+      "symbol": "CEIGALL",
+      "instrumentKey": "NSE_EQ|INE0AG901020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 86944951.54
+    },
+    {
+      "symbol": "MAYURUNIQ",
+      "instrumentKey": "NSE_EQ|INE040D01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 86316205.36
+    },
+    {
+      "symbol": "RIIL",
+      "instrumentKey": "NSE_EQ|INE046A01015",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 86199670.58
+    },
+    {
+      "symbol": "REFEX",
+      "instrumentKey": "NSE_EQ|INE056I01025",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 86100182.24
+    },
+    {
+      "symbol": "WAAREERTL",
+      "instrumentKey": "NSE_EQ|INE299N01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 85988032.12
+    },
+    {
+      "symbol": "MANGLMCEM",
+      "instrumentKey": "NSE_EQ|INE347A01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 85843767.48
+    },
+    {
+      "symbol": "GRMOVER",
+      "instrumentKey": "NSE_EQ|INE192H01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 85609688.55
+    },
+    {
+      "symbol": "YUKEN",
+      "instrumentKey": "NSE_EQ|INE384C01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 84452623.75
+    },
+    {
+      "symbol": "VIMTALABS",
+      "instrumentKey": "NSE_EQ|INE579C01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 84079018.65
+    },
+    {
+      "symbol": "KIRLPNU",
+      "instrumentKey": "NSE_EQ|INE811A01038",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 83959443.74
+    },
+    {
+      "symbol": "DBREALTY",
+      "instrumentKey": "NSE_EQ|INE879I01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 83545373.46
+    },
+    {
+      "symbol": "RML",
+      "instrumentKey": "NSE_EQ|INE050H01012",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82962408.08
+    },
+    {
+      "symbol": "RALLIS",
+      "instrumentKey": "NSE_EQ|INE613A01020",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82899693.03
+    },
+    {
+      "symbol": "IONEXCHANG",
+      "instrumentKey": "NSE_EQ|INE570A01022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82648894.36
+    },
+    {
+      "symbol": "SANDUMA",
+      "instrumentKey": "NSE_EQ|INE149K01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82333832.82
+    },
+    {
+      "symbol": "INTERARCH",
+      "instrumentKey": "NSE_EQ|INE00M901018",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82270372.12
+    },
+    {
+      "symbol": "KAPSTON",
+      "instrumentKey": "NSE_EQ|INE542Z01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82221498.61
+    },
+    {
+      "symbol": "HLEGLAS",
+      "instrumentKey": "NSE_EQ|INE461D01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 82053292.28
+    },
+    {
+      "symbol": "MEDIASSIST",
+      "instrumentKey": "NSE_EQ|INE456Z01021",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 81969846.91
+    },
+    {
+      "symbol": "JKLAKSHMI",
+      "instrumentKey": "NSE_EQ|INE786A01032",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 81413244.3
+    },
+    {
+      "symbol": "INDRAMEDCO",
+      "instrumentKey": "NSE_EQ|INE681B01017",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 81369964.28
+    },
+    {
+      "symbol": "MAHLOG",
+      "instrumentKey": "NSE_EQ|INE766P01016",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 81030839.07
+    },
+    {
+      "symbol": "RPGLIFE",
+      "instrumentKey": "NSE_EQ|INE105J01010",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 80513381.06
+    },
+    {
+      "symbol": "WINDLAS",
+      "instrumentKey": "NSE_EQ|INE0H5O01029",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 79756777.52
+    },
+    {
+      "symbol": "FOSECOIND",
+      "instrumentKey": "NSE_EQ|INE519A01011",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 79026361.0
+    },
+    {
+      "symbol": "ATULAUTO",
+      "instrumentKey": "NSE_EQ|INE951D01028",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 78535684.89
+    },
+    {
+      "symbol": "GKENERGY",
+      "instrumentKey": "NSE_EQ|INE1AG301022",
+      "sector": "MARKET_PROXY",
+      "sectorInstrumentKey": "NSE_INDEX|Nifty 50",
+      "selectionAverageTradedValueINR": 78217968.29
+    }
+  ]
+}

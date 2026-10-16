@@ -1,0 +1,29 @@
+name: Engine request isolation
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence-engine/**'
+      - '.github/workflows/engine-request-isolation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence-engine/**'
+      - '.github/workflows/engine-request-isolation.yml'
+
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fastapi: ['0.115.0', '0.141.1']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install fastapi==${{ matrix.fastapi }} httpx pytest pytest-asyncio
+      - run: python -m pytest tests/test_route_offload.py -q
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .

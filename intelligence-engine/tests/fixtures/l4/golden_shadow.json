@@ -1,0 +1,102 @@
+{
+  "as_of": "2026-07-24",
+  "universe_id": "NIFTY500",
+  "cases": [
+    {
+      "symbol": "TCS",
+      "e01": {
+        "primary_regime": "expansion_risk_on",
+        "score": 65.0,
+        "confidence": 0.75
+      },
+      "e14": {
+        "playbook": "normal",
+        "risk_level": "moderate",
+        "score": 40.0,
+        "confidence": 0.7,
+        "confidence_adjustment": 0.95,
+        "gate": "allow"
+      },
+      "e02": {
+        "dominant_factor": "F_QUALITY",
+        "composite_score": 62.0,
+        "factor_confidence": 0.72,
+        "sector_id": "IT"
+      },
+      "e03": {
+        "agi_tech_score": 72.0,
+        "label": "Strong Bullish",
+        "confidence_pct": 70,
+        "confidence": 0.7
+      },
+      "expect": {
+        "shadow": true,
+        "has_label": true
+      }
+    },
+    {
+      "symbol": "RISKY",
+      "e01": {
+        "primary_regime": "contraction_risk_off",
+        "score": 35.0,
+        "confidence": 0.7
+      },
+      "e14": {
+        "playbook": "hard_derisk",
+        "risk_level": "severe",
+        "score": 85.0,
+        "confidence": 0.8,
+        "confidence_adjustment": 0.45,
+        "gate": "block_promotion"
+      },
+      "e02": {
+        "dominant_factor": "F_MOMENTUM",
+        "composite_score": 70.0,
+        "factor_confidence": 0.6,
+        "sector_id": "FIN"
+      },
+      "e03": {
+        "agi_tech_score": 80.0,
+        "label": "Strong Bullish",
+        "confidence_pct": 85,
+        "confidence": 0.85
+      },
+      "expect": {
+        "shadow": true,
+        "prefer_neutral_or_defensive": true,
+        "has_contradictions": true
+      }
+    },
+    {
+      "symbol": "NEUTRALCO",
+      "e01": {
+        "primary_regime": "transition",
+        "score": 50.0,
+        "confidence": 0.6
+      },
+      "e14": {
+        "playbook": "normal",
+        "risk_level": "low",
+        "score": 25.0,
+        "confidence": 0.65,
+        "confidence_adjustment": 1.0,
+        "gate": "allow"
+      },
+      "e02": {
+        "dominant_factor": "F_VALUE",
+        "composite_score": 50.0,
+        "factor_confidence": 0.55,
+        "sector_id": "CONS"
+      },
+      "e03": {
+        "agi_tech_score": 50.0,
+        "label": "Neutral",
+        "confidence_pct": 50,
+        "confidence": 0.5
+      },
+      "expect": {
+        "shadow": true
+      }
+    }
+  ]
+}

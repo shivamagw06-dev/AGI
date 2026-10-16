@@ -1,0 +1,11 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+let code=fs.readFileSync('src/lib/ipoApi.js','utf8').replace("'./ipoScope.js'",JSON.stringify(new URL('file://'+process.cwd()+'/src/lib/ipoScope.js').href));
+globalThis.window={API_URL:'https://example.test'};
+let calls=[];
+globalThis.fetch=async(url)=>{calls.push(url);return url.endsWith('/platform')?{ok:true,json:async()=>({upcoming:[{ipoId:'paras-healthcare-limited-ipo',isSme:false,name:'Paras Healthcare'}]})}:{ok:false,status:404,json:async()=>({error:'IPO record not found.'})}};
+const {getIpoDetail}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+assert.equal((await getIpoDetail('paras-healthcare-limited-ipo')).ipo.name,'Paras Healthcare');
+await assert.rejects(()=>getIpoDetail('unknown-ipo'));
+globalThis.fetch=async()=>({ok:false,status:503,json:async()=>({error:'Unavailable'})});
+await assert.rejects(()=>getIpoDetail('paras-healthcare-limited-ipo'),/Unavailable/);
+console.log('IPO ID resolution, unknown ID and outage checks passed');

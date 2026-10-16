@@ -1,0 +1,19 @@
+{
+  "industry_id": "it_services",
+  "name": "IT Services",
+  "demand_drivers": ["digital_transformation", "cloud_migration", "cost_optimisation", "automation"],
+  "supply_drivers": ["talent_supply", "wage_inflation", "utilization", "offshore_capacity"],
+  "capacity": "people_and_delivery_capacity",
+  "pricing": "rate_cards_and_deal_mix",
+  "margins": {"gross": "28-35%", "ebit": "18-25%"},
+  "competition": "global_and_indian_peers_on_scale_and_verticals",
+  "regulation": ["data_privacy", "visa_immigration", "client_jurisdiction_rules"],
+  "capital_intensity": "low",
+  "typical_risks": ["client_concentration", "wage_pressure", "deal_delays", "currency"],
+  "important_kpis": ["revenue_growth", "utilization", "attrition", "deal_wins", "ebit_margin", "tcv"],
+  "preferred_valuation_models": ["dcf_fcff", "relative_pe", "relative_ev_ebitda"],
+  "historical_cycles": ["dotcom", "gfc", "covid_digital_acceleration"],
+  "industry_structure": "fragmented_to_oligopoly_at_large_deal_end",
+  "business_characteristics": ["people_levered", "recurring_annuity_mix", "onshore_offshore"],
+  "capital_cycle": "talent_hiring_and_bench_management"
+}

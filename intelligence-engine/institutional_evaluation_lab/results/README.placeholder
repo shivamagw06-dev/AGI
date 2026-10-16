@@ -1,0 +1,15 @@
+Evaluation Lab results land here as:
+
+  results/{release_id}/{TICKER}.json
+  results/{release_id}/_manifest.json
+  results/{release_id}/_summary.json
+
+Example:
+
+  results/PR306/HDFCBANK.json
+  results/PR306/RELIANCE.json
+  results/PR306/TCS.json
+
+Generate with:
+
+  python -m institutional_evaluation_lab.golden_universe --release-id PR306

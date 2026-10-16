@@ -1,0 +1,199 @@
+{
+  "agi_core_version": "1.0",
+  "status": "frozen",
+  "owner": "Core Platform",
+  "regression": "production_release_gate",
+  "baseline_date": "2026-08-02",
+  "frozen_components": [
+    {
+      "id": "financial_foundations",
+      "name": "Financial Foundations",
+      "module": "financial_foundations",
+      "gate": "afi_acceptance"
+    },
+    {
+      "id": "financial_intelligence",
+      "name": "Financial Intelligence",
+      "module": "financial_statement_intelligence",
+      "gate": "afi_acceptance"
+    },
+    {
+      "id": "financial_concepts",
+      "name": "Financial Concepts",
+      "module": "financial_concepts",
+      "gate": "concept_acceptance"
+    },
+    {
+      "id": "business_intelligence",
+      "name": "Business Intelligence",
+      "module": "business_intelligence.foundation",
+      "gate": "bi_acceptance"
+    },
+    {
+      "id": "knowledge_unification",
+      "name": "Knowledge Unification",
+      "module": "knowledge_unification",
+      "gate": "kul_acceptance"
+    },
+    {
+      "id": "coverage_intelligence",
+      "name": "Coverage Intelligence",
+      "module": "coverage_policy + capiq_ikt",
+      "gate": "coverage_acceptance"
+    }
+  ],
+  "release_gate_order": [
+    "founder_evaluation_v2",
+    "golden_founder_5",
+    "golden_business_20",
+    "afi_acceptance",
+    "bi_acceptance",
+    "bi_integration",
+    "ii_acceptance",
+    "ii_integration",
+    "founder_evaluation_v3",
+    "coverage_acceptance",
+    "concept_acceptance",
+    "kul_acceptance",
+    "recommendation_policy",
+    "unknown_entity",
+    "canonical_classification",
+    "company_metadata_routing",
+    "core_platform_acceptance",
+    "answer_quality"
+  ],
+  "release_gate_targets": {
+    "founder_evaluation_v2": {
+      "metric": "pass_rate_pct",
+      "op": "gte",
+      "value": 95.0
+    },
+    "golden_founder_5": {
+      "metric": "pass_rate",
+      "op": "eq",
+      "value": 1.0
+    },
+    "golden_business_20": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "afi_acceptance": {
+      "metric": "overall_score_pct",
+      "op": "gte",
+      "value": 95.0
+    },
+    "bi_acceptance": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "bi_integration": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "ii_acceptance": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "ii_integration": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "founder_evaluation_v3": {
+      "metric": "pass_rate_pct",
+      "op": "gte",
+      "value": 95.0
+    },
+    "coverage_acceptance": {
+      "metric": "release_decision",
+      "op": "eq",
+      "value": "PASS"
+    },
+    "concept_acceptance": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "kul_acceptance": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "recommendation_policy": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "unknown_entity": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "canonical_classification": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "company_metadata_routing": {
+      "metric": "pass_rate_pct",
+      "op": "eq",
+      "value": 100.0
+    },
+    "core_platform_acceptance": {
+      "metric": "overall_score",
+      "op": "gte",
+      "value": 98.0
+    },
+    "answer_quality": {
+      "metric": "overall_score",
+      "op": "gte",
+      "value": 95.0
+    }
+  },
+  "baseline_results_inprocess": {
+    "recorded_at": "2026-08-02",
+    "mode": "inprocess",
+    "release_decision": "PASS",
+    "phase3_freeze_ready": true,
+    "results": {
+      "bi_acceptance": 100.0,
+      "bi_integration": 100.0,
+      "golden_business_20": 100.0,
+      "golden_founder_5": 1.0,
+      "founder_evaluation_v2": 100.0,
+      "kul_acceptance": 100.0,
+      "concept_acceptance": 100.0,
+      "recommendation_policy": 100.0,
+      "unknown_entity": 100.0,
+      "coverage_acceptance": "PR_SCOPED_PASS",
+      "afi_acceptance": 96.42,
+      "hallucinations": 0
+    }
+  },
+  "freeze_policy": {
+    "status": "frozen",
+    "version": "1.0",
+    "owner": "Core Platform",
+    "regression": "production_release_gate",
+    "allowed_without_version_bump": [
+      "bug_fixes_restoring_baseline",
+      "performance_without_answer_change",
+      "coverage_expansion_without_weaker_refusal",
+      "documentation_and_observability",
+      "new_capabilities_outside_core_that_do_not_regress_gate"
+    ],
+    "requires_version_bump": [
+      "changing_release_suite_expected_behavior_or_targets",
+      "weakening_recommendation_unknown_or_coverage_policy",
+      "bypassing_kul_for_core_financial_or_business_short_circuits",
+      "dropping_or_relaxing_production_release_gate_suites"
+    ],
+    "merge_rule": "Production Release Gate PASS required before merge"
+  },
+  "docs": "docs/AGI_CORE_V1_0.md",
+  "runner": "ask_product_test.run_production_regression_v1"
+}
