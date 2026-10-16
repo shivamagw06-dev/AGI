@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const endpoint = 'https://xflot.com/api/public/market/ipos?status=OPEN&board=MAINBOARD&limit=200';
 const file = path.join(process.env.DATA_DIR || path.resolve('data'), 'ipo-gmp-xflot.json');
-const dayKey = () => new Date(Date.now() + 19800000).toISOString().slice(0, 10);
+const dayKey = () => new Date(Date.now() + 19800000 - 12 * 3600000).toISOString().slice(0, 10);
 let state = { day: null, records: [], history: [] };
 let loaded = false, pending = null, retryAt = 0;
 const numeric = v => v !== null && v !== undefined && String(v).trim() !== '' && Number.isFinite(Number(v)) ? Number(v) : null;
@@ -69,7 +69,7 @@ export async function loadDailyXflot() {
 let timer;
 export function startDailyGmp() {
   if (timer) return;
-  // Startup catches missed runs; hourly checks fetch at most once per IST day.
+  // Startup catches missed runs; hourly checks fetch at most once per noon-to-noon IST cycle.
   void loadDailyXflot();
   timer = setInterval(() => { void loadDailyXflot(); }, 3600000);
   timer.unref?.();

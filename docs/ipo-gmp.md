@@ -1,6 +1,6 @@
 # Daily mainboard GMP
 
-Xflot public API: https://www.xflot.com/api-docs. No key. One bulk request per IST calendar day, startup catch-up and hourly scheduler checks. Failed requests retry no sooner than 15 minutes. No new service or paid plan.
+Xflot public API: https://www.xflot.com/api-docs. No key. One bulk request per noon-to-noon IST cycle (refresh within one hour after noon), startup catch-up and hourly scheduler checks. Failed requests retry no sooner than 15 minutes. No new service or paid plan.
 
 Only exact unambiguous symbol/name matches on open mainboard issues are attached to the existing IPO list. Missing values stay null; zero/negative premiums are valid. Disputed quotes and issue-price conflicts are withheld. Provider record updatedAt is not treated as the GMP observation time: UI shows our collection time separately. Attribution and the provider disclaimer travel with quotes.
 
