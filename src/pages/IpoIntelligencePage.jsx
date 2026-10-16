@@ -91,9 +91,9 @@ function IpoCard({ ipo, saved, compared, onSave, onCompare, researchArticles }) 
   const investment = minimumInvestment(ipo);
   const subscription = Number(ipo.subscriptionRate);
   const gmpValue = Number(ipo.gmp?.value);
-  const hasGmp = Number.isFinite(gmpValue);
+  const hasGmp = ipo.gmp?.value != null && !ipo.gmp?.disputed && Number.isFinite(gmpValue);
   const issuePrice = Number(ipo.cutOffPrice || ipo.maxPrice);
-  const gmpPercentage = Number.isFinite(Number(ipo.gmp?.percentage))
+  const gmpPercentage = hasGmp && ipo.gmp?.percentage != null && Number.isFinite(Number(ipo.gmp?.percentage))
     ? Number(ipo.gmp.percentage)
     : hasGmp && Number.isFinite(issuePrice) && issuePrice > 0 ? (gmpValue / issuePrice) * 100 : null;
   const closeIn = daysUntil(ipo.biddingEndDate);
@@ -146,6 +146,7 @@ function IpoCard({ ipo, saved, compared, onSave, onCompare, researchArticles }) 
             <div><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#89949b]">Total subscription</p><p className="mt-1 text-2xl font-semibold text-[#173a4d]">{Number.isFinite(subscription) ? `${formatNumber(subscription)}x` : 'Awaiting data'}</p></div>
             <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#89949b]">Unofficial GMP</p><p className={`mt-1 text-xl font-semibold ${hasGmp && gmpValue >= 0 ? 'text-[#27734d]' : hasGmp ? 'text-[#a33e28]' : 'text-[#7b878e]'}`}>{hasGmp ? `${gmpValue >= 0 ? '+' : ''}₹${formatNumber(gmpValue)}` : 'Pending'}</p>{gmpPercentage != null && <p className="text-[10px] font-bold text-[#9a6944]">{gmpPercentage >= 0 ? '+' : ''}{gmpPercentage.toFixed(1)}%</p>}</div>
           </div>
+          {hasGmp && <p className="mt-2 text-[11px] text-[#7b878e]">Data by <a href="https://www.xflot.com/api-docs" target="_blank" rel="noreferrer" className="underline">Xflot</a> · {ipo.gmp.stale ? 'Last saved quote; refresh delayed' : 'Checked daily'}<br />{ipo.gmp.disclaimer}</p>}
           {urgent && <span className="mt-3 inline-flex rounded-full bg-[#fff1e8] px-3 py-1.5 text-[11px] font-bold text-[#a64d18]">{closeIn === 0 ? 'Closes today' : `${closeIn} day${closeIn === 1 ? '' : 's'} left`}</span>}
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e9edef]"><div className="h-full rounded-full bg-gradient-to-r from-[#2b6076] to-[#c58a59] transition-all duration-700" style={{ width: `${Number.isFinite(subscription) ? Math.max(4, Math.min(100, subscription * 10)) : 0}%` }} /></div>
         </div>
@@ -168,7 +169,7 @@ function ComparePanel({ items, onRemove, onClear }) {
     ['Minimum investment', (ipo) => minimumInvestment(ipo) ? `₹${formatNumber(minimumInvestment(ipo))}` : 'Pending'],
     ['Lot size', (ipo) => ipo.lotSize ? formatNumber(ipo.lotSize) : 'Pending'],
     ['Subscription', (ipo) => ipo.subscriptionRate != null ? `${formatNumber(ipo.subscriptionRate)}x` : 'Awaiting data'],
-    ['Unofficial GMP', (ipo) => Number.isFinite(Number(ipo.gmp?.value)) ? `${Number(ipo.gmp.value) >= 0 ? '+' : ''}₹${formatNumber(ipo.gmp.value)}` : 'Pending'],
+    ['Unofficial GMP', (ipo) => ipo.gmp?.value != null && !ipo.gmp?.disputed && Number.isFinite(Number(ipo.gmp?.value)) ? `${Number(ipo.gmp.value) >= 0 ? '+' : ''}₹${formatNumber(ipo.gmp.value)}` : 'Pending'],
     ['Close date', (ipo) => formatDate(ipo.biddingEndDate, true)],
   ];
   return (

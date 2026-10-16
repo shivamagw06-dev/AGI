@@ -123,7 +123,7 @@ export default function IpoDetailPage() {
   const confidence = meta ? panel.confidence : 0;
   const demand = demandScore(ipo?.subscriptionRate);
   const listedReturn = listingReturn(ipo);
-  const automaticGmp = ipo?.gmp && hasVerifiedScore(ipo.gmp.value) ? ipo.gmp : null;
+  const automaticGmp = ipo?.gmp && !ipo.gmp.disputed && hasVerifiedScore(ipo.gmp.value) ? ipo.gmp : null;
   const manualGmp = meta?.ipo_gmp && hasVerifiedScore(meta.ipo_gmp.value)
     ? { value: Number(meta.ipo_gmp.value), source: meta.ipo_gmp.source || 'AGI manual verification', updatedAt: meta.ipo_gmp.updated_at || null, unofficial: true }
     : null;
@@ -253,9 +253,11 @@ export default function IpoDetailPage() {
                   <>
                     <div className="mt-2 flex items-end justify-between gap-3"><p className={`font-serif text-4xl font-semibold ${gmpValue >= 0 ? 'text-[#27734d]' : 'text-[#a33e28]'}`}>{gmpValue >= 0 ? '+' : ''}₹{number(gmpValue)}</p><p className="text-sm font-bold text-[#9a6944]">{gmpPercentage != null ? `${gmpPercentage >= 0 ? '+' : ''}${gmpPercentage.toFixed(1)}%` : '—'}</p></div>
                     <div className="mt-4 grid grid-cols-2 gap-3"><Fact label="Indicative listing" value={indicativeListingPrice != null ? `₹${number(indicativeListingPrice)}` : 'Pending'} /><Fact label="Est. application gain" value={estimatedApplicationGain != null ? `₹${number(estimatedApplicationGain)}` : 'Pending'} /></div>
-                    <p className="mt-3 text-[11px] leading-5 text-[#7a6b60]">Source: {gmp.source || 'IPO Guru'}{formatObservedAt(gmp.updatedAt) ? ` · Updated ${formatObservedAt(gmp.updatedAt)}` : ''}</p>
+                    <p className="mt-3 text-[11px] leading-5 text-[#7a6b60]">Source: {gmp.sourceUrl ? <a href={gmp.sourceUrl} target="_blank" rel="noreferrer" className="underline">{gmp.source}</a> : gmp.source}{formatObservedAt(gmp.updatedAt) ? ` · Updated ${formatObservedAt(gmp.updatedAt)}` : ''}</p>
+                    {gmp.fetchedAt && <p className="text-[11px]">Checked {formatObservedAt(gmp.fetchedAt)} · Daily refresh{gmp.stale ? ' · Last saved quote — refresh delayed' : ''}</p>}
+                    {gmp.disclaimer && <p className="mt-2 text-[11px] leading-5">{gmp.disclaimer}</p>}
                   </>
-                ) : <EvidencePending>No verified GMP quote is available. Enter a manual CMS value or add the IPO Guru API key.</EvidencePending>}
+                ) : <EvidencePending>No undisputed GMP quote is available. Open-IPO quotes are checked automatically each day.</EvidencePending>}
                 <p className="mt-3 text-[10px] leading-4 text-[#8a7768]">GMP is unregulated and may change sharply. It is not a listing-price guarantee or investment recommendation.</p>
               </section>
               {listedReturn != null && <section className="rounded-[24px] border border-[#dfe5e7] bg-white p-6"><TrendingUp className="h-5 w-5 text-[#27734d]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a969c]">Listing performance</p><p className={`mt-2 font-serif text-4xl font-semibold ${listedReturn >= 0 ? 'text-[#27734d]' : 'text-[#a33e28]'}`}>{listedReturn >= 0 ? '+' : ''}{listedReturn.toFixed(1)}%</p><p className="mt-2 text-xs text-[#738087]">Listing price ₹{number(ipo.listingPrice)} versus issue price ₹{number(ipo.cutOffPrice || ipo.maxPrice)}</p></section>}
