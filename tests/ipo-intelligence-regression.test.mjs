@@ -41,3 +41,11 @@ test('December financial years support annual profit comparison', () => {
  const p=parseIpoPaste(source.replaceAll('31 Mar','31 Dec').replace('5\t20\t15\t10','5\t12\t15\t10'));
  assert.ok(p.risks.some(r=>r.includes('Annual profit after tax declined')));
 });
+test('page navigation cannot classify a mainboard company as SME', () => {
+ const p=parseIpoPaste('SME IPO\n'+source+'\nListing At\tBSE, NSE');
+ assert.ok(!p.risks.some(r=>r.includes('SME-listed')));
+});
+test('key strengths supported without read-less UI text', () => {
+ const p=parseIpoPaste(source.replace('Company Financials','Key Strengths\nExperienced management across several business verticals.\n- Read Less\nCompany Financials'));
+ assert.deepEqual(p.strengths,['Experienced management across several business verticals.']);
+});

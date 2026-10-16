@@ -50,7 +50,7 @@ function lines(value = '') {
   return value
     .split('\n')
     .map((line) => line.replace(/^[#*\-\s]+/, '').trim())
-    .filter((line) => line && line.length > 8 && !/^updated on\b/i.test(line));
+    .filter((line) => line && line.length > 8 && !/^updated on\b/i.test(line) && !/^(read (less|more)|show (less|more))$/i.test(line));
 }
 
 function parseThreePeriodRows(text) {
@@ -210,10 +210,10 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const revenueGrowth = numberFrom(firstMatch(text, [/revenue increased by\s*([\d.]+)%/i]));
   const patGrowth = numberFrom(firstMatch(text, [/profit after tax \(PAT\) rose by\s*([\d.]+)%/i]));
 
-  const about = sectionBetween(text, /About\s+.+?(?:\n|Updated on[^\n]*\n)/i, /Competitive Strengths|Company Financials/i)
+  const about = sectionBetween(text, /About\s+.+?(?:\n|Updated on[^\n]*\n)/i, /(?:Competitive|Key) Strengths|Company Financials/i)
     .replace(/^Updated on[^\n]*\n?/i, '')
     .trim();
-  const explicitStrengths = lines(sectionBetween(text, /Competitive Strengths/i, /Company Financials/i));
+  const explicitStrengths = lines(sectionBetween(text, /(?:Competitive|Key) Strengths/i, /Company Financials/i));
   const objectiveBlock = sectionBetween(text, /IPO Objects of the Issue/i, /Key Performance Indicator/i);
   const objectives = [...objectiveBlock.matchAll(/(?:^|\n)(\d+)\s+([^\n]+?)(?:\s+([\d,.]+))?(?=\n|$)/g)]
     .map((match) => ({ order: Number(match[1]), description: match[2].trim(), amountCr: numberFrom(match[3]) }))
@@ -230,7 +230,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
     ? debtRepaymentObjectiveCr / freshIssueAmountCr
     : null;
   const exportShare = numberFrom(firstMatch(text, [/export-focused business contributed\s*([\d.]+)%/i]));
-  const isSme = /NSE SME|BSE SME|SME IPO/i.test(text);
+  const isSme = /SME|Emerge/i.test(firstMatch(text, [/Listing At[ \t]*([^\n]+)/i]) || '');
   const completedProjects = numberFrom(firstMatch(about, [/completed more than\s*([\d,]+)\s*projects/i]));
   const latestRoce = kpis.ROCE?.[0] ?? null;
   const promoterPrePct = numberFrom(firstMatch(text, [/Promoter and Promoter Group\s*([\d.]+)%/i]));
