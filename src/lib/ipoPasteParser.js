@@ -50,7 +50,7 @@ function lines(value = '') {
   return value
     .split('\n')
     .map((line) => line.replace(/^[#*\-\s]+/, '').trim())
-    .filter((line) => line && line.length > 8 && !/^updated on\b/i.test(line));
+    .filter((line) => line && line.length > 8 && !/^updated on\b/i.test(line) && !/^(read (less|more)|show (less|more))$/i.test(line));
 }
 
 function parseThreePeriodRows(text) {
@@ -70,9 +70,12 @@ function parseThreePeriodRows(text) {
   const rows = {};
   for (const [key, label] of names) {
     const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = text.match(new RegExp(`(?:^|\\n)${escaped}[ \\t]+([^\\n]+)`, 'i'));
-    if (match) {
-      const values = match[1].trim().split(/\s+/).map(numberFrom);
+    const row = text.split('\n').find((line) => new RegExp(`^${escaped}(?:\\t| )`, 'i').test(line));
+    if (row) {
+      const suffix = row.slice(label.length);
+      const values = suffix.includes('\t')
+        ? suffix.replace(/^[ ]*\t/, '').split('\t').map(numberFrom)
+        : suffix.trim().split(/\s+/).map(numberFrom);
       rows[key] = periods.length ? periods.map((_, index) => values[index] ?? null) : values;
     }
   }
@@ -185,7 +188,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const lotSize = numberFrom(firstMatch(text, [/Lot Size\s*([\d,]+)\s*Shares/i, /lot size for an application is\s*([\d,]+)\s*shares/i]));
   const financials = parseThreePeriodRows(text);
   const kpis = parseKpis(text);
-  const annualIndices = financials.periods.map((period, index) => /^31 Mar /.test(period) ? index : -1).filter((index) => index >= 0);
+  const annualIndices = financials.periods.map((period, index) => /^(31 Mar|31 Dec) /.test(period) ? index : -1).filter((index) => index >= 0);
   const comparablePat = annualIndices.length >= 2
     ? annualIndices.slice(0, 2).map((index) => financials.rows.profit_after_tax?.[index] ?? null)
     : [];
@@ -207,10 +210,10 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const revenueGrowth = numberFrom(firstMatch(text, [/revenue increased by\s*([\d.]+)%/i]));
   const patGrowth = numberFrom(firstMatch(text, [/profit after tax \(PAT\) rose by\s*([\d.]+)%/i]));
 
-  const about = sectionBetween(text, /About\s+.+?(?:\n|Updated on[^\n]*\n)/i, /Competitive Strengths|Company Financials/i)
+  const about = sectionBetween(text, /About\s+.+?(?:\n|Updated on[^\n]*\n)/i, /(?:Competitive|Key) Strengths|Company Financials/i)
     .replace(/^Updated on[^\n]*\n?/i, '')
     .trim();
-  const explicitStrengths = lines(sectionBetween(text, /Competitive Strengths/i, /Company Financials/i));
+  const explicitStrengths = lines(sectionBetween(text, /(?:Competitive|Key) Strengths/i, /Company Financials/i));
   const objectiveBlock = sectionBetween(text, /IPO Objects of the Issue/i, /Key Performance Indicator/i);
   const objectives = [...objectiveBlock.matchAll(/(?:^|\n)(\d+)\s+([^\n]+?)(?:\s+([\d,.]+))?(?=\n|$)/g)]
     .map((match) => ({ order: Number(match[1]), description: match[2].trim(), amountCr: numberFrom(match[3]) }))
@@ -227,7 +230,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
     ? debtRepaymentObjectiveCr / freshIssueAmountCr
     : null;
   const exportShare = numberFrom(firstMatch(text, [/export-focused business contributed\s*([\d.]+)%/i]));
-  const isSme = /NSE SME|BSE SME|SME IPO/i.test(text);
+  const isSme = /SME|Emerge/i.test(firstMatch(text, [/Listing At[ \t]*([^\n]+)/i]) || '');
   const completedProjects = numberFrom(firstMatch(about, [/completed more than\s*([\d,]+)\s*projects/i]));
   const latestRoce = kpis.ROCE?.[0] ?? null;
   const promoterPrePct = numberFrom(firstMatch(text, [/Promoter and Promoter Group\s*([\d.]+)%/i]));
