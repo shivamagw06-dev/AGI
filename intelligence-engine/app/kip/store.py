@@ -81,6 +81,17 @@ class KipStore:
             if new is not None and new.supersedes != old_id:
                 self.documents[new_id] = new.model_copy(update={"supersedes": old_id})
 
+    def retire_article(self, article_id: str) -> KipDocument | None:
+        """Remove a CMS article from active retrieval while preserving its audit record."""
+        with self._lock:
+            doc_id = self.article_index.pop(article_id, None)
+            doc = self.documents.get(doc_id) if doc_id else None
+            if doc is None:
+                return None
+            retired = doc.model_copy(update={"superseded_by": f"retired:{article_id}"})
+            self.documents[doc_id] = retired
+            return retired
+
     def add_timeline_events(self, events: list[TimelineEvent]) -> None:
         with self._lock:
             for ev in events:
