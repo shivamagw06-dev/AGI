@@ -236,7 +236,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const marginPrior = comparableKpis ? kpis['EBITDA Margin']?.[1] ?? null : null;
   const strengths = [...explicitStrengths];
   if (!strengths.length) {
-    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% in the ${financialPeriod}.`);
+    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% for the comparison stated in the source.`);
     if (latestDebtEquity != null && latestDebtEquity <= 0.5) strengths.push(`Low reported leverage, with debt/equity of ${latestDebtEquity.toFixed(2)}x in the ${financialPeriod}.`);
     if (latestRoce != null && latestRoce >= 20) strengths.push(`Strong reported capital efficiency, with ROCE of ${latestRoce}% in the ${financialPeriod}.`);
     if (completedProjects != null) strengths.push(`Execution track record of more than ${completedProjects} completed projects as of the reported date.`);
@@ -244,7 +244,6 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   }
   const risks = [];
   const latestPat = financials.rows.profit_after_tax?.[0] ?? null;
-  const priorPat = financials.rows.profit_after_tax?.[1] ?? null;
   if (latestPat != null && latestPat < 0) risks.push(`The latest reported period shows a net loss of INR ${Math.abs(latestPat)} crore. Profitability has not been established for that period.`);
   if (comparablePat.length === 2 && comparablePat[0] != null && comparablePat[1] != null && comparablePat[0] >= 0 && comparablePat[1] > comparablePat[0]) risks.push(`Annual profit after tax declined from INR ${comparablePat[1]} crore to INR ${comparablePat[0]} crore.`);
   if (exportShare != null) risks.push(`Export concentration is high at ${exportShare}% of revenue, increasing geographic, currency and external-demand sensitivity.`);
