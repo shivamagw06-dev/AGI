@@ -1,3 +1,4 @@
+import { hasGmpNumber } from '../lib/ipoGmpValue.js';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams } from 'react-router-dom';
@@ -123,19 +124,19 @@ export default function IpoDetailPage() {
   const confidence = meta ? panel.confidence : 0;
   const demand = demandScore(ipo?.subscriptionRate);
   const listedReturn = listingReturn(ipo);
-  const automaticGmp = ipo?.gmp && !ipo.gmp.disputed && hasVerifiedScore(ipo.gmp.value) ? ipo.gmp : null;
-  const manualGmp = meta?.ipo_gmp && hasVerifiedScore(meta.ipo_gmp.value)
+  const automaticGmp = ipo?.gmp && !ipo.gmp.disputed && hasGmpNumber(ipo.gmp.value) ? ipo.gmp : null;
+  const manualGmp = meta?.ipo_gmp && hasGmpNumber(meta.ipo_gmp.value)
     ? { value: Number(meta.ipo_gmp.value), source: meta.ipo_gmp.source || 'AGI manual verification', updatedAt: meta.ipo_gmp.updated_at || null, unofficial: true }
     : null;
   const gmp = automaticGmp || manualGmp;
   const gmpValue = gmp ? Number(gmp.value) : null;
   const gmpIssuePrice = Number(ipo?.cutOffPrice || ipo?.maxPrice);
-  const gmpPercentage = gmp && hasVerifiedScore(gmp.percentage)
+  const gmpPercentage = gmp && hasGmpNumber(gmp.percentage)
     ? Number(gmp.percentage)
     : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice) && gmpIssuePrice > 0
       ? (gmpValue / gmpIssuePrice) * 100
       : null;
-  const indicativeListingPrice = gmp && hasVerifiedScore(gmp.indicativeListingPrice)
+  const indicativeListingPrice = gmp && hasGmpNumber(gmp.indicativeListingPrice)
     ? Number(gmp.indicativeListingPrice)
     : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice)
       ? gmpIssuePrice + gmpValue
