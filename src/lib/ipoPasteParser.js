@@ -70,8 +70,11 @@ function parseThreePeriodRows(text) {
   const rows = {};
   for (const [key, label] of names) {
     const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = text.match(new RegExp(`(?:^|\\n)${escaped}\\s+([0-9.,-]+)\\s+([0-9.,-]+)\\s+([0-9.,-]+)`, 'i'));
-    if (match) rows[key] = match.slice(1, 4).map(numberFrom);
+    const match = text.match(new RegExp(`(?:^|\\n)${escaped}[ \\t]+([^\\n]+)`, 'i'));
+    if (match) {
+      const values = match[1].trim().split(/\s+/).map(numberFrom);
+      rows[key] = periods.length ? periods.map((_, index) => values[index] ?? null) : values;
+    }
   }
   return { periods, rows };
 }
@@ -182,6 +185,15 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const lotSize = numberFrom(firstMatch(text, [/Lot Size\s*([\d,]+)\s*Shares/i, /lot size for an application is\s*([\d,]+)\s*shares/i]));
   const financials = parseThreePeriodRows(text);
   const kpis = parseKpis(text);
+  const annualIndices = financials.periods.map((period, index) => /^31 Mar /.test(period) ? index : -1).filter((index) => index >= 0);
+  const comparablePat = annualIndices.length >= 2
+    ? annualIndices.slice(0, 2).map((index) => financials.rows.profit_after_tax?.[index] ?? null)
+    : [];
+  const kpiHeader = firstMatch(text, [/^KPI[ \t]+([^\n]+)/im]) || '';
+  const kpiDates = [...kpiHeader.matchAll(/([A-Za-z]{3} \d{1,2}, \d{4})/g)].map((match) => match[1]);
+  const comparableKpis = kpiDates.length === 2 && kpiDates[0].slice(0, -4) === kpiDates[1].slice(0, -4);
+
+  const financialPeriod = financials.periods[0] ? `period ending ${financials.periods[0]}` : 'reported period';
   const valuationBlock = sectionBetween(text, /IPO Valuation/i, /Shareholding Structure/i);
   const peRow = valuationBlock.match(/P\/E \(x\)[ \t]+([-\d,.]+)(?:[ \t]+([-\d,.]+))?/i);
   const epsRow = valuationBlock.match(/EPS \(₹\)[ \t]+([-\d,.]+)(?:[ \t]+([-\d,.]+))?/i);
@@ -221,18 +233,21 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const promoterPrePct = numberFrom(firstMatch(text, [/Promoter and Promoter Group\s*([\d.]+)%/i]));
   const promoterPostPct = numberFrom(firstMatch(text, [/Promoter and Promoter Group\s*[\d.]+%\s*([\d.]+)%/i]));
   const marginNow = kpis['EBITDA Margin']?.[0] ?? null;
-  const marginPrior = kpis['EBITDA Margin']?.[1] ?? null;
+  const marginPrior = comparableKpis ? kpis['EBITDA Margin']?.[1] ?? null : null;
   const strengths = [...explicitStrengths];
   if (!strengths.length) {
-    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% in FY2026.`);
-    if (latestDebtEquity != null && latestDebtEquity <= 0.5) strengths.push(`Low reported leverage, with debt/equity of ${latestDebtEquity.toFixed(2)}x in FY2026.`);
-    if (latestRoce != null && latestRoce >= 20) strengths.push(`Strong reported capital efficiency, with ROCE of ${latestRoce}% in FY2026.`);
+    if (revenueGrowth != null && patGrowth != null) strengths.push(`Reported revenue growth of ${revenueGrowth}% and PAT growth of ${patGrowth}% for the comparison stated in the source.`);
+    if (latestDebtEquity != null && latestDebtEquity <= 0.5) strengths.push(`Low reported leverage, with debt/equity of ${latestDebtEquity.toFixed(2)}x in the ${financialPeriod}.`);
+    if (latestRoce != null && latestRoce >= 20) strengths.push(`Strong reported capital efficiency, with ROCE of ${latestRoce}% in the ${financialPeriod}.`);
     if (completedProjects != null) strengths.push(`Execution track record of more than ${completedProjects} completed projects as of the reported date.`);
     if (/international markets/i.test(about)) strengths.push('Operations span India and international markets, providing geographic diversification.');
   }
   const risks = [];
+  const latestPat = financials.rows.profit_after_tax?.[0] ?? null;
+  if (latestPat != null && latestPat < 0) risks.push(`The latest reported period shows a net loss of INR ${Math.abs(latestPat)} crore. Profitability has not been established for that period.`);
+  if (comparablePat.length === 2 && comparablePat[0] != null && comparablePat[1] != null && comparablePat[0] >= 0 && comparablePat[1] > comparablePat[0]) risks.push(`Annual profit after tax declined from INR ${comparablePat[1]} crore to INR ${comparablePat[0]} crore.`);
   if (exportShare != null) risks.push(`Export concentration is high at ${exportShare}% of revenue, increasing geographic, currency and external-demand sensitivity.`);
-  if (latestDebtEquity != null && latestDebtEquity >= 1) risks.push(`Leverage remains meaningful with debt/equity of ${latestDebtEquity.toFixed(2)}x despite the reported improvement.`);
+  if (latestDebtEquity != null && latestDebtEquity >= 1) risks.push(`Leverage remains meaningful with debt/equity of ${latestDebtEquity.toFixed(2)}x.`);
   if (latestBorrowing != null && priorBorrowing != null && latestBorrowing > priorBorrowing * 1.25) {
     const debtGrowth = Math.round((latestBorrowing / priorBorrowing - 1) * 100);
     const ratioContext = latestDebtEquity != null && priorDebtEquity != null
@@ -269,7 +284,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
     || (latestDebtEquity != null && priorDebtEquity != null && latestDebtEquity > priorDebtEquity * 1.2)) financialQuality -= 8;
   const suggestedScores = {
     business_quality: businessQuality,
-    financial_quality: Math.max(0, Math.min(100, financialQuality)),
+    financial_quality: latestPat == null || latestPat < 0 ? '' : Math.max(0, Math.min(100, financialQuality)),
     valuation: '',
     governance: '',
     issue_structure: debtRepaymentShare != null && debtRepaymentShare >= 0.75

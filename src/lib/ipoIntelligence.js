@@ -136,7 +136,7 @@ function extractBullets(text, pattern, limit = 3) {
     .map((s) => s.trim())
     .filter((s) => s.length > 28 && s.length < 220);
   const matched = sentences.filter((s) => pattern.test(s));
-  const pool = matched.length ? matched : sentences;
+  const pool = matched;
   return pool.slice(0, limit);
 }
 
@@ -150,8 +150,9 @@ export function buildAiSummary(article = {}, previousArticles = []) {
   const authoredStrengths = splitAuthoredPoints(meta.strengths);
   const authoredRisks = splitAuthoredPoints(meta.risks);
   const takeaways = [...thesis, ...authoredStrengths, ...extractBullets(text, /./, 3)].slice(0, 3);
-  const opportunities = [...authoredStrengths, ...extractBullets(text, OPPORTUNITY, 3)].slice(0, 3);
-  const risks = [...authoredRisks, ...extractBullets(text, RISK_WORD, 3)].slice(0, 3);
+  const structured = Boolean(meta.ipo_facts);
+  const opportunities = structured || authoredStrengths.length ? authoredStrengths.slice(0, 3) : extractBullets(article.analysisText || article.excerpt || '', OPPORTUNITY, 3);
+  const risks = structured || authoredRisks.length ? authoredRisks.slice(0, 3) : extractBullets(article.analysisText || '', RISK_WORD, 3);
   const prevText = previousArticles.map((a) => `${a.title} ${a.excerpt}`).join(' ');
   const changes = [];
   if (previousArticles.length) {
