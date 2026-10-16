@@ -33,3 +33,11 @@ test('latest reported loss is explicit and has no default financial score', () =
  assert.ok(p.risks.some(r=>/net loss/.test(r)));
  assert.equal(p.suggestedScores.financial_quality,'');
 });
+test('blank financial cells keep an older value in its original period', () => {
+ const p=parseIpoPaste(source.replace('Assets\t100\t90\t80\t70','Assets\t\t\t\t70'));
+ assert.deepEqual(p.financials.rows.assets,[null,null,null,70]);
+});
+test('December financial years support annual profit comparison', () => {
+ const p=parseIpoPaste(source.replaceAll('31 Mar','31 Dec').replace('5\t20\t15\t10','5\t12\t15\t10'));
+ assert.ok(p.risks.some(r=>r.includes('Annual profit after tax declined')));
+});

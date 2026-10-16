@@ -181,6 +181,7 @@ export default function IpoIntelligenceImport() {
       const scoreEntries = Object.entries(parsed.suggestedScores).map(([key, suggested]) => [
         key,
         previousMeta.ipo_scores?.[key] !== '' && previousMeta.ipo_scores?.[key] != null
+          && previousMeta.ipo_scores[key] !== previousMeta.ipo_facts?.suggestedScores?.[key]
           ? previousMeta.ipo_scores[key]
           : suggested,
       ]);

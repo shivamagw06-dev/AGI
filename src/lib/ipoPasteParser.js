@@ -70,9 +70,12 @@ function parseThreePeriodRows(text) {
   const rows = {};
   for (const [key, label] of names) {
     const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = text.match(new RegExp(`(?:^|\\n)${escaped}[ \\t]+([^\\n]+)`, 'i'));
-    if (match) {
-      const values = match[1].trim().split(/\s+/).map(numberFrom);
+    const row = text.split('\n').find((line) => new RegExp(`^${escaped}(?:\\t| )`, 'i').test(line));
+    if (row) {
+      const suffix = row.slice(label.length);
+      const values = suffix.includes('\t')
+        ? suffix.replace(/^[ ]*\t/, '').split('\t').map(numberFrom)
+        : suffix.trim().split(/\s+/).map(numberFrom);
       rows[key] = periods.length ? periods.map((_, index) => values[index] ?? null) : values;
     }
   }
@@ -185,7 +188,7 @@ export function parseIpoPaste(rawText, { sourceUrl = '', sourceName = 'Chittorga
   const lotSize = numberFrom(firstMatch(text, [/Lot Size\s*([\d,]+)\s*Shares/i, /lot size for an application is\s*([\d,]+)\s*shares/i]));
   const financials = parseThreePeriodRows(text);
   const kpis = parseKpis(text);
-  const annualIndices = financials.periods.map((period, index) => /^31 Mar /.test(period) ? index : -1).filter((index) => index >= 0);
+  const annualIndices = financials.periods.map((period, index) => /^(31 Mar|31 Dec) /.test(period) ? index : -1).filter((index) => index >= 0);
   const comparablePat = annualIndices.length >= 2
     ? annualIndices.slice(0, 2).map((index) => financials.rows.profit_after_tax?.[index] ?? null)
     : [];
