@@ -19884,6 +19884,25 @@ async def warehouse_recalculate(
     return await run_in_threadpool(recompute, **kwargs)
 
 
+@router.post("/warehouse/daily-intelligence-refresh")
+async def warehouse_daily_intelligence_refresh(
+    payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    """Bounded post-close refresh for source-updated companies only."""
+    from institutional_warehouse.daily_intelligence import refresh_companies
+
+    body = payload or {}
+    symbols = body.get("symbols") or []
+    if not isinstance(symbols, list):
+        raise HTTPException(status_code=400, detail="symbols_must_be_a_list")
+    return refresh_companies(
+        symbols,
+        actor=_warehouse_actor(body, x_agi_actor),
+        max_companies=int(body.get("max_companies") or 25),
+    )
+
+
 @router.get("/warehouse/search")
 def warehouse_search(q: str, per_tab: int = 5, tabs: str | None = None):
     from institutional_warehouse.production import global_search
