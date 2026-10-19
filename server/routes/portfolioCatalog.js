@@ -1,3 +1,5 @@
+import {factorCandidates,factorIds,factorTarget,factorSelectionView} from '../services/factorSelection.js';
+import {createIndiaQuotes,session} from '../services/indiaPortfolioTracking.js';
 import {portfolioLedger,ledgerView} from '../services/portfolioRebalanceLedger.js';
 import { usaHistory } from '../services/usaPortfolioHistory.js';
 import { growthMomentumPortfolio, GROWTH_MOMENTUM_ID } from '../services/growthMomentumPortfolio.js';
@@ -5,7 +7,7 @@ import { readIndiaTracking } from '../services/indiaPortfolioTracking.js';
 import { Router } from 'express';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { createPortfolioStore, validatePortfolio } from '../services/portfolioCatalog.js';
-export default function createPortfolioRouter({ store, admin = requireStrategyLabAdmin, readTracking = readIndiaTracking, ledger = portfolioLedger } = {}) {
+export default function createPortfolioRouter({ store, admin = requireStrategyLabAdmin, readTracking = readIndiaTracking, ledger = portfolioLedger, readFactorQuotes = createIndiaQuotes(), now = ()=>new Date() } = {}) {
   const router = Router();
   const repository = () => store || createPortfolioStore();
   const publicRows = rows => rows.filter(p=>p.visibility!=='admin' && p.id!==GROWTH_MOMENTUM_ID);
@@ -26,6 +28,25 @@ export default function createPortfolioRouter({ store, admin = requireStrategyLa
       if(row.document.portfolio.visibility==='admin'||req.params.id===GROWTH_MOMENTUM_ID)return admin(req,res,next);next();
     }catch{res.status(503).json({error:'Portfolio ledger temporarily unavailable'});}
   };
+  let factorFeed={quotes:{},saved:0},factorRequest=null;
+  const quotesForFactors=async()=>{
+    if(!session(now()).open)return {};
+    if(now().getTime()-factorFeed.saved<240000)return factorFeed.quotes;
+    if(!factorRequest)factorRequest=(async()=>{try{const d=await readFactorQuotes([...new Set(factorIds.flatMap(id=>factorCandidates(id).map(h=>h.symbol)))]);factorFeed={quotes:d.quotes,saved:now().getTime()};return d.quotes;}catch{return {};}finally{factorRequest=null;}})();
+    return factorRequest;
+  };
+  router.get('/:id/factor-selection',ledgerAccess,async(req,res)=>{
+    try{const view=factorSelectionView(req.ledgerRow,await quotesForFactors(),now());if(!view)return res.status(404).json({error:'No factor selection for this portfolio'});
+      res.set('Cache-Control','no-store').json({...view,ledgerRevision:req.ledgerRow.revision,pendingDate:req.ledgerRow.document.pending?.effectiveDate||null});
+    }catch{res.status(503).json({error:'Factor price evidence temporarily unavailable.'});}
+  });
+  router.post('/:id/factor-selection/rebalance',admin,async(req,res)=>{
+    try{const row=await ledger().get(req.params.id);if(!row)return res.status(404).json({error:'Tracking baseline not ready'});
+      const next=await ledger().schedule(req.params.id,{ledgerRevision:req.body.ledgerRevision,replacePending:true,effectiveDate:req.body.effectiveDate,feeBps:req.body.feeBps,
+        reason:'AGI main 25 at 4% each; published October factor-score order. Remaining 25 are reserves at 0% main weight. Preserve previous allocations and returns.',target:factorTarget(row.document.portfolio)},req.strategyLabActor.id);
+      res.json(ledgerView(next));
+    }catch(e){res.status(e.status||503).json({error:e.status?e.message:'Unable to schedule factor allocation; no changes applied.'});}
+  });
   router.get('/:id/ledger',ledgerAccess,(req,res)=>{res.set('Cache-Control','no-store').json(ledgerView(req.ledgerRow));});
   router.get('/admin/ledger-catalog',admin,async(_req,res)=>{try{res.set('Cache-Control','private, no-store').json({portfolios:(await ledger().list()).map(ledgerView)});}catch{res.status(503).json({error:'Ledger unavailable'});}});
   router.post('/:id/rebalance',admin,async(req,res)=>{try{const row=await ledger().schedule(req.params.id,req.body,req.strategyLabActor.id);res.json(ledgerView(row));}catch(e){res.status(e.status||503).json({error:e.status?e.message:'Unable to schedule rebalance; no changes applied.'});}});

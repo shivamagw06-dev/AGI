@@ -1,9 +1,10 @@
+import {FACTOR_SNAPSHOT,factorCandidates,isMain25,selectionStart} from './factorSelection.js';
 import {nseSession} from './liveAlphaSession.js';
 import {createSupabaseAdmin} from '../lib/supabaseAdmin.js';
 import {allocate,advanceLedger,validPrices,valueAccount,clone} from './portfolioRebalanceMath.js';
 import {validatePortfolio,publicDocument} from './portfolioCatalog.js';
 import {usaHistory,completedUSDate} from './usaPortfolioHistory.js';
-import {createIndiaDailyReader,completedDates} from './indiaPortfolioDaily.js';
+import {createIndiaDailyReader,completedDates,dailyDue} from './indiaPortfolioDaily.js';
 import {loadUpstoxNseIsinMap} from './companyIsinBackfill.js';
 const TABLE='agi_portfolio_ledger';
 const day=(date,market)=>new Intl.DateTimeFormat('en-CA',{timeZone:market==='india'?'Asia/Kolkata':'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
@@ -18,7 +19,8 @@ export function validateSchedule(portfolio,input,now=new Date()){
  const reason=String(input.reason||'').trim();if(reason.length<8||reason.length>2000)throw fail('Add a rebalance reason (8–2000 characters).',400);
  const clean=validatePortfolio({...portfolio,...input.target,market:portfolio.market,asOf:effectiveDate,incomplete:false},{preserveWeightPrecision:true});
  let target={...portfolio,...clean};
- target.holdings=target.holdings.map(h=>({...portfolio.holdings.find(x=>x.symbol===h.symbol),...h}));
+ if(input.target?.factorSelection===FACTOR_SNAPSHOT){if(!isMain25(portfolio.id,clean.holdings)||clean.cashWeight!==0)throw fail('Factor selection must contain exactly the verified top 25 at 4% each.',400);target.factorSelection=FACTOR_SNAPSHOT;target.weightMethod=input.target.weightMethod;}else if(portfolio.factorSelection){delete target.factorSelection;}
+ target.holdings=target.factorSelection===FACTOR_SNAPSHOT?factorCandidates(portfolio.id).slice(0,25):target.holdings.map(h=>({...portfolio.holdings.find(x=>x.symbol===h.symbol),...h}));
  if(target.holdings.some(h=>!h.symbol))throw fail('Every holding needs a verified symbol.',400);
  if(portfolio.conviction){
   const categories=input.target?.categories;
@@ -74,7 +76,7 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
   async schedule(id,input,actor){
    const row=await get(id);if(!row)throw fail('Tracking baseline not ready. No holdings have changed.');
    if(row.revision!==input.ledgerRevision)throw fail('Reload the current portfolio before scheduling.');
-   const s=clone(row.document);if(s.pending)throw fail('A rebalance is already pending. Cancel it before replacing it.');
+   const s=clone(row.document);if(s.pending&&!input.replacePending)throw fail('A rebalance is already pending. Cancel it before replacing it.');
    const request=validateSchedule(s.portfolio,input,now());
    if(request.target.market==='india'){
     const instruments=await master();
@@ -83,11 +85,14 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
    }else{
     for(const h of request.target.holdings){h.symbol=h.symbol.replace('BRK.B','BRK-B');const series=await history.ensureSymbol(h.symbol);if(series?.status!=='ok'||series.currency!=='USD')throw fail(`Yahoo USD history for ${h.symbol} must be collected and verified before scheduling.`,400);}
    }
+   if(s.pending)s.events.push({type:'cancelled',requestId:s.pending.id,recordedAt:now().toISOString(),actor,reason:'Replaced atomically by main-25 selection'});
    s.pending={...request,requestedAt:now().toISOString(),requestedBy:actor,id:crypto.randomUUID()};s.events.push({...s.pending,type:'scheduled'});return write(row,s);
   },
   async cancel(id,revision,actor){const row=await get(id);if(!row||row.revision!==revision)throw fail('Reload before cancelling.');const s=clone(row.document);if(!s.pending)throw fail('No pending rebalance.');s.events.push({type:'cancelled',requestId:s.pending.id,recordedAt:now().toISOString(),actor});s.pending=null;return write(row,s);},
   async collect(){
    await this.initialize();const ledgerRows=await this.list();
+   const dailyCache=new Map();
+   const sharedDaily=async(date,holdings)=>{const prices=dailyCache.get(date)||{};const missing=holdings.filter(h=>!validPrices([h],prices));if(missing.length)Object.assign(prices,await readDaily(date,missing));dailyCache.set(date,prices);return Object.fromEntries(holdings.filter(h=>validPrices([h],prices)).map(h=>[h.symbol,prices[h.symbol]]));};
    for(const symbol of new Set(ledgerRows.filter(r=>r.document.portfolio.market==='usa').flatMap(r=>[...r.document.account.holdings,...(r.document.pending?.target.holdings||[])].map(h=>h.symbol))))await history.ensureSymbol(symbol);
    const us=await history.read();
    for(let row of await this.list()){
@@ -97,10 +102,10 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
     if(india&&Date.parse(day(now(),'india'))-Date.parse(s.lastDate)>6*86400000)continue;
     for(const date of dates.filter(d=>d>s.lastDate)){
      if(s.pending&&date>s.pending.effectiveDate)break;
-     const holdings=[...new Map([...s.account.holdings,...(s.pending?.effectiveDate===date?s.pending.target.holdings:[])].map(h=>[h.symbol,h])).values()];
+     const holdings=[...new Map([...s.account.holdings,...(s.pending?.effectiveDate===date?s.pending.target.holdings:[]),...(s.portfolio.factorSelection===FACTOR_SNAPSHOT||s.pending?.target.factorSelection===FACTOR_SNAPSHOT?factorCandidates(s.portfolio.id):[])].map(h=>[h.symbol,h])).values()];
      let prices;
      if(india){
-      const {data,error}=await client.from('agi_india_daily_prices').select('prices').eq('session_date',date).maybeSingle();if(error)throw error;prices={...(data?.prices||{})};const missing=holdings.filter(h=>!validPrices([h],prices));if(missing.length)Object.assign(prices,await readDaily(date,missing));
+      const {data,error}=await client.from('agi_india_daily_prices').select('prices').eq('session_date',date).maybeSingle();if(error)throw error;prices={...(data?.prices||{})};const missing=holdings.filter(h=>!validPrices([h],prices));if(missing.length)Object.assign(prices,await sharedDaily(date,missing));
      }else{
       prices=usPrices(us,holdings,date);
       // Adjust model units to the provider's current adjustment scale without rewriting published NAV.
@@ -109,6 +114,16 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
       s=clone(s);for(const h of s.account.holdings){if(!record[h.symbol]?.price)throw Error('Missing prior adjustment anchor');const ratio=record[h.symbol].price/prior[h.symbol].price;h.units*=ratio;h.entryPrice/=ratio;}
      }
      try{const next=advanceLedger(s,date,prices,now().toISOString());row=await write(row,next);s=row.document;}catch(e){if(e.status===409)break;console.warn('[portfolio-ledger] Pending evidence for',row.portfolio_id,date);break;}
+    }
+    // Reserve evidence can be completed later without editing immutable NAV/execution history.
+    const start=selectionStart(s),candidates=factorCandidates(s.portfolio.id);
+    if(start&&dailyDue(now())){let updated=false;const next=clone(s);next.factorEvidence||=[];
+     for(const mark of next.history.filter(h=>h.date>=start&&now().getTime()-Date.parse(h.date+'T00:00:00Z')<7*86400000)){
+      const known=Object.assign({},mark.prices,...next.factorEvidence.filter(e=>e.date===mark.date).map(e=>e.prices));
+      const missing=candidates.filter(h=>!validPrices([h],known));if(!missing.length)continue;
+      const recovered=await sharedDaily(mark.date,missing);if(Object.keys(recovered).length){next.factorEvidence.push({date:mark.date,collectedAt:now().toISOString(),prices:recovered});updated=true;}
+     }
+     if(updated)row=await write(row,next);
     }
    }
   }
