@@ -1,3 +1,4 @@
+import {retrospectiveView} from './factorRetrospective.js';
 import {readFileSync} from 'node:fs';
 
 const source=JSON.parse(readFileSync(new URL('../data/factorCandidates.json',import.meta.url),'utf8'));
@@ -49,6 +50,7 @@ export function factorSelectionView(row,quotes={},now=new Date()){
  return {id,snapshot:FACTOR_SNAPSHOT,sourceDate:'2026-10-11',marketDataDate:'2026-10-08',sourcePage:source.find(h=>h.factor===factors[id])?.page,
   selectionBasis:'Published factor-score order; displayed source order breaks rounded-score ties. This is an October snapshot, not a fresh ranking.',
   active:!!start,startDate:start,positions,comparison,indicative,sectors,mainCount:25,reserveCount:25,
+  retrospective:retrospectiveView(s.factorRetrospective,candidates,FACTOR_SNAPSHOT,now),
   comparisonStatus:!start?'awaiting_rebalance':!complete(baseline)?'missing_baseline_prices':'recorded',
   missingBaseline:start?candidates.filter(c=>!valid(c,baseline?.prices?.[c.symbol])).map(c=>c.symbol):[],
   missingDates:observed.filter(h=>!complete(h)).map(h=>h.date)};

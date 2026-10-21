@@ -33,3 +33,11 @@ Successful shared daily lookups are reused across portfolios within a collection
 5. Verify all 50 quotes during a live market session and collect the activation-close baseline before describing tracking as live.
 
 No production allocations, pending requests or historical returns were changed while building this branch.
+
+## Separate September 15 current-holdings backtest
+
+The five factor pages now expose a retrospective view from 15 September 2026 close: first 25 of the fixed October snapshot, 4% initial weight each, buy-and-hold thereafter. Because the selection postdates the start, the UI explicitly identifies selection look-ahead; it is not evidence of a strategy selected in September. Raw INR price returns exclude dividends, fees and taxes; corporate actions require review. Actual activation, pending requests, execution events and continuous published NAV remain untouched.
+
+The existing ledger document stores separate `factorRetrospective` evidence, keyed by source snapshot and verified instrument identity, using existing CAS writes and server authorization. No new table or public write access. Off-market collection is bounded to five instruments per portfolio per scheduled pass, with shared instrument requests across the five portfolios and the existing market-data budget. Each historical range request returns daily bars from the start through the latest completed NSE session. Partial results persist; failures retry after an hour. Previously saved observations are retained. Current daily quotes do not substitute for historical prices.
+
+The exact 15 September baseline requires all 25 prices; no late baseline shift or removal/reweighting of missing stocks. All-25 daily gaps appear explicitly, break the chart line and withhold the corresponding composite point. Stock charts can show their available bars independently. The page shows latest complete basket date and incomplete dates; collection does not claim full coverage until every expected session is present. After implementation release, verify real provider coverage for all five before reporting numerical results. September history collection is research data retrieval, not a backdated allocation or broker trade.

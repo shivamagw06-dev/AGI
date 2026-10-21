@@ -1,3 +1,4 @@
+import FactorRetrospective from './FactorRetrospective';
 import {useEffect,useState} from 'react';
 import {ResponsiveContainer,LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,Legend} from 'recharts';
 import CompanyLogo from './CompanyLogo';
@@ -21,6 +22,7 @@ export default function FactorSelection({portfolio,admin=false}){
  return <section className="factor-selection"><header><span className="pf-eyebrow">25 HOLDINGS · 25 RESERVES</span><h2>Focused allocation, full watchlist.</h2><p>25 stocks at 4% target weight each. Reserves carry 0% in the main portfolio.</p></header>
  {error&&<p role="alert" className="pf-warning">{error}</p>}
  {!data?<p role="status">Loading selection and price evidence…</p>:<>
+ <FactorRetrospective data={data.retrospective}/>
  <p className={data.active?'factor-status':'pf-warning'}>{data.active?`Allocation effective ${data.startDate} close. Main-portfolio performance continues in the ledger above.`:`Proposed selection · current holdings remain in effect. ${data.pendingDate?`Existing pending rebalance: ${data.pendingDate}.`:''} A dated main-25 rebalance is required before tracking starts.`}</p>
  <div className="factor-stats">{[['Main 25',last?last.main-100:null],['Reserve 25 · comparison only',last?last.reserve-100:null],['All 50 · comparison only',last?last.all-100:null]].map(([label,value])=><div key={label}><span>{label}</span><strong>{pct(value)}</strong><small>{data.startDate?`Common baseline: ${data.startDate}`:'Awaiting activation baseline'}</small></div>)}</div>
  {data.indicative&&<p className="factor-status">Indicative live basket returns: Main 25 {pct(data.indicative.main-100)} · Reserve 25 {pct(data.indicative.reserve-100)} · All 50 {pct(data.indicative.all-100)}. Quote range: {time(data.indicative.oldestQuote)} – {time(data.indicative.newestQuote)}. Daily charts use closing prices.</p>}
