@@ -1,4 +1,5 @@
-import {createFactorRangeReader,collectRetrospective} from './factorRetrospective.js';
+import {indiaHistorySpec} from './indiaRetrospective.js';
+import {createFactorRangeReader,collectRetrospective,retrospectiveDates} from './factorRetrospective.js';
 import {FACTOR_SNAPSHOT,factorCandidates,isMain25,selectionStart} from './factorSelection.js';
 import {nseSession,sessionState} from './liveAlphaSession.js';
 import {createSupabaseAdmin} from '../lib/supabaseAdmin.js';
@@ -92,12 +93,28 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
   async cancel(id,revision,actor){const row=await get(id);if(!row||row.revision!==revision)throw fail('Reload before cancelling.');const s=clone(row.document);if(!s.pending)throw fail('No pending rebalance.');s.events.push({type:'cancelled',requestId:s.pending.id,recordedAt:now().toISOString(),actor});s.pending=null;return write(row,s);},
   async collectFactorHistory(){
    if(sessionState(now()).open)return;
+   const indiaRows=(await this.list()).filter(r=>r.document.portfolio.market==='india'),pool=new Map(),allowed=new Set(retrospectiveDates(now()));
+   const merge=(key,bars,attemptedAt)=>{if(!key)return;bars=Object.fromEntries(Object.entries(bars||{}).filter(([d,p])=>allowed.has(d)&&Number.isFinite(p)&&p>0));if(!Object.keys(bars).length&&!attemptedAt)return;const old=pool.get(key)||{instrumentKey:key,bars:{}};pool.set(key,{...old,attemptedAt:attemptedAt||old.attemptedAt,bars:{...bars,...old.bars}});};
+   for(const row of indiaRows){
+    const saved=row.document.factorRetrospective;
+    if(saved?.startDate==='2026-09-15')for(const series of Object.values(saved.securities||{}))merge(series.instrumentKey,series.bars,series.attemptedAt);
+    for(const mark of [...row.document.history||[],...row.document.factorEvidence||[]]){
+     if(mark.date<'2026-09-15')continue;
+     for(const p of Object.values(mark.prices||{}))if(p.instrumentKey&&Number.isFinite(p.price)&&p.price>0)merge(p.instrumentKey,{[mark.date]:p.price});
+    }
+   }
    const cache=new Map();
-   const shared=(h,end)=>{const key=h.instrumentKey+end;if(!cache.has(key))cache.set(key,readRange(h,end));return cache.get(key);};
-   for(const row of await this.list()){
-    const candidates=factorCandidates(row.portfolio_id);if(candidates.length!==50)continue;
-    const evidence=await collectRetrospective(row.document,candidates,FACTOR_SNAPSHOT,shared,now());
-    if(evidence){try{await write(row,{...row.document,factorRetrospective:evidence});}catch(e){if(e.status!==409)throw e;}}
+   const shared=(h,end)=>{const key=h.instrumentKey+end;if(!cache.has(key))cache.set(key,(async()=>{const result=await readRange(h,end,pool.get(h.instrumentKey));if(result.instrumentKey!==h.instrumentKey)throw Error('Wrong historical instrument');merge(h.instrumentKey,result.bars,now().toISOString());return pool.get(h.instrumentKey);})());return cache.get(key);};
+   for(const row of indiaRows){
+    const spec=indiaHistorySpec(row);if(!spec)continue;
+    const seeded=clone(row.document),securities={...(seeded.factorRetrospective?.securities||{})};
+    for(const h of spec.candidates)if(pool.has(h.instrumentKey))securities[h.symbol]=clone(pool.get(h.instrumentKey));
+    seeded.factorRetrospective={snapshot:spec.snapshot,startDate:'2026-09-15',securities};
+    const collected=await collectRetrospective(seeded,spec.candidates,spec.snapshot,shared,now());
+    const evidence=collected||seeded.factorRetrospective;
+    if(JSON.stringify(evidence)!==JSON.stringify(row.document.factorRetrospective)){
+     try{await write(row,{...row.document,factorRetrospective:evidence});}catch(e){if(e.status!==409)throw e;}
+    }
    }
   },
   async collect(){

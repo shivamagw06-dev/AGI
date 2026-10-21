@@ -1,3 +1,4 @@
+import {indiaRetrospectiveView} from '../services/indiaRetrospective.js';
 import {factorCandidates,factorIds,factorTarget,factorSelectionView} from '../services/factorSelection.js';
 import {createIndiaQuotes,session} from '../services/indiaPortfolioTracking.js';
 import {portfolioLedger,ledgerView} from '../services/portfolioRebalanceLedger.js';
@@ -46,6 +47,14 @@ export default function createPortfolioRouter({ store, admin = requireStrategyLa
         reason:'AGI main 25 at 4% each; published October factor-score order. Remaining 25 are reserves at 0% main weight. Preserve previous allocations and returns.',target:factorTarget(row.document.portfolio)},req.strategyLabActor.id);
       res.json(ledgerView(next));
     }catch(e){res.status(e.status||503).json({error:e.status?e.message:'Unable to schedule factor allocation; no changes applied.'});}
+  });
+  router.get('/:id/retrospective',ledgerAccess,(req,res)=>{
+    const view=indiaRetrospectiveView(req.ledgerRow,now());if(!view)return res.status(404).json({error:'India portfolio history only'});
+    res.set('Cache-Control','no-store').json(view);
+  });
+  router.get('/india-retrospectives',async(_req,res)=>{
+    try{const portfolios=(await ledger().list()).filter(r=>r.document.portfolio.market==='india'&&r.document.portfolio.visibility!=='admin'&&r.portfolio_id!==GROWTH_MOMENTUM_ID).map(r=>{const v=indiaRetrospectiveView(r,now());const {holdings,categories,reserve,all50,...summary}=v;return summary;});res.set('Cache-Control','no-store').json({portfolios});}
+    catch{res.status(503).json({error:'Historical price evidence temporarily unavailable'});}
   });
   router.get('/:id/ledger',ledgerAccess,(req,res)=>{res.set('Cache-Control','no-store').json(ledgerView(req.ledgerRow));});
   router.get('/admin/ledger-catalog',admin,async(_req,res)=>{try{res.set('Cache-Control','private, no-store').json({portfolios:(await ledger().list()).map(ledgerView)});}catch{res.status(503).json({error:'Ledger unavailable'});}});

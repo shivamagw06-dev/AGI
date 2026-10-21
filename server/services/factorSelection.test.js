@@ -29,5 +29,5 @@ test('retrospective collection runs independently of account and USA downloads',
  const r=row();let calls=0,writes=0;const original=structuredClone(r.document);
  const client={from(){let payload;return {select(){return this;},order(){return this;},eq(){return this;},update(p){payload=p;return this;},async range(){return {data:[r]};},async maybeSingle(){writes++;Object.assign(r,payload);return {data:r};}};}};
  const ledger=createRebalanceLedger({client,now:()=>new Date('2026-10-21T12:00Z'),readRange:async h=>{calls++;return {instrumentKey:h.instrumentKey,bars:{'2026-09-15':100}};},history:{ensureSymbol(){throw Error('Must not depend on USA history');}}});
- await ledger.collectFactorHistory();assert.equal(calls,5);assert.equal(writes,1);assert.equal(Object.keys(r.document.factorRetrospective.securities).length,5);assert.deepEqual(r.document.history,original.history);assert.deepEqual(r.document.events,original.events);assert.deepEqual(r.document.portfolio,original.portfolio);
+ await ledger.collectFactorHistory();assert.equal(calls,10);assert.equal(writes,1);assert.equal(Object.values(r.document.factorRetrospective.securities).filter(s=>s.bars['2026-09-15']).length,10);assert.deepEqual(r.document.history,original.history);assert.deepEqual(r.document.events,original.events);assert.deepEqual(r.document.portfolio,original.portfolio);
 });

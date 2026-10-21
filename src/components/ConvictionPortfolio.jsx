@@ -1,3 +1,4 @@
+import IndiaRetrospective from './IndiaRetrospective';
 import PortfolioLedger from './PortfolioLedger';
 import CompanyLogo from './CompanyLogo';
 import {useState} from 'react';
@@ -21,7 +22,7 @@ export default function ConvictionPortfolio({portfolio:p,admin=false}) {
   {error&&<p className="pf-warning" role="alert">{error}</p>}
   {short&&<p className="pf-warning"><strong>Theoretical short research.</strong> Uses signed short model units and cash; dated rebalances preserve earlier results. Excludes borrowing costs, taxes, dividends owed, margin and actual execution. Chosen rebalance costs are deducted. No short trades are placed. Losses can exceed 100%; this is not a tradable fund return.</p>}
   <div className="india-metrics"><div><span>Total Conviction {short?'Short · theoretical':'Long'} return</span><strong>{pct(t?.returnPct)}</strong></div><div><span>{short?'Research index · insolvency stops updates':'Portfolio index · launch = 100'}</span><strong>{t?.nav==null?'—':t.nav.toFixed(2)}</strong></div><div><span>Category positions / unique stocks</span><strong>{p.categories.reduce((n,c)=>n+c.holdings.length,0)} / {p.holdings.length}</strong></div></div>
-  <PortfolioLedger portfolio={p} admin={admin}/><h3>Returns by category</h3><p>Each category receives exactly one-sixth of initial capital. Displayed weights are rounded; calculations use full precision.</p>
+  <PortfolioLedger portfolio={p} admin={admin}/><IndiaRetrospective key={p.id} id={p.id} admin={admin}/><h3>Actual allocation · returns by category</h3><p>Each category receives exactly one-sixth of initial capital. Displayed weights are rounded; calculations use full precision.</p>
   <div className="conviction-categories">{categories.map(c=><button type="button" className={selected===c.name?'selected':''} onClick={()=>setSelected(c.name)} key={c.name} aria-pressed={selected===c.name}><strong>{c.name==='Low Vol'?'Low Volatility':c.name}</strong><span>{c.holdings.length} stocks · {c.weight.toFixed(2)}% allocation</span><b>{pct(c.returnPct)}</b><small>{c.priceDate?`Prices: ${c.priceDate}`:'Awaiting recorded prices'}</small></button>)}</div>
   <button type="button" className="pf-button" onClick={()=>setSelected('Total')} aria-pressed={selected==='Total'}>Show total Conviction</button>
   <PriceChart key={selected} title={`${selected==='Total'?'Total Conviction':selected}${short?' · theoretical short index':''}`} points={pointsFor(chart)}/>
