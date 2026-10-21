@@ -90,10 +90,18 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
    s.pending={...request,requestedAt:now().toISOString(),requestedBy:actor,id:crypto.randomUUID()};s.events.push({...s.pending,type:'scheduled'});return write(row,s);
   },
   async cancel(id,revision,actor){const row=await get(id);if(!row||row.revision!==revision)throw fail('Reload before cancelling.');const s=clone(row.document);if(!s.pending)throw fail('No pending rebalance.');s.events.push({type:'cancelled',requestId:s.pending.id,recordedAt:now().toISOString(),actor});s.pending=null;return write(row,s);},
+  async collectFactorHistory(){
+   if(sessionState(now()).open)return;
+   const cache=new Map();
+   const shared=(h,end)=>{const key=h.instrumentKey+end;if(!cache.has(key))cache.set(key,readRange(h,end));return cache.get(key);};
+   for(const row of await this.list()){
+    const candidates=factorCandidates(row.portfolio_id);if(candidates.length!==50)continue;
+    const evidence=await collectRetrospective(row.document,candidates,FACTOR_SNAPSHOT,shared,now());
+    if(evidence){try{await write(row,{...row.document,factorRetrospective:evidence});}catch(e){if(e.status!==409)throw e;}}
+   }
+  },
   async collect(){
    await this.initialize();const ledgerRows=await this.list();
-   const rangeCache=new Map();
-   const sharedRange=(h,end)=>{const key=h.instrumentKey+end;if(!rangeCache.has(key))rangeCache.set(key,readRange(h,end));return rangeCache.get(key);};
    const dailyCache=new Map();
    const sharedDaily=async(date,holdings)=>{const prices=dailyCache.get(date)||{};const missing=holdings.filter(h=>!validPrices([h],prices));if(missing.length)Object.assign(prices,await readDaily(date,missing));dailyCache.set(date,prices);return Object.fromEntries(holdings.filter(h=>validPrices([h],prices)).map(h=>[h.symbol,prices[h.symbol]]));};
    for(const symbol of new Set(ledgerRows.filter(r=>r.document.portfolio.market==='usa').flatMap(r=>[...r.document.account.holdings,...(r.document.pending?.target.holdings||[])].map(h=>h.symbol))))await history.ensureSymbol(symbol);
@@ -128,18 +136,19 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
      }
      if(updated)row=await write(row,next);
     }
-    // Separate retrospective evidence; never backdate holdings, execution events or NAV.
-    if(candidates.length===50&&!sessionState(now()).open){
-     const evidence=await collectRetrospective(row.document,candidates,FACTOR_SNAPSHOT,sharedRange,now());
-     if(evidence)await write(row,{...row.document,factorRetrospective:evidence});
-    }
    }
   }
  };
 }
 let instance,running=false;
 export const portfolioLedger=()=>instance||=createRebalanceLedger();
-export function startPortfolioLedgerScheduler(){const tick=async()=>{if(running)return;running=true;try{await portfolioLedger().collect();}catch{console.warn('[portfolio-ledger] Collection pending; existing history retained.');}finally{running=false;}};const timer=setInterval(tick,300000);timer.unref();tick();return timer;}
+export function startPortfolioLedgerScheduler(){
+ const tick=async()=>{if(running)return;running=true;try{await portfolioLedger().collect();}catch{console.warn('[portfolio-ledger] Collection pending; existing history retained.');}finally{running=false;}};
+ let researchRunning=false;
+ const research=async()=>{if(researchRunning)return;researchRunning=true;try{await portfolioLedger().collectFactorHistory();}catch{console.warn('[portfolio-ledger] Separate historical basket collection pending.');}finally{researchRunning=false;}};
+ const timer=setInterval(tick,300000);timer.unref();tick();
+ const researchTimer=setInterval(research,300000);researchTimer.unref();research();return timer;
+}
 export function ledgerView(row){
  const s=row.document,last=s.history.at(-1),prior=s.history.at(-2),prices=last?.prices||{};
  return {id:row.portfolio_id,ledgerRevision:row.revision,portfolio:s.portfolio,basis:s.basis,startedAt:s.startedAt,ledgerStartedAt:s.ledgerStartedAt,priceDate:s.lastDate,nav:last?.nav??null,returnPct:last?last.nav-100:null,dayReturnPct:last&&prior?(last.nav/prior.nav-1)*100:null,history:s.history.map(({prices,...m})=>m),events:s.events.map(({requestedBy,actor,...e})=>e),pending:s.pending?{effectiveDate:s.pending.effectiveDate,requestedAt:s.pending.requestedAt,reason:s.pending.reason,target:s.pending.target,feeBps:s.pending.feeBps}:null,categories:s.categories.map(c=>({...c,account:undefined,nav:c.history.at(-1)?.nav??null,returnPct:c.history.length?c.history.at(-1).nav-100:null,priceDate:c.history.at(-1)?.date})),positions:s.account.holdings.map(h=>{const entryAt=s.events.filter(e=>e.type==='rebalance').at(-1)?.effectiveDate||s.startedAt;const price=prices[h.symbol]?.price??null;return {...h,entryAt,price,basePrice:h.entryPrice,priceDate:s.lastDate,returnPct:price?(price/h.entryPrice-1)*100:null,strategyReturnPct:price?(s.direction==='short'?-1:1)*(price/h.entryPrice-1)*100:null,history:s.history.filter(m=>m.date>=entryAt.slice(0,10)&&m.prices?.[h.symbol]?.price>0).map(m=>({date:m.date,price:m.prices[h.symbol].price}))};}),status:s.pending&&s.pending.effectiveDate<day(new Date(),s.portfolio.market)?'daily_pending':'daily_recorded'};
