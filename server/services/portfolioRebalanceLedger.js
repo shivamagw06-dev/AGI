@@ -1,5 +1,6 @@
+import {createFactorRangeReader,collectRetrospective} from './factorRetrospective.js';
 import {FACTOR_SNAPSHOT,factorCandidates,isMain25,selectionStart} from './factorSelection.js';
-import {nseSession} from './liveAlphaSession.js';
+import {nseSession,sessionState} from './liveAlphaSession.js';
 import {createSupabaseAdmin} from '../lib/supabaseAdmin.js';
 import {allocate,advanceLedger,validPrices,valueAccount,clone} from './portfolioRebalanceMath.js';
 import {validatePortfolio,publicDocument} from './portfolioCatalog.js';
@@ -40,7 +41,7 @@ export function validateSchedule(portfolio,input,now=new Date()){
 }
 async function rows(client,table){const all=[];for(let offset=0;;offset+=500){const {data,error}=await client.from(table).select('*').order(table===TABLE?'portfolio_id':table==='agi_india_daily_prices'?'session_date':table==='agi_india_portfolio_marks'?'session_date':'id').range(offset,offset+499);if(error)throw error;all.push(...data);if(data.length<500)return all;}}
 function usPrices(data,holdings,date){const prices={};for(const h of holdings){const symbol=h.symbol.replace('BRK.B','BRK-B'),s=data.securities[symbol],b=s?.bars?.find(b=>b[0]===date);if(s?.status==='ok'&&s.currency==='USD'&&b?.[1]>0)prices[h.symbol]={price:b[1],source:'Yahoo adjusted close',date};}return prices;}
-export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new Date(),history=usaHistory,readDaily=createIndiaDailyReader(),master=()=>loadUpstoxNseIsinMap({instrumentTypes:['EQ','BE','ETF']})}={}){
+export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new Date(),history=usaHistory,readDaily=createIndiaDailyReader(),readRange=createFactorRangeReader(),master=()=>loadUpstoxNseIsinMap({instrumentTypes:['EQ','BE','ETF']})}={}){
  const get=async id=>{const {data,error}=await client.from(TABLE).select('*').eq('portfolio_id',id).maybeSingle();if(error)throw error;return data;};
  const write=async(row,document)=>{const {data,error}=await client.from(TABLE).update({document,revision:row.revision+1,updated_at:now().toISOString()}).eq('portfolio_id',row.portfolio_id).eq('revision',row.revision).select('*').maybeSingle();if(error)throw error;if(!data)throw fail('Portfolio updated concurrently. Reload and try again.');return data;};
  async function seed(p){
@@ -91,6 +92,8 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
   async cancel(id,revision,actor){const row=await get(id);if(!row||row.revision!==revision)throw fail('Reload before cancelling.');const s=clone(row.document);if(!s.pending)throw fail('No pending rebalance.');s.events.push({type:'cancelled',requestId:s.pending.id,recordedAt:now().toISOString(),actor});s.pending=null;return write(row,s);},
   async collect(){
    await this.initialize();const ledgerRows=await this.list();
+   const rangeCache=new Map();
+   const sharedRange=(h,end)=>{const key=h.instrumentKey+end;if(!rangeCache.has(key))rangeCache.set(key,readRange(h,end));return rangeCache.get(key);};
    const dailyCache=new Map();
    const sharedDaily=async(date,holdings)=>{const prices=dailyCache.get(date)||{};const missing=holdings.filter(h=>!validPrices([h],prices));if(missing.length)Object.assign(prices,await readDaily(date,missing));dailyCache.set(date,prices);return Object.fromEntries(holdings.filter(h=>validPrices([h],prices)).map(h=>[h.symbol,prices[h.symbol]]));};
    for(const symbol of new Set(ledgerRows.filter(r=>r.document.portfolio.market==='usa').flatMap(r=>[...r.document.account.holdings,...(r.document.pending?.target.holdings||[])].map(h=>h.symbol))))await history.ensureSymbol(symbol);
@@ -124,6 +127,11 @@ export function createRebalanceLedger({client=createSupabaseAdmin(),now=()=>new 
       const recovered=await sharedDaily(mark.date,missing);if(Object.keys(recovered).length){next.factorEvidence.push({date:mark.date,collectedAt:now().toISOString(),prices:recovered});updated=true;}
      }
      if(updated)row=await write(row,next);
+    }
+    // Separate retrospective evidence; never backdate holdings, execution events or NAV.
+    if(candidates.length===50&&!sessionState(now()).open){
+     const evidence=await collectRetrospective(row.document,candidates,FACTOR_SNAPSHOT,sharedRange,now());
+     if(evidence)await write(row,{...row.document,factorRetrospective:evidence});
     }
    }
   }
