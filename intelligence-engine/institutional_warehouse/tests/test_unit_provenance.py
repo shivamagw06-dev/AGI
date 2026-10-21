@@ -86,15 +86,63 @@ def test_running_it_twice_changes_nothing_the_second_time():
     assert second["changed"] == 0 and second["already_done"] is True
 
 
-def test_the_rollback_sql_puts_it_back():
-    _seed([CAPIQ_ASSUMED, {**CAPIQ_ASSUMED, "fy": "FY2021"}])
-    rollback = up.plan(TAB)["rollback_sql"]
-    up.apply(TAB, actor="test", confirm=True)
-    assert up.plan(TAB)["rows_eligible"] == 0
+def test_the_rollback_targets_only_the_rows_the_run_changed():
+    """The reason a predicate-shaped rollback is wrong.
 
-    for statement in [s for s in rollback.split("\n") if not s.startswith("--")]:
-        db.execute(statement.rstrip(";"))
-    assert up.plan(TAB)["rows_eligible"] == 2, "rollback must restore the prior state"
+    After the backfill, a row it moved and a row that was legitimately
+    source_default beforehand look identical. "Set every source_default row back
+    to assumed" would revert both, unstamping provenance this run never touched.
+    """
+    _seed([CAPIQ_ASSUMED,                                        # will be moved
+           {**CAPIQ_ASSUMED, "fy": "FY2021"},                    # will be moved
+           {**CAPIQ_ASSUMED, "fy": "FY2022", "method": "source_default"}])  # innocent
+
+    out = up.apply(TAB, actor="test", confirm=True)
+    assert out["changed"] == 2
+    run_id = out["run_id"]
+
+    restored = up.rollback(run_id, actor="test", confirm=True)
+    assert restored["rows_restored"] == 2
+
+    methods = sorted(r["m"] for r in db.query(
+        f"SELECT sys_unit_method AS m FROM {db.physical_table(TAB)}"))
+    assert methods == ["assumed_canonical", "assumed_canonical", "source_default"], \
+        "the pre-existing source_default row must survive the rollback untouched"
+
+
+def test_the_rollback_sql_names_the_run_not_a_predicate():
+    _seed([CAPIQ_ASSUMED])
+    out = up.apply(TAB, actor="test", confirm=True)
+    sql = up.rollback_sql(out["run_id"])
+    assert out["run_id"] in sql
+    assert "row_id" in sql
+    ids = [r["row_id"] for r in db.query(f"SELECT row_id FROM {db.physical_table(TAB)}")]
+    assert ids[0] in sql or "wh_provenance_run_rows" in sql
+
+
+def test_the_plan_cannot_offer_a_rollback_before_the_run_exists():
+    _seed([CAPIQ_ASSUMED])
+    assert "rollback_sql" not in up.plan(TAB), \
+        "a rollback written before the run has no row ids to target"
+
+
+def test_a_run_is_recorded_and_rollback_is_idempotent():
+    _seed([CAPIQ_ASSUMED])
+    out = up.apply(TAB, actor="test", confirm=True)
+    runs = up.runs()["runs"]
+    assert len(runs) == 1 and runs[0]["rows_changed"] == 1
+    assert up.rollback(out["run_id"], actor="test", confirm=True)["rows_restored"] == 1
+    again = up.rollback(out["run_id"], actor="test", confirm=True)
+    assert again.get("already_rolled_back") is True
+
+
+def test_rollback_refuses_without_confirmation():
+    _seed([CAPIQ_ASSUMED])
+    out = up.apply(TAB, actor="test", confirm=True)
+    refused = up.rollback(out["run_id"], actor="test")
+    assert refused["ok"] is False and refused["error"] == "confirm_required"
+    row = db.query(f"SELECT sys_unit_method AS m FROM {db.physical_table(TAB)}")[0]
+    assert row["m"] == "source_default", "a refused rollback must change nothing"
 
 
 def test_the_plan_writes_nothing():
