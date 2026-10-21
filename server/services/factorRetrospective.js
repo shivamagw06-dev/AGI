@@ -1,8 +1,15 @@
+import {readFileSync} from 'node:fs';
 import {budgetedMarketFetch} from '../lib/marketDataBudget.js';
 import {resolveUpstoxAccessToken} from '../providers/upstox.js';
 import {validDailyCandle} from './indiaPortfolioDaily.js';
 import {nseSession,istDateKey} from './liveAlphaSession.js';
 export const RETROSPECTIVE_START='2026-09-15';
+const verifiedNse=JSON.parse(readFileSync(new URL('../data/indiaNseHistoricalSupplements.json',import.meta.url),'utf8'));
+export function verifiedNseBars(h,end){
+ const series=verifiedNse.securities.find(s=>s.symbol===h.symbol&&s.instrumentKey===h.instrumentKey);
+ return Object.fromEntries(Object.entries(series?.bars||{}).filter(([d,p])=>d>=RETROSPECTIVE_START&&d<=end&&Number.isFinite(p.price)&&p.price>0&&p.sourceUrl.startsWith('https://archives.nseindia.com/content/cm/')).map(([d,p])=>[d,p.price]));
+}
+
 export function retrospectiveDates(now=new Date()){
  const dates=[];
  for(let at=Date.parse(RETROSPECTIVE_START+'T12:00:00+05:30');at<=now.getTime();at+=86400000){
@@ -33,6 +40,7 @@ export async function collectRetrospective(document,candidates,snapshot,readRang
  const old=document.factorRetrospective;
  const saved=old?.startDate===RETROSPECTIVE_START?{...structuredClone(old),snapshot}:{snapshot,startDate:RETROSPECTIVE_START,securities:{}};
  let count=0;
+ for(const h of candidates){const bars=verifiedNseBars(h,end);if(!Object.keys(bars).length)continue;const prior=saved.securities[h.symbol]?.instrumentKey===h.instrumentKey?saved.securities[h.symbol]:null;saved.securities[h.symbol]={...prior,instrumentKey:h.instrumentKey,verifiedNse:true,bars:{...bars,...prior?.bars}};}
  for(const h of [...candidates].sort((a,b)=>Number(!!saved.securities[a.symbol]?.bars?.[RETROSPECTIVE_START])-Number(!!saved.securities[b.symbol]?.bars?.[RETROSPECTIVE_START]))){
   const oldSeries=saved.securities[h.symbol],known=oldSeries?.instrumentKey===h.instrumentKey?oldSeries:null;
   const complete=known&&dates.every(d=>known.bars?.[d]>0);
@@ -62,7 +70,7 @@ export function retrospectiveView(saved,candidates,snapshot,now=new Date(),optio
   holdings:candidates.map(h=>{
    const bars=dates.filter(d=>get(h,d)>0).map(date=>({date,price:get(h,date)})),latest=bars.at(-1),base=get(h,RETROSPECTIVE_START)||null;
    const priceReturnPct=base&&latest?(latest.price/base-1)*100:null;
-   return {...h,basePrice:base,price:latest?.price??null,priceDate:latest?.date??null,priceReturnPct,strategyReturnPct:priceReturnPct==null?null:(short?-priceReturnPct:priceReturnPct),
+   return {...h,priceSource:saved?.securities?.[h.symbol]?.verifiedNse?'Upstox daily + verified NSE archive backup':'Upstox daily',basePrice:base,price:latest?.price??null,priceDate:latest?.date??null,priceReturnPct,strategyReturnPct:priceReturnPct==null?null:(short?-priceReturnPct:priceReturnPct),
     history:bars.length?dates.map(date=>({date,price:get(h,date)||null})):[]};
   })};
 }
