@@ -1,0 +1,30 @@
+name: Indian Investor Exchange Filings
+on:
+  schedule:
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: investor-exchange-filings
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate filing parser
+        run: python -m unittest discover -s scripts/investor_filings -p 'test_*.py'
+      - name: Check new and revised original disclosures
+        env:
+          BSE_SHAREHOLDING_FEED_URL: ${{ secrets.BSE_SHAREHOLDING_FEED_URL }}
+          BSE_SHAREHOLDING_FEED_TOKEN: ${{ secrets.BSE_SHAREHOLDING_FEED_TOKEN }}
+        run: python scripts/investor_filings/refresh.py /tmp/investor-filings/latest.json --limit 250
+      - name: Publish successful scan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/investor_filings/publish.py /tmp/investor-filings/latest.json

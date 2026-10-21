@@ -1,0 +1,78 @@
+{
+  "engine": "L4",
+  "version": "1.0.0",
+  "model_version": "l4-shadow-vote-0.1.0",
+  "as_of": "2026-07-24",
+  "universe_id": "NIFTY500",
+  "symbol": "RELIANCE",
+  "score": {
+    "raw": 0.55,
+    "normalized_0_100": 55.0,
+    "normalized_signed": 0.1,
+    "unit": "probability"
+  },
+  "confidence": {
+    "value": 0.61,
+    "components": {
+      "fusion_mult": 0.85,
+      "voter_mean": 0.7,
+      "hierarchy_haircut": 0.9
+    },
+    "method_version": "conf-1.0"
+  },
+  "reliability": {
+    "sample_size": null,
+    "historical_accuracy": null,
+    "stability": 0.5
+  },
+  "metadata": {
+    "label": "Neutral",
+    "bullish_probability": 0.42,
+    "bearish_probability": 0.33,
+    "neutral_probability": 0.25,
+    "weight_set_id": "l4_voters_v1",
+    "shadow": true,
+    "contributing_engines": ["E03", "E01"],
+    "conflicting_engines": ["E14"]
+  },
+  "evidence": {
+    "positive": [
+      {
+        "id": "l4_pos_e03",
+        "claim": "E03 constructive technical composite",
+        "engine": "E03"
+      }
+    ],
+    "negative": [
+      {
+        "id": "l4_neg_e14",
+        "claim": "E14 elevated risk haircut",
+        "engine": "E14"
+      }
+    ],
+    "contradictions": [
+      {
+        "id": "l4_con_tech_vs_risk",
+        "claim": "Technical constructive vs elevated firm risk"
+      }
+    ],
+    "unknowns": [],
+    "risks": [
+      {
+        "id": "l4_risk_size",
+        "claim": "Size metadata reduced by E14 size_mult"
+      }
+    ],
+    "missing_data": []
+  },
+  "explanation": {
+    "summary": "Shadow composite opinion is Neutral with modest confidence after risk haircut.",
+    "top_drivers": ["E03", "E14"],
+    "falsifiers": ["E14_hard_derisk", "E03_breakdown"]
+  },
+  "warnings": ["shadow_mode"],
+  "stale_inputs": [],
+  "input_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+  "timestamp_generated": "2026-07-24T18:40:00+05:30"
+}

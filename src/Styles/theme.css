@@ -1,0 +1,370 @@
+/* ==========================================================
+   AGARWAL GLOBAL INVESTMENTS
+   Editorial Theme v1.0
+   ========================================================== */
+
+:root {
+  /* Backgrounds */
+  --background: #ffffff;
+  --surface: #fafafa;
+  --surface-2: #f3f4f6;
+
+  /* Cards */
+  --card: #ffffff;
+  --card-hover: #fcfcfc;
+
+  /* Borders */
+  --border: #e5e7eb;
+  --border-dark: #d1d5db;
+
+  /* Text */
+  --text: #111827;
+  --text-light: #374151;
+  --muted: #6b7280;
+
+  /* Brand */
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
+
+  /* Status */
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.06);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+
+  /* Layout */
+  --container: 1280px;
+
+  /* Transition */
+  --transition: .25s ease;
+}
+
+/* ==========================================================
+   Base
+   ========================================================== */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  background:var(--background);
+  color:var(--text);
+  font-family:"Inter",sans-serif;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ==========================================================
+   Typography
+   ========================================================== */
+
+h1,h2,h3,h4,h5,h6{
+  color:var(--text);
+  font-weight:700;
+  line-height:1.2;
+}
+
+h1{
+  font-size:clamp(3rem,7vw,5rem);
+}
+
+h2{
+  font-size:clamp(2rem,4vw,3rem);
+}
+
+h3{
+  font-size:1.5rem;
+}
+
+p{
+  color:var(--text-light);
+  line-height:1.8;
+}
+
+small{
+  color:var(--muted);
+}
+
+/* ==========================================================
+   Layout
+   ========================================================== */
+
+section{
+  padding:96px 0;
+}
+
+.container{
+  width:100%;
+  max-width:var(--container);
+  margin:auto;
+  padding:0 24px;
+}
+
+/* ==========================================================
+   Links
+   ========================================================== */
+
+a{
+  color:inherit;
+  text-decoration:none;
+  transition:var(--transition);
+}
+
+a:hover{
+  color:var(--primary);
+}
+
+/* ==========================================================
+   Buttons
+   ========================================================== */
+
+.btn-primary{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:12px 22px;
+
+  border-radius:var(--radius-sm);
+
+  background:var(--primary);
+
+  color:white;
+
+  font-weight:600;
+
+  transition:var(--transition);
+}
+
+.btn-primary:hover{
+  background:var(--primary-hover);
+}
+
+.btn-secondary{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:12px 22px;
+
+  border-radius:var(--radius-sm);
+
+  background:white;
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  font-weight:600;
+
+  transition:var(--transition);
+}
+
+.btn-secondary:hover{
+  border-color:var(--primary);
+  color:var(--primary);
+}
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+
+.card{
+  background:var(--card);
+
+  border:1px solid var(--border);
+
+  border-radius:var(--radius);
+
+  padding:28px;
+
+  transition:var(--transition);
+}
+
+.card:hover{
+
+  background:var(--card-hover);
+
+  border-color:var(--primary);
+
+  box-shadow:var(--shadow-md);
+
+  transform:translateY(-3px);
+
+}
+
+/* ==========================================================
+   Badge
+   ========================================================== */
+
+.badge{
+
+display:inline-flex;
+
+align-items:center;
+
+padding:6px 12px;
+
+font-size:.8rem;
+
+font-weight:600;
+
+border-radius:999px;
+
+background:#eff6ff;
+
+color:var(--primary);
+
+border:1px solid #bfdbfe;
+
+}
+
+/* ==========================================================
+   Divider
+   ========================================================== */
+
+.divider{
+
+height:1px;
+
+background:var(--border);
+
+margin:48px 0;
+
+}
+
+/* ==========================================================
+   Tables
+   ========================================================== */
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+th{
+
+text-align:left;
+
+font-weight:600;
+
+padding:14px;
+
+border-bottom:1px solid var(--border);
+
+}
+
+td{
+
+padding:14px;
+
+border-bottom:1px solid var(--border);
+
+}
+
+/* ==========================================================
+   Inputs
+   ========================================================== */
+
+input,
+textarea,
+select{
+
+width:100%;
+
+padding:12px 16px;
+
+border:1px solid var(--border);
+
+border-radius:var(--radius-sm);
+
+font-family:inherit;
+
+transition:var(--transition);
+
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+
+outline:none;
+
+border-color:var(--primary);
+
+}
+
+/* ==========================================================
+   Utility
+   ========================================================== */
+
+.text-muted{
+  color:var(--muted);
+}
+
+.bg-surface{
+  background:var(--surface);
+}
+
+.bg-white{
+  background:white;
+}
+
+.shadow{
+  box-shadow:var(--shadow-sm);
+}
+
+.border{
+  border:1px solid var(--border);
+}
+
+.rounded{
+  border-radius:var(--radius);
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media (max-width:768px){
+
+section{
+padding:72px 0;
+}
+
+.container{
+padding:0 20px;
+}
+
+h1{
+font-size:2.8rem;
+}
+
+h2{
+font-size:2rem;
+}
+
+.card{
+padding:22px;
+}
+
+}

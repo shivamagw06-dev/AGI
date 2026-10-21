@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {valuation,peerMetrics,csvText,agiTools} from './agiResearchTools.js';
+const base={fcf:100,growth:0,wacc:10,terminal:0,debt:200,cash:50,shares:10,ebitda:100,multiple:10};
+test('DCF constant cash flow reconciles with perpetuity and equity bridge',()=>{const r=valuation(base);assert.equal(r.errors.length,0);assert.ok(Math.abs(r.ev-1000)<1e-8);assert.ok(Math.abs(r.equity-850)<1e-8);assert.ok(Math.abs(r.price-85)<1e-8);assert.equal(r.multipleEquity,850);});
+test('invalid and blank assumptions block valuation; negative terminal cash flow is flagged',()=>{for(const v of [{wacc:0},{terminal:10},{shares:0},{fcf:''},{growth:-101},{cash:-1}])assert.ok(valuation({...base,...v}).errors.length);assert.ok(valuation({...base,fcf:-100}).warning);assert.equal(valuation({...base,ebitda:-1}).multipleEV,null);});
+test('peer comparison preserves missing inputs and meaningful ratios',()=>{assert.ok(Object.values(peerMetrics({})).every(x=>x===null));const p={revenue:200,priorRevenue:100,ebitda:40,profit:20,priorProfit:10,debt:50,cash:10,equity:100,shares:10,price:30};const r=peerMetrics(p);assert.equal(r.marketCap,300);assert.equal(r.ev,340);assert.equal(r.pe,15);assert.equal(r.evEbitda,8.5);assert.equal(r.roe,.2);assert.equal(r.revenueGrowth,1);assert.equal(peerMetrics({...p,profit:-20}).pe,null);assert.equal(peerMetrics({...p,priorProfit:0}).profitGrowth,null);assert.equal(peerMetrics({...p,equity:0}).pb,null);});
+test('CSV escapes formula-looking user labels and keeps numeric negatives',()=>{assert.equal(csvText([['=SUM(A1)','a"b',-10]]),'"\'=SUM(A1)","a""b","-10"');});
+test('four AGI tools have distinct internal destinations',()=>{assert.equal(agiTools.length,4);assert.equal(new Set(agiTools.map(x=>x.path)).size,4);assert.ok(agiTools.every(x=>x.path.startsWith('/')));});

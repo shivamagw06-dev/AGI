@@ -1,0 +1,197 @@
+/* Institutional Holdings — white.
+ *
+ * This file used to repaint the page black and rewrite its colours to a blue
+ * accent. The markup itself is now a monochrome greyscale, so the override was
+ * the only thing making the page dark, and most of it can simply go.
+ *
+ * What is kept is the discipline rather than the drama: squared corners, no
+ * shadows, one typeface, tight labels. That is what reads as clean on a white
+ * ground - restraint, not decoration.
+ *
+ * What is dropped: the animated grid, the scanning line, the blue, and every
+ * forced dark surface. A page a client reads for holdings data does not need
+ * ambient motion behind it.
+ */
+
+.ihi-theme {
+  --ihi-ground: #ffffff;
+  --ihi-panel:  #fafafa;
+  --ihi-raised: #f4f4f4;
+  --ihi-line:   #e4e4e4;
+  --ihi-line-strong: #cfcfcf;
+  --ihi-ink:    #111111;
+  --ihi-muted:  #6b6b6b;
+
+  background: var(--ihi-ground) !important;
+  color: var(--ihi-ink) !important;
+  font-family: "Avenir Next", "Century Gothic", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* One ground throughout. No gradient mesh, no drifting grid. */
+.ihi-theme > header,
+.ihi-theme > main,
+.ihi-theme > div {
+  position: relative;
+  background-color: var(--ihi-ground) !important;
+  background-image: none !important;
+  animation: none !important;
+}
+
+.ihi-theme > header {
+  min-height: 0;
+  border-bottom: 1px solid var(--ihi-line);
+}
+
+/* The scanning line belonged to the terminal look. */
+.ihi-theme > header::after { display: none !important; }
+
+/* The dark theme hid these because it drew its own hero. On white they are
+   part of the page again. */
+.ihi-theme > header > div:first-child,
+.ihi-theme > header > div:nth-child(2) {
+  opacity: 1 !important;
+}
+
+.ihi-theme .font-serif {
+  font-family: "Avenir Next", "Century Gothic", ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: -0.03em;
+}
+
+/* --------------------------------------------------------------- surfaces
+   The markup carries greys from #222222 up to white. Anything dark enough to
+   have been a panel on the old design becomes a light panel here, and the text
+   sitting on it has to come with it - a surface that flips without its
+   foreground is how a page ends up with white text on white. */
+.ihi-theme [class*="bg-[#0"],
+.ihi-theme [class*="bg-[#1"],
+.ihi-theme [class*="bg-[#2"],
+.ihi-theme [class*="bg-[#3"],
+.ihi-theme [class*="bg-[#4"] {
+  background-color: var(--ihi-panel) !important;
+  background-image: none !important;
+  color: var(--ihi-ink) !important;
+  border-color: var(--ihi-line) !important;
+}
+
+/* Text authored to sit on a dark panel. On a light one it has to invert, or it
+   disappears. */
+.ihi-theme [class*="bg-[#0"] [class*="text-[#c"],
+.ihi-theme [class*="bg-[#0"] [class*="text-[#d"],
+.ihi-theme [class*="bg-[#0"] [class*="text-[#e"],
+.ihi-theme [class*="bg-[#0"] [class*="text-[#f"],
+.ihi-theme [class*="bg-[#1"] [class*="text-[#c"],
+.ihi-theme [class*="bg-[#1"] [class*="text-[#d"],
+.ihi-theme [class*="bg-[#1"] [class*="text-[#e"],
+.ihi-theme [class*="bg-[#1"] [class*="text-[#f"],
+.ihi-theme [class*="bg-[#2"] [class*="text-[#c"],
+.ihi-theme [class*="bg-[#2"] [class*="text-[#d"],
+.ihi-theme [class*="bg-[#2"] [class*="text-[#e"],
+.ihi-theme [class*="bg-[#2"] [class*="text-[#f"],
+.ihi-theme [class*="text-white"] {
+  color: var(--ihi-ink) !important;
+}
+
+.ihi-theme [class*="bg-white"],
+.ihi-theme [class*="bg-[#f"],
+.ihi-theme [class*="bg-[#e"] {
+  background-color: var(--ihi-ground) !important;
+  border-color: var(--ihi-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.ihi-theme [class*="border-white"],
+.ihi-theme [class*="border-[#d"],
+.ihi-theme [class*="border-[#e"],
+.ihi-theme [class*="border-[#2"],
+.ihi-theme [class*="border-[#3"] {
+  border-color: var(--ihi-line) !important;
+}
+
+/* Secondary text lands on one muted grey rather than eleven near-identical
+   ones, which is most of what makes a dense page look tidy. */
+.ihi-theme [class*="text-[#6"],
+.ihi-theme [class*="text-[#7"],
+.ihi-theme [class*="text-[#8"],
+.ihi-theme [class*="text-[#9"],
+.ihi-theme [class*="text-[#a"],
+.ihi-theme [class*="text-[#b"] {
+  color: var(--ihi-muted) !important;
+}
+
+/* Primary actions read as ink on white, not as a colour. */
+.ihi-theme button[class*="bg-[#2"],
+.ihi-theme a[class*="bg-[#2"],
+.ihi-theme button[class*="bg-[#1"],
+.ihi-theme a[class*="bg-[#1"] {
+  background: var(--ihi-ink) !important;
+  border-color: var(--ihi-ink) !important;
+  color: #ffffff !important;
+}
+.ihi-theme button[class*="bg-[#2"]:hover,
+.ihi-theme a[class*="bg-[#2"]:hover,
+.ihi-theme button[class*="bg-[#1"]:hover,
+.ihi-theme a[class*="bg-[#1"]:hover {
+  background: #333333 !important;
+  border-color: #333333 !important;
+}
+.ihi-theme button[class*="bg-[#2"] *,
+.ihi-theme a[class*="bg-[#2"] *,
+.ihi-theme button[class*="bg-[#1"] *,
+.ihi-theme a[class*="bg-[#1"] * {
+  color: #ffffff !important;
+}
+
+.ihi-theme input { color: var(--ihi-ink) !important; caret-color: var(--ihi-ink); }
+.ihi-theme input::placeholder { color: #9a9a9a !important; }
+
+/* ------------------------------------------------------------------ tables */
+.ihi-theme table thead,
+.ihi-theme thead[class*="bg-"] {
+  background: var(--ihi-panel) !important;
+  color: var(--ihi-muted) !important;
+}
+.ihi-theme table tr { border-color: var(--ihi-line) !important; }
+.ihi-theme table tbody tr:hover { background: var(--ihi-panel) !important; }
+
+.ihi-theme [aria-label$="AGI manager mark"] {
+  background: var(--ihi-panel) !important;
+  border: 1px solid var(--ihi-line-strong) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.ihi-theme [aria-label$="AGI manager mark"] span:first-child { background: #2b2b2b !important; }
+.ihi-theme [aria-label$="AGI manager mark"] span:last-child  { background: #8a8a8a !important; }
+
+/* --------------------------------------------------------------- geometry
+   Squared corners and no shadows. The one habit from the terminal look worth
+   keeping: it reads as precision rather than styling, and on white it does
+   more work than any colour would. */
+.ihi-theme a,
+.ihi-theme button { border-radius: 1px; }
+
+.ihi-theme [class*="rounded-"] { border-radius: 2px !important; }
+.ihi-theme [class*="rounded-full"] { border-radius: 999px !important; }
+.ihi-theme [class*="shadow-"] { box-shadow: none !important; }
+.ihi-theme [class*="bg-gradient-to-r"] { background-image: none !important; }
+
+.ihi-theme article,
+.ihi-theme section > div[class*="rounded-"] { transition: border-color .18s ease; }
+.ihi-theme article:hover,
+.ihi-theme section > div[class*="rounded-"]:hover { border-color: var(--ihi-line-strong) !important; }
+
+.ihi-theme main::before {
+  content: "AGI / INSTITUTIONAL DISCLOSURE NETWORK";
+  display: block;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 26px 32px 0;
+  color: #9a9a9a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+
+@media (max-width: 767px) {
+  .ihi-theme main::before { padding-inline: 20px; }
+}

@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agib.local/contracts/v1/engine_state.schema.json",
+  "title": "AGI EngineState Envelope",
+  "description": "Canonical Architecture v1.0.1 EngineState SSOT (E00 §5). Documented in contracts/v1/CANONICAL.json.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "engine",
+    "version",
+    "model_version",
+    "as_of",
+    "score",
+    "confidence",
+    "evidence",
+    "explanation",
+    "warnings",
+    "stale_inputs",
+    "input_hash",
+    "hash",
+    "timestamp_generated"
+  ],
+  "properties": {
+    "engine": {
+      "type": "string",
+      "pattern": "^(E0[1-9]|E1[0-4]|L4|ORCH)$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "as_of": {
+      "type": "string",
+      "minLength": 1
+    },
+    "universe_id": {
+      "type": ["string", "null"]
+    },
+    "symbol": {
+      "type": ["string", "null"]
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["unit"],
+      "properties": {
+        "raw": { "type": ["number", "null"] },
+        "normalized_0_100": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+        "normalized_signed": { "type": ["number", "null"], "minimum": -1, "maximum": 1 },
+        "unit": {
+          "type": "string",
+          "enum": ["score", "probability", "weight", "regime_label", "other"]
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["value", "components", "method_version"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "components": { "type": "object" },
+        "method_version": { "type": "string", "const": "conf-1.0" }
+      }
+    },
+    "reliability": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "sample_size": { "type": ["number", "null"] },
+        "historical_accuracy": { "type": ["number", "null"] },
+        "stability": { "type": ["number", "null"] }
+      }
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidence_pack"
+    },
+    "explanation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string" },
+        "top_drivers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "falsifiers": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "stale_inputs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "timestamp_generated": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "evidence_pack": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "positive",
+        "negative",
+        "contradictions",
+        "unknowns",
+        "risks",
+        "missing_data"
+      ],
+      "properties": {
+        "positive": { "type": "array" },
+        "negative": { "type": "array" },
+        "contradictions": { "type": "array" },
+        "unknowns": { "type": "array" },
+        "risks": { "type": "array" },
+        "missing_data": { "type": "array" }
+      }
+    }
+  }
+}

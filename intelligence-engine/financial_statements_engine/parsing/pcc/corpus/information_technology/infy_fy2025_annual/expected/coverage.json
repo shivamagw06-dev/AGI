@@ -1,0 +1,14 @@
+{
+  "core_domain_statuses": {},
+  "must_extract": [
+    "cash",
+    "finance_cost",
+    "net_income",
+    "operating_cash_flow",
+    "other_income",
+    "revenue",
+    "total_assets",
+    "total_equity"
+  ],
+  "notes": "Statuses left unlocked for min fixtures; must_extract is authoritative."
+}

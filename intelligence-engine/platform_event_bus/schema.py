@@ -1,0 +1,37 @@
+"""PEB-01 Platform Event Bus — schema constants."""
+
+from __future__ import annotations
+
+PEB01_WORKSTREAM_ID = "PEB-01"
+PEB01_PRODUCT = "Platform Event Bus"
+PEB01_VERSION = "peb-01-v1.0.0"
+PEB01_SUBSYSTEM = "platform_event_bus"
+PEB01_SPEC = "docs/PEB_01_PLATFORM_EVENT_BUS.md"
+PEB01_LAYER = "platform"
+
+# Built-in event types (extensible via registry)
+EVENT_COMPANY_RESEARCH_COMPLETED = "company.research.completed"
+EVENT_BUSINESS_QUALITY_UPDATED = "business_quality.updated"
+EVENT_MANAGEMENT_EXECUTION_UPDATED = "management_execution.updated"
+EVENT_PORTFOLIO_SNAPSHOT_CREATED = "portfolio.snapshot.created"
+EVENT_PORTFOLIO_UPDATED = "portfolio.updated"
+EVENT_WATCHLIST_COMPANY_ADDED = "watchlist.company.added"
+EVENT_WATCHLIST_COMPANY_REMOVED = "watchlist.company.removed"
+EVENT_COMPARISON_COMPLETED = "comparison.completed"
+EVENT_OFFICE_REQUEST_COMPLETED = "office.request.completed"
+EVENT_OFFICE_ERROR = "office.error"
+
+BUILTIN_EVENT_TYPES = (
+    EVENT_COMPANY_RESEARCH_COMPLETED,
+    EVENT_BUSINESS_QUALITY_UPDATED,
+    EVENT_MANAGEMENT_EXECUTION_UPDATED,
+    EVENT_PORTFOLIO_SNAPSHOT_CREATED,
+    EVENT_PORTFOLIO_UPDATED,
+    EVENT_WATCHLIST_COMPANY_ADDED,
+    EVENT_WATCHLIST_COMPANY_REMOVED,
+    EVENT_COMPARISON_COMPLETED,
+    EVENT_OFFICE_REQUEST_COMPLETED,
+    EVENT_OFFICE_ERROR,
+)
+
+EVENT_SCHEMA_VERSION = "peb.event.v1"

@@ -1,0 +1,14 @@
+{
+  "coverage": 0.75,
+  "current_pe": 28.999065,
+  "downside_case": -0.055774,
+  "entity": "TCS",
+  "entity_confidence": 0.95,
+  "freshness": "2026-08-01T13:04:22Z",
+  "historical_pe": 27.4631,
+  "missing_fields": [],
+  "provenance": "knowledge_factory",
+  "quality": 90.0,
+  "risk_drivers": "market_beta,volatility",
+  "version": "kf-pipeline-v1.0.0"
+}

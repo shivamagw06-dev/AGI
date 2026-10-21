@@ -1,0 +1,484 @@
+{
+  "accounting": {
+    "cash_conversion": 1.1905,
+    "derived_not_stored": true,
+    "entity": "MARUTI",
+    "found": true,
+    "leverage": 0.0093,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.098204
+  },
+  "business_quality": {
+    "entity": "MARUTI",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 80.0,
+    "roic": 53.988327
+  },
+  "company_profile": {
+    "entity": "MARUTI",
+    "market_cap": 4976.87,
+    "sector": "auto"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "MARUTI-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 1.0,
+  "entity": "MARUTI",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 26.122449,
+    "downside_case": -0.061002,
+    "entity": "MARUTI",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:24Z",
+    "historical_pe": 30.9433,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 1200.0,
+      "FY18": 1350.0,
+      "FY19": 1450.0,
+      "FY20": 1500.0,
+      "FY21": 1600.0,
+      "FY22": 1700.0,
+      "FY23": 1850.0,
+      "FY24": 2100.0,
+      "FY25": 2300.0,
+      "FY26": 2500.0
+    },
+    "capex": {
+      "FY17": 4000.0,
+      "FY18": 4500.0,
+      "FY19": 5000.0,
+      "FY20": 3500.0,
+      "FY21": 3000.0,
+      "FY22": 4000.0,
+      "FY23": 5500.0,
+      "FY24": 7000.0,
+      "FY25": 7500.0,
+      "FY26": 8000.0
+    },
+    "cash": {
+      "FY17": 15000.0,
+      "FY18": 18000.0,
+      "FY19": 20000.0,
+      "FY20": 22000.0,
+      "FY21": 25000.0,
+      "FY22": 28000.0,
+      "FY23": 32000.0,
+      "FY24": 40000.0,
+      "FY25": 45000.0,
+      "FY26": 50000.0
+    },
+    "ebit": {
+      "FY17": 9000.0,
+      "FY18": 11000.0,
+      "FY19": 10000.0,
+      "FY20": 6000.0,
+      "FY21": 5500.0,
+      "FY22": 7000.0,
+      "FY23": 10500.0,
+      "FY24": 15000.0,
+      "FY25": 17000.0,
+      "FY26": 18500.0
+    },
+    "ebitda": {
+      "FY17": 11000.0,
+      "FY18": 13000.0,
+      "FY19": 12000.0,
+      "FY20": 8000.0,
+      "FY21": 7500.0,
+      "FY22": 9000.0,
+      "FY23": 13000.0,
+      "FY24": 18000.0,
+      "FY25": 20000.0,
+      "FY26": 21500.0
+    },
+    "eps": {
+      "FY17": 220.0,
+      "FY18": 260.0,
+      "FY19": 250.0,
+      "FY20": 150.0,
+      "FY21": 180.0,
+      "FY22": 200.0,
+      "FY23": 280.0,
+      "FY24": 420.0,
+      "FY25": 460.0,
+      "FY26": 490.0
+    },
+    "equity": {
+      "FY17": 36240.0,
+      "FY18": 40770.0,
+      "FY19": 43790.0,
+      "FY20": 45300.0,
+      "FY21": 48320.0,
+      "FY22": 51340.0,
+      "FY23": 55870.0,
+      "FY24": 63420.0,
+      "FY25": 69460.0,
+      "FY26": 75500.0
+    },
+    "net_income": {
+      "FY17": 6600.0,
+      "FY18": 7800.0,
+      "FY19": 7500.0,
+      "FY20": 4500.0,
+      "FY21": 5400.0,
+      "FY22": 6000.0,
+      "FY23": 8400.0,
+      "FY24": 12600.0,
+      "FY25": 13800.0,
+      "FY26": 14700.0
+    },
+    "ocf": {
+      "FY17": 8000.0,
+      "FY18": 9000.0,
+      "FY19": 8500.0,
+      "FY20": 6000.0,
+      "FY21": 7000.0,
+      "FY22": 8000.0,
+      "FY23": 11000.0,
+      "FY24": 15000.0,
+      "FY25": 16500.0,
+      "FY26": 17500.0
+    },
+    "price": {
+      "FY17": 6000.0,
+      "FY18": 8800.0,
+      "FY19": 6800.0,
+      "FY20": 4800.0,
+      "FY21": 7000.0,
+      "FY22": 7600.0,
+      "FY23": 8500.0,
+      "FY24": 12000.0,
+      "FY25": 12500.0,
+      "FY26": 12800.0
+    },
+    "revenue": {
+      "FY17": 68000.0,
+      "FY18": 78000.0,
+      "FY19": 86000.0,
+      "FY20": 76000.0,
+      "FY21": 70000.0,
+      "FY22": 88000.0,
+      "FY23": 112000.0,
+      "FY24": 138000.0,
+      "FY25": 148000.0,
+      "FY26": 158000.0
+    },
+    "shares": {
+      "FY17": 30.2,
+      "FY18": 30.2,
+      "FY19": 30.2,
+      "FY20": 30.2,
+      "FY21": 30.2,
+      "FY22": 30.2,
+      "FY23": 30.2,
+      "FY24": 30.2,
+      "FY25": 30.2,
+      "FY26": 30.2
+    },
+    "total_debt": {
+      "FY17": 1000.0,
+      "FY18": 900.0,
+      "FY19": 800.0,
+      "FY20": 700.0,
+      "FY21": 600.0,
+      "FY22": 500.0,
+      "FY23": 400.0,
+      "FY24": 300.0,
+      "FY25": 250.0,
+      "FY26": 200.0
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "MARUTI",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": 60.606061,
+          "FY18": 57.692308,
+          "FY19": 46.666667,
+          "FY20": 55.555556,
+          "FY21": 74.074074,
+          "FY22": 66.666667,
+          "FY23": 65.47619,
+          "FY24": 63.492063,
+          "FY25": 65.217391,
+          "FY26": 64.62585
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 15.2,
+          "FY18": 19.127692,
+          "FY19": 15.513333,
+          "FY20": 15.4575,
+          "FY21": 24.933333,
+          "FY22": 22.446667,
+          "FY23": 17.315385,
+          "FY24": 17.927778,
+          "FY25": 16.6375,
+          "FY26": 15.663256
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 9.705882,
+          "FY18": 10.0,
+          "FY19": 8.72093,
+          "FY20": 5.921053,
+          "FY21": 7.714286,
+          "FY22": 6.818182,
+          "FY23": 7.5,
+          "FY24": 9.130435,
+          "FY25": 9.324324,
+          "FY26": 9.303797
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 5.0,
+          "FY18": 6.518519,
+          "FY19": 4.689655,
+          "FY20": 3.2,
+          "FY21": 4.375,
+          "FY22": 4.470588,
+          "FY23": 4.594595,
+          "FY24": 5.714286,
+          "FY25": 5.434783,
+          "FY26": 5.12
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 27.272727,
+          "FY18": 33.846154,
+          "FY19": 27.2,
+          "FY20": 32.0,
+          "FY21": 38.888889,
+          "FY22": 38.0,
+          "FY23": 30.357143,
+          "FY24": 28.571429,
+          "FY25": 27.173913,
+          "FY26": 26.122449
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 18.211921,
+          "FY18": 19.131714,
+          "FY19": 17.127198,
+          "FY20": 9.933775,
+          "FY21": 11.175497,
+          "FY22": 11.686794,
+          "FY23": 15.034902,
+          "FY24": 19.86755,
+          "FY25": 19.86755,
+          "FY26": 19.470199
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 30.350719,
+          "FY18": 34.854246,
+          "FY19": 30.500203,
+          "FY20": 18.75,
+          "FY21": 17.244983,
+          "FY22": 22.021812,
+          "FY23": 32.447466,
+          "FY24": 47.428331,
+          "FY25": 51.598543,
+          "FY26": 53.988327
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:24Z",
+  "macro_sensitivity": {
+    "beta": 1.0194,
+    "sector": "auto"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "MARUTI",
+    "fabricated": false,
+    "found": true,
+    "insufficient": false,
+    "peers": [
+      "BAJAJ-AUTO",
+      "BOSCHLTD",
+      "EICHERMOT",
+      "HEROMOTOCO",
+      "M&M",
+      "TATAMOTORS",
+      "TVSMOTOR",
+      "ASHOKLEY",
+      "MOTHERSON",
+      "BALKRISIND",
+      "ESCORTS",
+      "EXIDEIND",
+      "AMARAJABAT",
+      "TIINDIA",
+      "BHARATFORG",
+      "SUNDRMFAST",
+      "ENDURANCE",
+      "SCHAEFFLER",
+      "MRF",
+      "APOLLOTYRE",
+      "CEAT",
+      "JKTYRE",
+      "VSTTILLERS",
+      "FORCEMOT",
+      "SMLISUZU",
+      "OLECTRA",
+      "TVSHLTD",
+      "MAHSCOOTER",
+      "SWARAJENG",
+      "TATAMTRDVR",
+      "SONACOMS",
+      "MINDACORP",
+      "VARROC",
+      "CRAFTSMAN",
+      "UNO",
+      "ROLEXRINGS",
+      "SUPRAJIT",
+      "GABRIEL",
+      "FIEM",
+      "LUMAXTECH",
+      "SANDHAR",
+      "PRICOL",
+      "WHEELS",
+      "MSUMI"
+    ],
+    "provider": "kf_peer_producer"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 1.0194,
+    "correlation": 0.9926,
+    "derived_not_stored": true,
+    "entity": "MARUTI",
+    "expected_shortfall_95_pct": 6.1825,
+    "factor_exposure": {
+      "market_beta": 1.0194,
+      "residual_vol_pct": 0.1448
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.7555,
+    "max_drawdown_pct": 6.24,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 6.1002,
+    "volatility_ann_pct": 19.5627
+  },
+  "sector": "auto",
+  "timeline": {
+    "entity": "MARUTI",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "MARUTI-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "MARUTI-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "MARUTI-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}
