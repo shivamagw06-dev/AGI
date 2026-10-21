@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {collectRetrospective,retrospectiveView,retrospectiveDates,createFactorRangeReader} from './factorRetrospective.js';
+import {collectRetrospective,retrospectiveView,retrospectiveDates,createFactorRangeReader,verifiedNseBars} from './factorRetrospective.js';
 const now=new Date('2026-09-16T12:00:00Z'),snapshot='test',c=Array.from({length:50},(_,i)=>({symbol:'S'+i,instrumentKey:'NSE_EQ|'+i}));
 const saved=()=>({snapshot,startDate:'2026-09-15',securities:Object.fromEntries(c.slice(0,25).map(h=>[h.symbol,{instrumentKey:h.instrumentKey,bars:{'2026-09-15':100,'2026-09-16':110}}]))});
 test('retrospective basket starts at 100, excludes reserves, and does not mutate ledger',()=>{const s=saved(),copy=structuredClone(s),v=retrospectiveView(s,c,snapshot,now);assert.equal(v.history[0].value,100);assert.ok(Math.abs(v.returnPct-10)<1e-8);assert.equal(v.status,'complete');assert.equal(v.holdings.length,50);assert.deepEqual(s,copy);});
@@ -13,4 +13,9 @@ test('reader validates OHLC, excludes future bars and uses daily range once',asy
  const candles=[['2026-09-15T00:00:00+05:30',100,110,90,105],['2026-09-16T00:00:00+05:30',100,90,100,105],['2026-09-17T00:00:00+05:30',100,110,90,106]];
  const reader=createFactorRangeReader({token:()=> 'test-only',fetcher:async(_p,u)=>{url=u;return {ok:true,json:async()=>({status:'success',data:{candles}})};}});
  const out=await reader(c[0],'2026-09-16');assert.ok(url.endsWith('/days/1/2026-09-16/2026-09-15'));assert.deepEqual(out.bars,{'2026-09-15':105});
+});
+
+test('NSE archive gap supplement requires both symbol and instrument identity',async()=>{
+ const h={symbol:'ZEEL',instrumentKey:'NSE_EQ|INE256A01028',weight:100};const bars=verifiedNseBars(h,'2026-10-21');assert.equal(bars['2026-09-15'],77.41);assert.equal(Object.keys(bars).length,25);assert.deepEqual(verifiedNseBars({...h,instrumentKey:'wrong'},'2026-10-21'),{});
+ let reads=0;const doc={history:[{nav:96}],events:[{type:'opening'}]},copy=structuredClone(doc);const out=await collectRetrospective(doc,[h],'test',async()=>{reads++;throw Error('Provider gap');},new Date('2026-10-21T14:00Z'));assert.equal(reads,0);assert.equal(out.securities.ZEEL.verifiedNse,true);assert.equal(out.securities.ZEEL.bars['2026-09-15'],77.41);assert.deepEqual(doc,copy);
 });

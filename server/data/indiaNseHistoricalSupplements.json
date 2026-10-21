@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-21",
+  "purpose": "Verified NSE historical gap supplement; does not modify actual portfolio NAV or execution records.",
+  "securities": [
+    {
+      "symbol": "ZEEL",
+      "instrumentKey": "NSE_EQ|INE256A01028",
+      "source": "NSE official daily bhavcopy",
+      "bars": {
+        "2026-09-15": {
+          "price": 77.41,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260915_F_0000.csv.zip"
+        },
+        "2026-09-16": {
+          "price": 79.6,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260916_F_0000.csv.zip"
+        },
+        "2026-09-17": {
+          "price": 78.31,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260917_F_0000.csv.zip"
+        },
+        "2026-09-18": {
+          "price": 78.62,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260918_F_0000.csv.zip"
+        },
+        "2026-09-21": {
+          "price": 77.68,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260921_F_0000.csv.zip"
+        },
+        "2026-09-22": {
+          "price": 78.21,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260922_F_0000.csv.zip"
+        },
+        "2026-09-23": {
+          "price": 77.28,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260923_F_0000.csv.zip"
+        },
+        "2026-09-24": {
+          "price": 78.17,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260924_F_0000.csv.zip"
+        },
+        "2026-09-25": {
+          "price": 76.87,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260925_F_0000.csv.zip"
+        },
+        "2026-09-28": {
+          "price": 76.5,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260928_F_0000.csv.zip"
+        },
+        "2026-09-29": {
+          "price": 74.14,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260929_F_0000.csv.zip"
+        },
+        "2026-09-30": {
+          "price": 74.47,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20260930_F_0000.csv.zip"
+        },
+        "2026-10-01": {
+          "price": 71.92,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261001_F_0000.csv.zip"
+        },
+        "2026-10-05": {
+          "price": 73.57,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261005_F_0000.csv.zip"
+        },
+        "2026-10-06": {
+          "price": 72.42,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261006_F_0000.csv.zip"
+        },
+        "2026-10-07": {
+          "price": 70.12,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261007_F_0000.csv.zip"
+        },
+        "2026-10-08": {
+          "price": 68.37,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261008_F_0000.csv.zip"
+        },
+        "2026-10-09": {
+          "price": 69.97,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261009_F_0000.csv.zip"
+        },
+        "2026-10-12": {
+          "price": 73.98,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261012_F_0000.csv.zip"
+        },
+        "2026-10-13": {
+          "price": 74.14,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261013_F_0000.csv.zip"
+        },
+        "2026-10-14": {
+          "price": 73.81,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261014_F_0000.csv.zip"
+        },
+        "2026-10-15": {
+          "price": 72.79,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261015_F_0000.csv.zip"
+        },
+        "2026-10-16": {
+          "price": 71.85,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261016_F_0000.csv.zip"
+        },
+        "2026-10-19": {
+          "price": 73.13,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261019_F_0000.csv.zip"
+        },
+        "2026-10-21": {
+          "price": 72.36,
+          "sourceUrl": "https://archives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_20261021_F_0000.csv.zip"
+        }
+      }
+    }
+  ]
+}
