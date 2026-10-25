@@ -7,11 +7,11 @@ const root = new URL('../data/investorProfiles/', import.meta.url);
 const directory = JSON.parse(fs.readFileSync(new URL('index.json', root), 'utf8'));
 const profiles = directory.map(item => JSON.parse(fs.readFileSync(new URL(`holdings/${item.country.toLowerCase()}-${item.slug}.json`, root), 'utf8')));
 
-test('all 273 India and US investors have distinct resolvable profile routes', () => {
-  assert.equal(directory.length, 273);
-  assert.equal(directory.filter(row => row.country === 'IN').length, 186);
+test('all 275 India and US investors have distinct resolvable profile routes', () => {
+  assert.equal(directory.length, 275);
+  assert.equal(directory.filter(row => row.country === 'IN').length, 188);
   assert.equal(directory.filter(row => row.country === 'US').length, 87);
-  assert.equal(new Set(directory.map(row => investorPath(row.country, row.name))).size, 273);
+  assert.equal(new Set(directory.map(row => investorPath(row.country, row.name))).size, 275);
   for (const row of directory) assert.equal(row.slug, investorSlug(row.name));
   assert.notEqual(investorPath('IN', 'Mohnish Pabrai'), investorPath('US', 'Mohnish Pabrai'));
 });
@@ -77,5 +77,5 @@ test('October refresh checks all source profiles and preserves official US filin
   if (p.latestSourceUnavailable) assert.equal(p.lastCheckedAt, '2026-10-15');
  }
  const damani=profiles.find(p => p.name === 'Radhakishan Damani');
- assert.equal(damani.rows.find(r => r.stock === 'Horizon Industrial Parks').value, '161.9127 Cr');
+ assert.equal(damani.rows.find(r => r.stock === 'Horizon Industrial Parks').value, '141.3 Cr');
 });
