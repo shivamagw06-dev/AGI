@@ -2453,5 +2453,23 @@
     "reportPeriod": "Sep 2026",
     "coverageLabel": "Retrieved disclosure snapshot",
     "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53982/latest/passage-to-india-master-fund-limited/"
+  },
+  {
+    "name": "Alternate Investment Funds",
+    "country": "IN",
+    "slug": "alternate-investment-funds-7335d5e6",
+    "reportPeriod": "Sep 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53820/latest/alternate-investment-funds/",
+    "category": "institutional"
+  },
+  {
+    "name": "India Max Investment Fund Limited",
+    "country": "IN",
+    "slug": "india-max-investment-fund-limited-4f7dbbbc",
+    "reportPeriod": "Sep 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53934/latest/india-max-investment-fund-limited/",
+    "category": "institutional"
   }
 ]
