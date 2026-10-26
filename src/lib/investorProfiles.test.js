@@ -74,8 +74,31 @@ test('October refresh checks all source profiles and preserves official US filin
    if (latest.rows.length >= 200) assert.equal(latest.sourceLimited, true);
   }
   if (p.trendlyneSnapshot) assert.ok(['sec13f', 'fund-disclosures'].includes(p.kind));
-  if (p.latestSourceUnavailable) assert.equal(p.lastCheckedAt, '2026-10-15');
+  if (p.latestSourceUnavailable) assert.equal(p.lastCheckedAt, '2026-10-26');
  }
  const damani=profiles.find(p => p.name === 'Radhakishan Damani');
  assert.equal(damani.rows.find(r => r.stock === 'Horizon Industrial Parks').value, '141.3 Cr');
+});
+
+
+test('completed refresh checks all profiles and preserves dated alternative sources', () => {
+ const audit = JSON.parse(fs.readFileSync(new URL('../../docs/investor-holdings-refresh-2026-10-26.json', import.meta.url)));
+ assert.equal(audit.profilesAudit.length, 275);
+ assert.equal(audit.sourceRefreshed, 261);
+ assert.equal(audit.latestTableUnavailable, 14);
+ assert.equal(audit.officialSEC.length, 20);
+ for (const p of profiles.filter(p => p.country === 'US')) {
+  const t = p.trendlyneSnapshot || p;
+  assert.equal(t.retrievedAt, '2026-10-26', p.name);
+  assert.equal(t.periods[0], 'Company ownership %', p.name);
+  assert.ok(t.rows.every(r => r.sourceUrl?.startsWith('https://us.trendlyne.com/')), p.name);
+  if (t.rows.length >= 200) assert.equal(t.sourceLimited, true, p.name);
+ }
+ const mairs = profiles.find(p => p.name === 'Mairs and Power');
+ assert.equal(mairs.rows.length, 254);
+ assert.equal(mairs.sourceReportedCount, 254);
+ assert.equal(mairs.retrievalComplete, true);
+ const karr = profiles.find(p => p.name === 'Robert Karr');
+ assert.equal(karr.primarySourceUnavailable, true);
+ assert.notEqual(karr.retrievedAt, '2026-10-26');
 });

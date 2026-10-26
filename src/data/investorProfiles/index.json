@@ -685,9 +685,9 @@
     "name": "Ole Andreas Halvorsen",
     "country": "US",
     "slug": "ole-andreas-halvorsen-587106f7",
-    "reportPeriod": "Source filing dates not supplied",
+    "reportPeriod": "2026-06-30",
     "coverageLabel": "Retrieved disclosure snapshot",
-    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158591/latest/ole-andreas-halvorsen-portfolio/",
+    "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000006/xslForm13F_X02/primary_doc.xml",
     "category": "individual"
   },
   {
@@ -812,7 +812,7 @@
     "country": "US",
     "slug": "mairs-and-power-4215dcb9",
     "reportPeriod": "30 Jun 2026",
-    "coverageLabel": "Partial disclosed portfolio",
+    "coverageLabel": "Retrieved disclosure snapshot",
     "sourceUrl": "https://www.dataroma.com/m/holdings.php?m=MPF",
     "category": "individual"
   },
@@ -1127,7 +1127,7 @@
     "country": "US",
     "slug": "robert-karr-37f476a7",
     "reportPeriod": "2026 Q1",
-    "coverageLabel": "Retrieved disclosure snapshot",
+    "coverageLabel": "Partial disclosed portfolio",
     "sourceUrl": "https://mail.valuesider.com/guru/robert-karr-joho-capital/portfolio?page=1",
     "category": "individual"
   },
