@@ -34,6 +34,7 @@ Two conventions this module encodes:
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 from datetime import date, datetime
 from pathlib import Path
@@ -256,3 +257,19 @@ def write(parsed: dict[str, Any], *, actor: str = "capiq_vintages") -> dict[str,
     gateway.write(WAREHOUSE_TAB, rows, source=SOURCE, actor=actor,
                   reason="capiq_estimate_vintage_import")
     return {"ok": True, "written": len(rows), "tab": WAREHOUSE_TAB}
+
+
+def seed_on_startup() -> dict[str, Any]:
+    """Bulk imports are opt-in; existing warehouse reads need no boot replay.
+
+    Parsing this 252k-row workbook and serialising the warehouse can exhaust
+    the web service's memory while its live paper feed is running. The explicit
+    preview/import endpoints keep their existing behavior.
+    """
+    enabled = os.getenv("CAPIQ_VINTAGES_BOOT_IMPORT", "false").strip().lower()
+    if enabled not in {"true", "1", "yes", "on"}:
+        return {"ok": True, "skipped": True, "reason": "explicit_import_required"}
+    parsed = parse()
+    if not parsed.get("ok"):
+        return {"ok": False, "skipped": True, "reason": parsed.get("error")}
+    return write(parsed)

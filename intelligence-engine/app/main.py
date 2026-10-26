@@ -235,21 +235,17 @@ async def lifespan(_app: FastAPI):
         log.warning("vendor_export_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Capital IQ estimate vintages — 252k rows of point-in-time consensus and
     # reported EPS, 2020-01 to 2025-12. This is what makes an honest backtest
-    # possible; without it every fundamental ranking looks ahead.
+    # possible; without it every fundamental ranking looks ahead. Bulk import
+    # is explicit/opt-in: replaying it on every HTTP boot exhausts small plans.
     try:
         import threading
 
-        from financial_warehouse_completion.capiq_vintages import parse as parse_vintages
-        from financial_warehouse_completion.capiq_vintages import write as write_vintages
+        from financial_warehouse_completion.capiq_vintages import seed_on_startup
 
         def _run_vintage_seed() -> None:
             try:
-                parsed = parse_vintages()
-                if not parsed.get("ok"):
-                    log.info("capiq_vintage_seed_skipped", extra={"reason": parsed.get("error")})
-                    return
-                result = write_vintages(parsed)
-                log.info("capiq_vintage_seed", extra={"written": result.get("written")})
+                result = seed_on_startup()
+                log.info("capiq_vintage_seed", extra=result)
             except Exception as exc:  # pragma: no cover - defensive startup path
                 log.warning("capiq_vintage_seed_failed", extra={"error": str(exc)[:200]})
 
