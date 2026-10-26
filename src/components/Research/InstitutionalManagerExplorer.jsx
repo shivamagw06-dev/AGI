@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, ExternalLink, FileClock, Loader2, MapPin, Search } from 'lucide-react';
 import { getInstitutionalFund } from '@/lib/institutionalHoldingsApi';
 
+import { filingStatus, secManagerUrl, secPublicationDate } from '@/lib/hedgeFundDisclosure';
+
 const PAGE_SIZE = 50;
 
 const money = (value) => {
@@ -259,7 +261,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
                   <td className="px-3 py-4"><div className="flex flex-col items-end"><span className="mb-1 text-[10px] font-bold text-[#333333]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</span><AumSparkline history={fund.filing_history} /></div></td>
                   <td className="px-3 py-4"><PortfolioDonut positions={fund.top_positions} /></td>
                   <td className="px-3 py-4 text-right text-sm font-bold">{fund.position_count || 0}</td>
-                  <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-neutral-100 text-neutral-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{fund.last_refresh_status || 'queued'}</span></td>
+                  <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-neutral-100 text-neutral-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{filingStatus(fund).label}</span><p className="mt-2 max-w-[250px] text-[10px] leading-4 text-[#777777]">{filingStatus(fund).note}</p><p className="mt-1 text-[10px] text-[#888888]">Source checked: {fund.last_refresh_at ? String(fund.last_refresh_at).slice(0, 10) : 'unavailable'}</p>{secManagerUrl(fund.cik) && <a href={secManagerUrl(fund.cik)} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[10px] underline">SEC filer record ↗</a>}</td>
                 </tr>,
                 expanded ? (
                   <tr key={`${fund.slug}-holdings`} className="border-t border-[#dddddd] bg-[#ffffff]">
@@ -268,7 +270,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
                         {loadingSlug === fund.slug ? <div className="flex items-center justify-center gap-3 py-14 text-sm text-[#777777]"><Loader2 className="h-5 w-5 animate-spin" /> Loading latest SEC holdings</div> : loadError && !detail ? <p className="py-10 text-center text-sm text-rose-700">{loadError}</p> : detail ? (
                           <>
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                              <div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Taken from latest 13F filing</p><h3 className="mt-2 text-2xl font-bold">{fund.display_name} holdings</h3><p className="mt-1 text-xs text-[#777777]">Report quarter {detail.latest_filing?.report_date} · Public {String(detail.latest_filing?.filed_at || '').slice(0, 10)} · {filtered.length} matching positions</p></div>
+                              <div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Taken from latest 13F filing</p><h3 className="mt-2 text-2xl font-bold">{fund.display_name} holdings</h3><p className="mt-1 text-xs text-[#777777]">Report quarter {detail.latest_filing?.report_date} · SEC public (US Eastern) {secPublicationDate(detail.latest_filing?.filed_at)} · {filtered.length} matching positions</p></div>
                               <div className="flex flex-col gap-3 sm:flex-row">
                                 <label className="flex items-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3"><Search className="h-4 w-4 text-[#888888]" /><input value={holdingQuery} onChange={(event) => { setHoldingQuery(event.target.value); setHoldingPage(1); }} placeholder="Filter ticker or company" className="w-56 bg-transparent py-3 text-xs outline-none" /></label>
                                 <Link to={`/institutional-holdings/funds/${fund.slug}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#333333] px-4 py-3 text-xs font-bold text-white">Full manager profile <ExternalLink className="h-3.5 w-3.5" /></Link>

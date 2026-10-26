@@ -29,3 +29,17 @@ Following a stock stores the selected comparisons in that browser only. A change
 - Browser: India/USA switching, saved-data failure state, company search/follow, profiles and archive toggles.
 
 Option Lab remains paused. No trading flags, positions or broker-order paths are changed.
+
+## Hedge Funds surface audit — 26 October 2026
+
+The separate `/institutional-holdings` directory now includes the existing two primary-checked US observations and their shared chronological outcome feed. These remain separate from generated research-service approvals; no unreviewed note was approved. Tracking was not restarted or backdated.
+
+The directory count comes from the returned manager rows. Consensus eligibility remains the existing service rule: latest report within 200 days of the newest report in that service. The page explicitly warns that this can mix quarters. The research library's broader manager count is labelled separately, not silently forced to match. No ranking or consensus rule changed.
+
+Filing signals use each selected manager's structured latest filing and sort on `filed_at`, not alert ingestion. SEC publication dates use US Eastern; date-only inputs retain their calendar day. The old limited imported-alert sample is retained separately with an explicit AGI import-date label. This is not a comprehensive filing-event archive.
+
+SEC submissions were checked directly on 26 October: Pershing CIK1336528 had a June2026 13F-NT accepted14August; Vanguard CIK102909 had a June2026 13F-NT accepted13August; Scion CIK1649339's latest listed 13F-HR covered September2025, filed3November2025. Notices must not be imported as holdings, and alternative-filer holdings must not be guessed. Directory and manager pages now explain historical/notice/failed statuses and link to the legal filer's SEC record. No positions or historical filings were replaced.
+
+Overview methodology tiles are formula definitions, not empty numeric scores. Manager-specific scores remain on their manager pages. Research selected-tab and positive/negative text contrast were corrected on the light theme.
+
+Validation: eight focused tests cover population boundaries, missing values, SEC timezone boundaries, status semantics, filing ordering/deduplication and ownership comparison safeguards. Production build passed. Browser preview used recorded public overview/research responses to avoid localhost CORS; final verification uses production directly. No database, Render setting, broker or Option Lab change was required.
