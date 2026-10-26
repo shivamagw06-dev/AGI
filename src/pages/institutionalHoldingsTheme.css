@@ -195,3 +195,9 @@
 @media (max-width: 767px) {
   .ihi-theme main::before { padding-inline: 20px; }
 }
+
+/* Selected research tabs keep readable foregrounds on their dark buttons. */
+.ihi-theme button.bg-neutral-900,
+.ihi-theme button.bg-neutral-900 * { color: #fff !important; }
+.ihi-theme .text-emerald-300 { color: #16704a !important; }
+.ihi-theme .text-rose-300 { color: #a62f46 !important; }

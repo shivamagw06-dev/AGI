@@ -37,6 +37,8 @@ import {
 import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
 import InstitutionalIntelligenceWorkbench from '@/components/Research/InstitutionalIntelligenceWorkbench';
 import InstitutionalResearchLayer from '@/components/Research/InstitutionalResearchLayer';
+import ResearchIntelligence from '@/components/institutions/ResearchIntelligence';
+import { coverageCounts, filingStatus, latestFilingEvents, secManagerUrl, secPublicationDate } from '@/lib/hedgeFundDisclosure';
 import ManagerSaid from '@/components/Research/ManagerSaid';
 import './institutionalHoldingsTheme.css';
 
@@ -185,7 +187,7 @@ function ModuleShell({ children, title, eyebrow, subtitle, back }) {
   );
 }
 
-function ScoreCard({ type, signal, index }) {
+function ScoreCard({ type, signal, index, definitionOnly = false }) {
   const meta = SCORE_META[type];
   const Icon = meta.icon;
   const score = Number(signal?.score || 0);
@@ -200,19 +202,19 @@ function ScoreCard({ type, signal, index }) {
       <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-10 transition group-hover:scale-125" style={{ background: tone }} />
       <div className="flex items-start justify-between gap-4">
         <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#eeeeee] text-[#555555]"><Icon className="h-5 w-5" /></div>
-        <div className="text-right">
+        <div className="text-right" hidden={definitionOnly}>
           <span className="text-3xl font-bold text-[#333333]">{signal ? Math.round(score) : '--'}</span>
           <span className="ml-1 text-[10px] text-[#999999]">/100</span>
         </div>
       </div>
       <h3 className="mt-5 text-xl font-bold capitalize">{meta.title}</h3>
       <p className="mt-2 min-h-[42px] text-xs leading-5 text-[#777777]">{signal?.explanation || meta.copy}</p>
-      <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-[#eeeeee]">
+      <div hidden={definitionOnly} className="mt-5 h-1.5 overflow-hidden rounded-full bg-[#eeeeee]">
         <div className="h-full rounded-full" style={{ width: `${score}%`, background: tone }} />
       </div>
       <div className="mt-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[.1em]">
-        <span className="text-[#999999]">Transparent score</span>
-        <span style={{ color: tone }}>{signal?.label || 'Awaiting history'}</span>
+        <span className="text-[#999999]">{definitionOnly ? 'Formula guide' : 'Transparent score'}</span>
+        <span style={{ color: tone }}>{definitionOnly ? 'Definition · select a manager for scores' : signal?.label || 'Awaiting history'}</span>
       </div>
     </motion.article>
   );
@@ -656,13 +658,15 @@ function OverviewPage() {
     [data, fundQuery],
   );
 
+  const counts = coverageCounts(data);
+  const filingEvents = latestFilingEvents(data?.managers);
   if (loading) return <Loading />;
 
   return (
     <ModuleShell
       eyebrow="Public filings transformed into decision context"
       title="Follow top hedge funds."
-      subtitle="Search fifty institutional portfolios, expand every latest holding, and understand what changed quarter by quarter."
+      subtitle="Explore selected institutional filers, inspect dated holdings, and compare reported changes quarter by quarter."
     >
       <main className="mx-auto max-w-[1760px] px-5 pb-16 sm:px-8 xl:px-12">
         <motion.section
@@ -682,8 +686,8 @@ function OverviewPage() {
             <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border border-neutral-300/20" />
             <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#bbbbbb]">Coverage pulse</p>
             <div className="mt-6 grid grid-cols-2 gap-4">
-              <div><span className="text-4xl font-bold">{data?.covered_managers || 10}</span><p className="mt-1 text-xs text-[#bbbbbb]">Selected managers</p></div>
-              <div><span className="text-4xl font-bold">{data?.consensus_managers || 0}</span><p className="mt-1 text-xs text-[#bbbbbb]">Current for consensus</p></div>
+              <div><span className="text-4xl font-bold">{counts.selected ?? '—'}</span><p className="mt-1 text-xs text-[#bbbbbb]">Selected managers</p></div>
+              <div><span className="text-4xl font-bold">{counts.eligible ?? '—'}</span><p className="mt-1 text-xs text-[#bbbbbb]">Eligible in consensus window</p></div>
               <div><span className="text-2xl font-bold">{data?.latest_report_date || 'Pending'}</span><p className="mt-1 text-xs text-[#bbbbbb]">Latest quarter</p></div>
               <div><span className="text-4xl font-bold">{data?.consensus?.length || 0}</span><p className="mt-1 text-xs text-[#bbbbbb]">Consensus names</p></div>
             </div>
@@ -693,11 +697,18 @@ function OverviewPage() {
           </div>
         </motion.section>
 
+        <section className="mt-7 rounded-2xl border border-[#dddddd] bg-white p-5 text-xs leading-6 text-[#666666]" aria-label="Coverage and reporting dates">
+          <p><b>How to read coverage.</b> The directory contains {counts.selected ?? 'an unavailable number of'} selected filers; {counts.withFilings ?? 'an unavailable number'} have collected holdings. The consensus service includes {counts.eligible ?? 'an unavailable number of'} filers with a report within 200 days of the newest collected quarter. This can mix reporting quarters; it is not a same-quarter vote or the whole market.</p>
+          <p>The research library below has its own broader universe. Its counts are not additional funds to add to this directory. Holdings, SEC publication and source-check dates mean different things.</p>
+          <p>September 2026 Form 13F reports are due 16 November 2026; earlier submissions may arrive before that date. <a className="underline" href="https://www.sec.gov/rules-regulations/staff-guidance/division-investment-management-frequently-asked-questions/frequently-asked-questions-about-form-13f" target="_blank" rel="noreferrer">SEC filing calendar ↗</a></p>
+          <p>Overview checked {shortDate(data?.generated_at)}. Daily prices cannot reveal a manager’s undisclosed trades.</p>
+        </section>
+        <ResearchIntelligence country="US" />
         {error ? <div className="mt-8"><Empty error={error} /></div> : (
           <>
             <MarketIntelligencePanel data={data} />
             <InstitutionalIntelligenceWorkbench />
-            <InstitutionalResearchLayer />
+            <InstitutionalResearchLayer selectedManagerCount={counts.selected} />
 
             <section id="funds" className="pt-14">
               <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -768,15 +779,17 @@ function OverviewPage() {
                   <Zap className="h-6 w-6 text-[#bbbbbb]" />
                 </div>
                 <div className="mt-7 space-y-5">
-                  {(data?.alerts || []).slice(0, 7).map((alert) => (
-                    <article key={alert.id} className="relative border-l border-[#666666] pl-5">
-                      <span className="absolute -left-1 top-1 h-2 w-2 rounded-full bg-[#bbbbbb] shadow-[0_0_12px_rgba(109,210,197,.7)]" />
-                      <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[.12em] text-[#bbbbbb]"><span>{alert.severity}</span><span className="text-[#777777]">/</span><span>{shortDate(alert.created_at)}</span></div>
-                      <h3 className="mt-2 text-sm font-bold leading-5">{alert.title}</h3>
-                      <p className="mt-1 text-xs leading-5 text-[#bbbbbb]">{alert.body}</p>
+                  <p className="text-xs leading-5 text-[#bbbbbb]">Latest collected report for each selected filer, ordered by SEC publication. This is not an import-time news feed.</p>
+                  {filingEvents.slice(0, 7).map(({ key, manager, filing, source }) => (
+                    <article key={key} className="border-l border-[#666666] pl-5">
+                      <p className="text-[10px] text-[#bbbbbb]">SEC public (US Eastern): {secPublicationDate(filing.filed_at)}</p>
+                      <h3 className="mt-2 text-sm font-bold">{manager} · {filing.form_type}</h3>
+                      <p className="mt-1 text-xs leading-5 text-[#bbbbbb]">Holdings quarter: {filing.report_date}. Collected by AGI: {shortDate(filing.ingested_at)}.</p>
+                      {source && <a className="text-xs underline" href={source} target="_blank" rel="noreferrer">Original SEC record ↗</a>}
                     </article>
                   ))}
-                  {!data?.alerts?.length ? <p className="text-sm leading-6 text-[#bbbbbb]">New filings, amendments, material initiations and reported exits will appear here.</p> : null}
+                  {!filingEvents.length && <p>No dated filing records are available.</p>}
+                  <details className="text-xs leading-5"><summary className="cursor-pointer">Imported alert archive ({data?.alerts?.length || 0})</summary><p className="mt-3">Import dates below are when AGI recorded an alert, not when a filing became public. This is a limited stored alert sample, not a full filing history.</p>{(data?.alerts || []).map(alert => <article key={alert.id} className="mt-4 border-t border-white/20 pt-3"><p>AGI import: {shortDate(alert.created_at)}</p><b>{alert.title}</b><p>{alert.body}</p></article>)}</details>
                 </div>
               </aside>
             </section>
@@ -788,7 +801,7 @@ function OverviewPage() {
                 <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#777777]">Scores summarize disclosed positioning. They never claim to know a manager's current portfolio or expected return.</p>
               </div>
               <div className="mt-8 grid gap-4 md:grid-cols-5">
-                {Object.keys(SCORE_META).map((key, index) => <ScoreCard key={key} type={key} index={index} />)}
+                {Object.keys(SCORE_META).map((key, index) => <ScoreCard key={key} type={key} index={index} definitionOnly />)}
               </div>
             </section>
 
@@ -832,7 +845,7 @@ function FundPage({ slug }) {
       back="/institutional-holdings"
       eyebrow={`${fund.strategy} / CIK ${fund.cik}`}
       title={fund.display_name}
-      subtitle={`Explore the portfolio reported for ${data.latest_filing?.report_date || 'the pending coverage period'} and disclosed publicly on ${shortDate(data.latest_filing?.filed_at)}.`}
+      subtitle={`Explore the portfolio reported for ${data.latest_filing?.report_date || 'the pending coverage period'} and disclosed publicly on ${secPublicationDate(data.latest_filing?.filed_at)} (US Eastern).`}
     >
       <main className="mx-auto max-w-[1760px] px-5 pb-16 sm:px-8 xl:px-12">
         <section className="-mt-8 flex flex-col gap-5 rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_28px_80px_rgba(6,37,48,.13)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-8">
@@ -840,11 +853,12 @@ function FundPage({ slug }) {
           <div className="flex items-center gap-3 rounded-2xl bg-[#eeeeee] px-4 py-3 text-xs font-bold text-[#666666]"><CheckCircle2 className="h-5 w-5" /> Point-in-time verified</div>
         </section>
 
+        <section className="mt-6 rounded-2xl border border-[#dddddd] bg-white p-5 text-sm leading-6" aria-label="Filer reporting status"><b>{filingStatus({ ...fund, latest_filing: data.latest_filing }).label}</b><p>{filingStatus({ ...fund, latest_filing: data.latest_filing }).note}</p><p className="text-xs text-[#777777]">Source checked {shortDate(fund.last_refresh_at)}</p>{secManagerUrl(fund.cik) && <a className="text-xs underline" href={secManagerUrl(fund.cik)} target="_blank" rel="noreferrer">Inspect this legal filer on SEC EDGAR ↗</a>}</section>
         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={Building2} label="Disclosed value" value={money(data.latest_filing?.total_value_usd)} note="Reported market value" />
           <MetricCard icon={Layers3} label="Positions" value={data.latest_filing?.holdings_count || 0} note="Includes separately reported lines" />
           <MetricCard icon={FileClock} label="Filing version" value={data.latest_filing?.amendment_type || 'Pending'} note={data.latest_filing?.form_type || '13F coverage'} />
-          <MetricCard icon={Eye} label="Public since" value={shortDate(data.latest_filing?.filed_at)} note="SEC acceptance timestamp" />
+          <MetricCard icon={Eye} label="Public since" value={secPublicationDate(data.latest_filing?.filed_at)} note="SEC acceptance timestamp" />
         </section>
 
         {/* The manager's own words come before the filing mechanics. A reader
