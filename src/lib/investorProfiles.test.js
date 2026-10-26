@@ -102,3 +102,9 @@ test('completed refresh checks all profiles and preserves dated alternative sour
  assert.equal(karr.primarySourceUnavailable, true);
  assert.notEqual(karr.retrievedAt, '2026-10-26');
 });
+
+
+test('fund entity labels do not contain unrelated news headlines', () => {
+ assert.equal(profiles.find(p => p.name === 'Mairs and Power').managerName, 'Mairs & Power Funds');
+ assert.equal(profiles.find(p => p.name === 'Tweedy Browne').managerName, 'Tweedy Browne');
+});
