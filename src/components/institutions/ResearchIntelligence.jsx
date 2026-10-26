@@ -4,7 +4,18 @@ import research from '@/data/institutionResearch.json';
 import briefs from '../../../public/data/institution-briefs.json';
 import './researchIntelligence.css';
 const dataUrl='https://raw.githubusercontent.com/shivamagw06-dev/AGI/institution-research-data/institution-research/performance.json';
-function usePerformance(){const [data,setData]=useState(null);useEffect(()=>{const c=new AbortController();fetch(dataUrl,{signal:c.signal,cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(d=>{if(d.schemaVersion===1)setData(d);}).catch(()=>{});return()=>c.abort();},[]);return data;}
+function usePerformance(){
+ const [data,setData]=useState(null);
+ useEffect(()=>{
+  const c=new AbortController();let active=true,inFlight=false;
+  async function load(){if(inFlight)return;inFlight=true;try{
+   const r=await fetch(dataUrl,{signal:AbortSignal.any([c.signal,AbortSignal.timeout(15000)]),cache:'no-store'});
+   if(!r.ok)throw Error();const d=await r.json();if(active&&d.schemaVersion===1)setData(d);
+  }catch{/* Retain the last successful dated research results. */}finally{inFlight=false;}}
+  load();const timer=setInterval(()=>{if(!document.hidden)load();},240000);
+  return()=>{active=false;c.abort();clearInterval(timer);};
+ },[]);return data;
+}
 const pct = x => Number.isFinite(x) ? `${x>0?'+':''}${x.toFixed(2)}%` : 'Pending';
 export function ObservationPerformance({observation,performance}){
  const item=performance?.observations?.[observation.id];
@@ -14,7 +25,7 @@ export function ObservationPerformance({observation,performance}){
  const paths=key=>filtered.map((p,i)=>`${i===0?'M':'L'}${8+(i/Math.max(filtered.length-1,1))*304},${96-((p[key]-min)/span)*80}`).join(' ');
  const values=filtered.flatMap(p=>[p.stockReturn,p.benchmarkReturn]).filter(Number.isFinite),min=Math.min(0,...values),span=Math.max(1,Math.max(0,...values)-min);
  return <section className="ir-performance"><strong>After AGI tracking registration</strong><p>{item ? `First observed publicly ${item.firstPublishedAt?.slice(0,10)} · baseline ${item.baselineDate || 'awaiting next completed session'}`:'Awaiting first public registration. No historical performance is implied.'}</p>
- {item?.baselineDate&&<><div className="ir-metrics"><span>Stock <b>{pct(points.at(-1)?.stockReturn)}</b></span><span>{observation.country==='IN'?'Nifty 50':'S&P 500'} <b>{pct(points.at(-1)?.benchmarkReturn)}</b></span><span>Difference <b>{Number.isFinite(points.at(-1)?.excessPp)?`${points.at(-1).excessPp.toFixed(2)} pp`:'Pending'}</b></span></div><label>Chart window <select value={window} onChange={e=>setWindow(e.target.value)}><option value="all">Since registration</option><option value="30">30 days</option><option value="90">90 days</option></select></label>{filtered.length>1?<svg viewBox="0 0 320 110" role="img" aria-label={`Cumulative stock return and benchmark return since ${item.baselineDate}`}><path d={paths('stockReturn')} stroke="#197c78" fill="none" strokeWidth="2"/><path d={paths('benchmarkReturn')} stroke="#5267a1" fill="none" strokeWidth="2"/></svg>:<p>Chart appears after two comparable closes.</p>}<small>Green: stock · Blue: benchmark · All values remain rebased to the registration baseline. Adjusted closes, local currency, before costs and taxes. No short P&amp;L or manager performance.</small></>}
+ {item?.baselineDate&&<><p>Latest common closing date: {points.at(-1)?.date || 'unavailable'} · data checked {performance.updatedAt?.slice(0,10) || 'date unavailable'}. These are recorded closing prices, not live quotes.</p>{item.status!=='Tracking adjusted closes'&&<p role="status">{item.status}. Previously recorded outcomes remain visible.</p>}<div className="ir-metrics"><span>Stock <b>{pct(points.at(-1)?.stockReturn)}</b></span><span>{observation.country==='IN'?'Nifty 50':'S&P 500'} <b>{pct(points.at(-1)?.benchmarkReturn)}</b></span><span>Difference <b>{Number.isFinite(points.at(-1)?.excessPp)?`${points.at(-1).excessPp.toFixed(2)} pp`:'Pending'}</b></span></div><label>Chart window <select value={window} onChange={e=>setWindow(e.target.value)}><option value="all">Since registration</option><option value="30">30 days</option><option value="90">90 days</option></select></label>{filtered.length>1?<svg viewBox="0 0 320 110" role="img" aria-label={`Cumulative stock return and benchmark return since ${item.baselineDate}`}><path d={paths('stockReturn')} stroke="#197c78" fill="none" strokeWidth="2"/><path d={paths('benchmarkReturn')} stroke="#5267a1" fill="none" strokeWidth="2"/></svg>:<p>Chart appears after two comparable closes.</p>}{filtered.length>1&&<small>{filtered[0].date} — {filtered.at(-1).date}</small>}<small>Green: stock · Blue: benchmark · All values remain rebased to the registration baseline. Adjusted closes, local currency, before costs and taxes. No short P&amp;L or manager performance.</small></>}
  </section>;
 }
 export default function ResearchIntelligence({country}){

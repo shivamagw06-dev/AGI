@@ -16,6 +16,10 @@ def update(previous,briefs,quotes,now):
         item=out['observations'].setdefault(o['id'],dict(firstPublishedAt=now.isoformat(),contentHash=digest,symbol=o['symbol'],benchmark=o['benchmark'],country=o['country'],baselineDate=None,series=[]))
         if item['contentHash']!=digest:
             item['status']='Observation changed; requires new version ID';continue
+        # Registration-only runs must not mark a previously successful price collection as failed.
+        if not quotes:
+            if not item.get('series'):item['status']='Awaiting next completed common session'
+            continue
         # Each bar must be a completed local trading session. Both series use identical dates.
         q,b=quotes.get(o['symbol'],{}),quotes.get(o['benchmark'],{})
         if q.get('symbol')!=o['symbol'] or b.get('symbol')!=o['benchmark'] or q.get('currency')!=o['currency'] or b.get('currency')!=o['currency']:
