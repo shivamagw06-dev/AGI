@@ -18,6 +18,7 @@ class TrackingTests(unittest.TestCase):
   d=update(d,self.briefs,self.quotes([('2026-10-27',100),('2026-10-28',120)]),datetime(2026,10,29,tzinfo=timezone.utc))
   old=d['observations']['one']['series']
   self.assertEqual(update(d,self.briefs,{},self.now)['observations']['one']['series'],old)
+  self.assertEqual(update(d,self.briefs,{},self.now)['observations']['one']['status'],'Tracking adjusted closes')
   self.briefs['observations'][0]['symbol']='WRONG.NS'
   self.assertIn('requires new version',update(d,self.briefs,{},self.now)['observations']['one']['status'])
  def test_currency_mismatch_rejected(self):
