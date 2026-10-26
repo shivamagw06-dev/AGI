@@ -1,68 +1,57 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
-import { usaInstitutionalInvestors } from '@/data/usInstitutionalInvestors';
-import { indiaInstitutionalInvestors } from '@/data/institutionalInvestors';
-import { indiaInvestors, usaInvestors } from '@/data/richKids';
-import './richKids.css';
-import PortfolioCharts from '@/components/institutions/PortfolioCharts';
 import InvestorSelector from '@/components/institutions/InvestorSelector';
+import ResearchIntelligence from '@/components/institutions/ResearchIntelligence';
+import research from '@/data/institutionResearch.json';
 import { useInvestorValuations, valuationMoney, valuationTime, valuationStale } from '@/lib/investorValuations';
-import { investorSlug } from '@/lib/investorProfiles';
-import { investorPath } from '@/lib/investorProfiles';
+import { investorSlug, investorPath } from '@/lib/investorProfiles';
+import { snapshotMatches } from '@/lib/institutionResearch';
 import { API_ORIGIN } from '@/config';
-
-function Entries({ items, tone = '' }) {
- return items.length ? <ul className={`rk-entries ${tone}`}>{items.map(item => <li key={`${item.url || ""}:${item.label}`}>{item.label}</li>)}</ul> : <span className="rk-muted">—</span>;
-}
-export default function InstitutionsPage() {
- const [params, setParams] = useSearchParams();
- const country = params.get('country') === 'US' ? 'US' : 'IN';
- const category=params.get('category')==='institutional'?'institutional':'individual';
- const selectionKey=category==='individual'?country:`${country}-institutional`;
- const valuations = useInvestorValuations();
- const [selections,setSelections] = useState(()=>{try{const saved=JSON.parse(localStorage.getItem('agi-investor-selections')||'{}');return Object.fromEntries(['IN','US','IN-institutional','US-institutional'].map(code=>[code,Array.isArray(saved?.[code])?saved[code].filter(x=>typeof x==='string'):[]]));}catch{return {IN:[],US:[]};}});
- useEffect(()=>{try{localStorage.setItem('agi-investor-selections',JSON.stringify(selections));}catch{/* Storage may be unavailable in private browsing. */}},[selections]);
- const selected=selections[selectionKey]||[];
- const changeSelection=names=>setSelections(previous=>({...previous,[selectionKey]:names}));
- const [query,setQuery] = useState('');
- const [sort,setSort] = useState('value');
- const location=useLocation(),navigate=useNavigate();
- const [snapshot,setSnapshot]=useState(null),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
+import './richKids.css';
+function readCache(country,category){try{const d=JSON.parse(localStorage.getItem(`agi-institution-directory:${country}:${category}`));return snapshotMatches(d,country,category)?d:null;}catch{return null;}}
+export default function InstitutionsPage(){
+ const [params,setParams]=useSearchParams(),location=useLocation(),navigate=useNavigate();
+ const country=params.get('country')==='US'?'US':'IN',category=params.get('category')==='institutional'?'institutional':'individual';
+ const selectionKey=country+':'+category,valuations=useInvestorValuations();
+ const [snapshot,setSnapshot]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
+ const [query,setQuery]=useState(''),[sort,setSort]=useState('name'),[entity,setEntity]=useState('all'),[page,setPage]=useState(0);
+ const [selections,setSelections]=useState(()=>{try{return JSON.parse(localStorage.getItem('agi-institution-selections-v2')||'{}');}catch{return {};}});
+ const selected=Array.isArray(selections[selectionKey])?selections[selectionKey]:[];
+ const changeSelection=names=>setSelections(prev=>({...prev,[selectionKey]:names}));
+ useEffect(()=>{try{localStorage.setItem('agi-institution-selections-v2',JSON.stringify(selections));}catch{}},[selections]);
  useEffect(()=>{if(location.pathname==='/rich-kids')navigate(`/institutions${location.search}`,{replace:true});},[location.pathname,location.search,navigate]);
- useEffect(()=>{let stopped=false;const controller=new AbortController();setError('');
-  async function load(){try{const response=await fetch(`${API_ORIGIN || ''}/api/intelligence/institutions?country=${country}&category=${category}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(30000)]),cache:'no-store'});if(!response.ok)throw Error('Could not load the published table. Please retry.');const data=await response.json();if(!stopped){setSnapshot(data);setError('');}}catch(e){if(!stopped&&e.name!=='AbortError')setError(e.message);}}
-  load();const interval=setInterval(()=>{if(!document.hidden)load();},60000);return()=>{stopped=true;controller.abort();clearInterval(interval);};
+ useEffect(()=>{
+  let active=true,inFlight=false;const controller=new AbortController();setSnapshot(readCache(country,category));setError('');
+  async function load(){if(inFlight)return;inFlight=true;setBusy(true);
+   try{const response=await fetch(`${API_ORIGIN || ''}/api/intelligence/institutions?country=${country}&category=${category}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)]),cache:'no-store'});
+    if(!response.ok)throw Error('Refresh unavailable');const data=await response.json();if(!snapshotMatches(data,country,category))throw Error('No validated published refresh');
+    if(active){setSnapshot(data);setError('');try{localStorage.setItem(`agi-institution-directory:${country}:${category}`,JSON.stringify(data));}catch{}}
+   }catch{if(active)setError('Refresh unavailable. Saved, dated disclosures remain visible below.');}
+   finally{inFlight=false;if(active)setBusy(false);}}
+  load();const timer=setInterval(()=>{if(!document.hidden)load();},240000);return()=>{active=false;controller.abort();clearInterval(timer);};
  },[country,category,refresh]);
- const current=snapshot?.country===country&&(snapshot.category||'individual')===category?snapshot:null;
- const investors = current ? (current.published?current.rows:category==='institutional'?(country==='IN'?indiaInstitutionalInvestors:usaInstitutionalInvestors):country==='IN'?indiaInvestors:usaInvestors) : [];
- const currency=country==='IN'?'₹':'$',unit=country==='IN'?'Cr':'M';
- const chosenInvestors=useMemo(()=>selected.length?investors.filter(row=>selected.includes(row.name)):investors,[investors,selected]);
- const rows = useMemo(() => chosenInvestors.filter(row => [row.name,...row.sectors.map(x=>x.label),...row.holdings.map(x=>x.label)].join(' ').toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='stocks'?b.stocks-a.stocks:b.value-a.value),[chosenInvestors,query,sort]);
- const hasQuarterlyHistory = investors.some(row => row.quarterlyNetWorth && row.quarterlyNetWorth !== 'Not supplied');
- const choose = code => {setParams({country:code,category});setQuery('');};
- const keyboardTab = event => {if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?'IN':event.key==='End'?'US':country==='IN'?'US':'IN';choose(next);document.getElementById(`rk-tab-${next}`)?.focus();}};
- return <main className="rk-page institutions-directory">
-  <Helmet><title>Institutions — Investor Portfolios | AGI</title><meta name="description" content="Explore prominent investor portfolios, sector preferences, top holdings and reported portfolio changes across India and the USA." /></Helmet>
-  <header className="institutions-header rk-container"><div><p className="institutions-kicker">RESEARCH / OWNERSHIP</p><h1>Institutions</h1><p>Disclosed portfolios of leading investors across India and the United States.</p></div><div className="institutions-edition"><span>PORTFOLIO MONITOR</span><strong>{country === 'IN' ? 'India' : 'United States'}</strong><span>{country === 'IN' ? 'Values in INR crore' : 'Values in USD million'}</span></div></header>
-  <div className="rk-container">
-   <div className="rk-tabs" role="tablist" aria-label="Investor market" onKeyDown={keyboardTab}>{[['IN','India'],['US','USA']].map(([code,label])=><button id={`rk-tab-${code}`} key={code} role="tab" aria-selected={country===code} aria-controls="rk-panel" tabIndex={country===code?0:-1} onClick={()=>choose(code)}>{label}<span>{code==='IN'?'INR':'USD'}</span></button>)}</div>
-   <div className="institution-category" aria-label="Investor category">{[['individual','Investor directory'],['institutional','Institutional investors']].map(([code,label])=><button key={code} aria-pressed={category===code} onClick={()=>{setParams({country,category:code});setQuery('');}}>{label}</button>)}</div>
-   <section id="rk-panel" role="tabpanel" aria-labelledby={`rk-tab-${country}`} tabIndex={0}>
-    <div className="institutions-status"><p><span className={`institutions-status-dot ${valuationStale(valuations) ? 'is-stale' : ''}`} aria-hidden="true"/>{valuations ? `Prices refreshed ${valuationTime(valuations.updatedAt)}${valuationStale(valuations) ? ' · refresh overdue' : ''}` : 'Price refresh pending'}<span className="institutions-schedule">Daily refresh · 2:00 AM IST</span></p><button className="rk-refresh" onClick={()=>setRefresh(x=>x+1)}>↻ Refresh table</button></div>
-    {error?<div className="rk-empty" role="alert">{error}</div>:!current?<p role="status">Loading published portfolios…</p>:investors.length ? <>
-     {category==='institutional'&&!current.published&&<p className="rk-table-hint">{country==='IN'?'100 institutions from the supplied list. The source directory contains 124 entries; the remaining 24 were not supplied.':'16 institutions from the supplied US list, matched to public sources.'} Summary valuation date was not supplied.</p>}
-     <InvestorSelector key={`${country}-${category}`} investors={investors} selected={selected} onChange={changeSelection} />
-     <PortfolioCharts investors={rows} country={country} linkProfiles />
-     <div className="rk-toolbar"><label>Search portfolios<input type="search" placeholder="Investor, company or sector…" value={query} onChange={e=>setQuery(e.target.value)} /></label><label>Sort by<select value={sort} onChange={e=>setSort(e.target.value)}><option value="value">Reported value: high to low</option><option value="stocks">Stock count: high to low</option><option value="name">Investor name: A–Z</option></select></label><p aria-live="polite">{rows.length} of {investors.length} investors</p></div>
-     <p className="rk-table-hint">{category==='institutional'?'Select an institution for sourced holdings and coverage details. Daily estimates appear after eligible positions are priced; summary and holdings dates may differ.':'Select an investor to view holdings. Daily estimates exclude unpriced positions; partial totals are marked.'}</p>
-     <div className="rk-table-wrap" role="region" aria-label="Investor portfolio comparison" tabIndex={0}><table><caption className="rk-sr-only">{country==='IN'?'Indian':'US'} investor portfolios. Currency: {country==='IN'?'INR crore':'USD million'}.</caption><thead><tr>{['Investor','Reported value','Daily estimate','Stocks','Sector exposure',...(hasQuarterlyHistory ? ['Quarterly history'] : []),'Top holdings','Reported additions','Reported reductions'].map(label=><th key={label} scope="col">{label}</th>)}</tr></thead><tbody>{rows.map(row=>{const valuation=valuations?.profiles?.[`${country.toLowerCase()}-${investorSlug(row.name)}`]; return <tr key={row.name}>
-      <th scope="row"><Link to={investorPath(country,row.name)}>{row.name}<span className="rk-external" aria-hidden="true"> →</span></Link></th>
-      <td className="rk-number"><strong>{currency}{row.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} {unit}</strong><span className={row.change>=0?'rk-positive':'rk-negative'}>{row.change==null?'Not supplied':`${row.change>0?'+':''}${row.change}%`}</span></td><td className="rk-number">{valuation?.pricedCount ? <><strong>{valuationMoney(valuation.value,country)}</strong><span>{valuation.pricedCount}/{valuation.rowCount} priced{valuation.pricedCount < valuation.rowCount ? ' · partial' : ''}</span><span className="institutions-period">{valuation.reportPeriod}</span>{valuation.dayChangePct != null && <span className={valuation.dayChangePct >= 0 ? 'rk-positive' : 'rk-negative'}>{valuation.dayChangePct > 0 ? '+' : ''}{valuation.dayChangePct.toFixed(2)}% price movement</span>}</> : <span className="rk-muted">Not priced</span>}</td><td className="rk-count">{row.stocks}</td><td><Entries items={row.sectors}/></td>{hasQuarterlyHistory && <td><span className="rk-muted">{row.quarterlyNetWorth || '—'}</span></td>}<td><Entries items={row.holdings}/></td><td><Entries items={row.bought} tone="rk-positive"/></td><td><Entries items={row.sold} tone="rk-negative"/></td>
-     </tr>;})}</tbody></table>{!rows.length&&<div className="rk-no-results"><h3>No matching investors</h3><p>Try a different search or investor selection.</p><button onClick={()=>{setQuery('');changeSelection([]);}}>Reset filters</button></div>}</div>
-     <details className="rk-notes"><summary>Methodology</summary><p className="rk-snapshot">{current?.published ? `Directory updated ${valuationTime(current.updatedAt)} · ${current.asOf ? `Valuation date ${current.asOf}` : 'Source valuation date not supplied'}` : 'Supplied directory snapshot'}</p><p>* Portfolio value reflects the supplied listed-shareholding figures, not personal net worth. Change periods are as reported by the source; the valuation date is shown above when supplied. “Recently bought” and “Recently sold” retain the source labels and percentages; these are not verified trade executions or investment returns.</p><p>Quarterly history is shown only when supplied as text or figures; copied graph images are not reconstructed. A dash means no entry was provided, not necessarily no activity. Figures are reproduced from the supplied snapshot and may not reconcile across columns. Family and associate portfolios can overlap; their values should not be added together.</p><p>Administrator-published portfolio snapshots. Tables update after publication and refresh every minute while this page is visible; this is not a live price feed.</p></details>
-    </> : <div className="rk-empty"><span className="rk-empty-mark" aria-hidden="true">{country}</span><h3>{category==='institutional'?'Institutional portfolios are ready for import.':'Portfolios are coming next.'}</h3><p>Investor entries have not been published for this market and category yet. Once available, they will appear here with holdings, sector preferences and reported changes.</p><button onClick={()=>choose('IN')}>Explore India portfolios <span aria-hidden="true">→</span></button></div>}
-   </section>
-  </div>
- </main>;
+ const current=snapshotMatches(snapshot,country,category)?snapshot:null;
+ const investors=useMemo(()=>Object.values(research.summaries).filter(r=>r.country===country&&r.category===category),[country,category]);
+ const rows=useMemo(()=>investors.filter(r=>(!selected.length||selected.includes(r.name))&&(entity==='all'||r.entityType===entity)&&[r.name,...r.holdings.map(x=>x.label)].join(' ').toLowerCase().includes(query.toLowerCase())).sort((a,b)=>sort==='stocks'?b.stocks-a.stocks:a.name.localeCompare(b.name)),[investors,selected,entity,query,sort]);
+ useEffect(()=>setPage(0),[country,category,query,entity,sort,selections]);
+ const entities=[...new Set(investors.map(r=>r.entityType))].sort();
+ const choose=code=>{setParams({country:code,category});setQuery('');setEntity('all');};
+ const keyboardTab=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'IN':e.key==='End'?'US':country==='IN'?'US':'IN';choose(next);document.getElementById(`rk-tab-${next}`)?.focus();}};
+ return <main className="rk-page institutions-directory"><Helmet><title>Institutions — Investor Portfolios | AGI</title><meta name="description" content="Sourced investor holdings, verified ownership research and publication-based outcome tracking for India and USA."/></Helmet>
+ <header className="institutions-header rk-container"><div><p className="institutions-kicker">RESEARCH / OWNERSHIP</p><h1>Institutions</h1><p>Compare disclosed holdings. Understand the evidence and the dates.</p></div><div className="institutions-edition"><span>OWNERSHIP MONITOR</span><strong>{country==='IN'?'India':'United States'}</strong><span>{country==='IN'?'INR':'USD'} · Historical disclosures</span></div></header>
+ <div className="rk-container"><div className="rk-tabs" role="tablist" aria-label="Investor market" onKeyDown={keyboardTab}>{[['IN','India'],['US','USA']].map(([code,label])=><button id={`rk-tab-${code}`} key={code} role="tab" aria-selected={country===code} aria-controls="rk-panel" tabIndex={country===code?0:-1} onClick={()=>choose(code)}>{label}<span>{code==='IN'?'INR':'USD'}</span></button>)}</div>
+ <div className="institution-category" aria-label="Investor category">{[['individual','Investor directory'],['institutional','Institutional investors']].map(([code,label])=><button key={code} aria-pressed={category===code} onClick={()=>{setParams({country,category:code});setQuery('');setEntity('all');}}>{label}</button>)}</div>
+ <section id="rk-panel" role="tabpanel" aria-labelledby={`rk-tab-${country}`} tabIndex={0}>
+ <div className="institutions-status"><p>Saved holdings checked through {research.sourceThrough}. <span className="institutions-schedule">{valuations?`Prices refreshed ${valuationTime(valuations.updatedAt)}${valuationStale(valuations)?' · overdue':''}`:'Price refresh pending'}</span></p><button className="rk-refresh" disabled={busy} onClick={()=>setRefresh(x=>x+1)}>{busy?'Checking refresh…':'Refresh directory status'}</button></div>
+ {(error||busy)&&<p className="ip-notice" role="status">{error||'Checking for a newer directory summary. Saved holdings are available now.'}</p>}
+ <ResearchIntelligence country={country}/>
+ <div className="rk-section-title"><div><p className="institutions-kicker">DISCLOSURE DIRECTORY</p><h2>Explore investor holdings</h2></div></div><p className="rk-table-hint">Counts are reconciled to each saved holdings file: current-period disclosed rows are separated from historical or unavailable rows. Summaries may cover different dates; no return is inferred from portfolio-value changes.</p>
+ <InvestorSelector key={selectionKey} investors={investors} selected={selected} onChange={changeSelection}/>
+ <div className="rk-toolbar"><label>Search portfolios<input type="search" placeholder="Investor or company…" value={query} onChange={e=>setQuery(e.target.value)}/></label><label>Entity type<select value={entity} onChange={e=>setEntity(e.target.value)}><option value="all">All entity types</option>{entities.map(t=><option key={t}>{t}</option>)}</select></label><label>Sort by<select value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Name A–Z</option><option value="stocks">Current disclosed rows</option></select></label><p aria-live="polite">{rows.length} of {investors.length} profiles</p></div>
+ <div className="rk-table-wrap" role="region" aria-label="Investor disclosure directory" tabIndex={0}><table><thead><tr>{['Investor / entity','Ownership period / source checked','Current disclosed rows','Historical / unavailable rows','Price coverage / subtotal','Top rows in source table','Evidence'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{rows.slice(page*25,(page+1)*25).map(row=>{const candidate=valuations?.profiles?.[country.toLowerCase()+'-'+row.slug];const v=candidate?.fingerprint===row.fingerprint?candidate:null;return <tr key={row.slug}><th scope="row"><Link to={investorPath(country,row.name)}>{row.name} →</Link><small className="ip-holder">{row.entityType}</small></th><td>{row.reportPeriod||'Period unavailable'}<small className="ip-holder">Checked {row.retrievedAt}</small></td><td>{row.stocks}</td><td>{row.historical}</td><td>{v?.pricedCount?<><strong>{valuationMoney(v.value,country)} · partial estimate</strong><small className="ip-holder">{v.pricedCount}/{v.rowCount} listed rows priced. Verify the matching holdings version inside the profile.</small></>:<span className="rk-muted">Price coverage unavailable</span>}</td><td>{row.holdings.map(x=><div key={x.label}>{x.label}</div>)}</td><td><a href={row.sourceUrl} target="_blank" rel="noreferrer">Source ↗</a><small className="ip-holder">{row.sourceLimited?'Source-limited snapshot':row.retrievalComplete?'Available source pages captured':'Capture completeness not established'}; open profile for coverage.</small></td></tr>;})}</tbody></table>{!rows.length&&<div className="rk-no-results"><p>No matching profiles.</p><button onClick={()=>{setQuery('');setEntity('all');changeSelection([]);}}>Reset filters</button></div>}</div>
+ {rows.length>25&&<nav className="ip-pagination" aria-label="Investor directory pages"><button disabled={page===0} onClick={()=>setPage(x=>x-1)}>Previous</button><span>Page {page+1} of {Math.ceil(rows.length/25)}</span><button disabled={(page+1)*25>=rows.length} onClick={()=>setPage(x=>x+1)}>Next</button></nav>}
+ {current&&<details className="ip-legacy"><summary>Separate directory summary · {current.updatedAt?valuationTime(current.updatedAt):'date unavailable'}</summary><p>These summary counts and values may differ from holdings above. They are not used for ownership-change intelligence.</p><p>{current.rows.length} supplied entries · valuation date {current.asOf||'not supplied'}.</p></details>}
+ <details className="rk-notes"><summary>Methodology and limitations</summary><p>Ownership date, public filing date, source-check date and price date are different. Price refreshes do not refresh ownership. Public disclosures can omit sub-threshold positions, shorts, cash and other assets. Missing data is unknown, not zero or a sale.</p><p>Groups and related entities can overlap. Numerical stake changes do not establish confirmed trades, cash flows, investor motives or expected returns. A newly disclosed position may have existed before it crossed a reporting threshold.</p><p>Exact security mappings are required for pricing. Unresolved identities, stale prices and unsupported securities are excluded. A partial valuation is not complete portfolio wealth or investment performance.</p></details>
+ </section></div></main>;
 }
