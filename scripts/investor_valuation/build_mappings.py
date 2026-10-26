@@ -1,5 +1,6 @@
 """Build conservative, reviewable symbol mappings from existing AGI reference data."""
 import csv, json, re
+from reviewed_aliases import ALIASES
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 def norm(s):
@@ -16,6 +17,13 @@ def build(sec_dir):
             found = candidates.get(norm(r['stock']), set())
             if len(found)==1:
                 mappings['IN'][r['stock']] = {'symbol': next(iter(found)), 'source': 'NSE equity security master, exact normalized company name'}
+    # Only the explicit reviewed aliases may use a display-name prefix; all other fuzzy matches remain unresolved.
+    reference=list(csv.DictReader((ROOT/'EQUITY_L.csv').open()))
+    for alias in ALIASES:
+        found=[r for r in reference if norm(r['NAME OF COMPANY']).startswith(norm(alias))]
+        if len(found)==1:
+            r=found[0]
+            mappings['IN'][alias]={'symbol':r['SYMBOL']+'.NS','isin':r[' ISIN NUMBER'],'issuer':r['NAME OF COMPANY'],'source':'Manually reviewed display-name alias against NSE equity master; explicit alias allowlist'}
     cusips = {}
     for p in Path(sec_dir).glob('*.json'):
         for r in json.loads(p.read_text()).get('holdings', []):

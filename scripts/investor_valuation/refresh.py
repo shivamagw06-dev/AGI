@@ -35,6 +35,8 @@ def period_date(profile):
 
 def eligible(profile,row,mappings):
     if not number(row.get('quantity')): return None,'Quantity unavailable'
+    if profile['country']=='IN' and row.get('reportPeriod') and row['reportPeriod']!=profile.get('reportPeriod'):
+        return None,'Historical ownership period; not current disclosed quantity'
     if profile['country']=='IN' and (not row.get('history') or row['history'][0] in ('-',None,'')):
         return None,'Historical position; current ownership unavailable'
     if re.search(r'\b(PUT|CALL|PRN|PFD|PREF|NOTE|WARRANT|WTS|DEBT|CONVERTIBLE)\b',row.get('security',''),re.I):
@@ -46,13 +48,17 @@ def eligible(profile,row,mappings):
     if not mapping: return None,'Exact security mapping unavailable'
     return mapping['symbol'],None
 
-def fetch_quote(symbol):
+def fetch_quote(symbol, history_range="1y"):
     # No alternate hosts, proxy bypasses, or retries on provider rate limits.
-    url='https://query1.finance.yahoo.com/v8/finance/chart/'+quote(symbol,safe='')+'?range=1y&interval=1d&events=splits'
+    url='https://query1.finance.yahoo.com/v8/finance/chart/'+quote(symbol,safe='')+'?range='+history_range+'&interval=1d&events=splits'
     proc=subprocess.run(['curl','--fail','--silent','--show-error','--max-time','25','--user-agent','AGI-Portfolio-Valuation/1.0 (+https://agarwalglobalinvestments.com)',url],capture_output=True,text=True)
     if proc.returncode: raise RuntimeError('Yahoo quote unavailable')
     data=json.loads(proc.stdout)['chart']['result'][0]
     meta=data['meta']; stamps=data.get('timestamp',[])
+    from zoneinfo import ZoneInfo
+    zone=ZoneInfo(meta.get('exchangeTimezoneName') or ('Asia/Kolkata' if symbol.endswith('.NS') or symbol=='^NSEI' else 'America/New_York'))
+    adjusted=(data['indicators'].get('adjclose') or [{}])[0].get('adjclose',[])
+    history=[dict(date=datetime.fromtimestamp(ts,zone).date().isoformat(),adjustedClose=number(c)) for ts,c in zip(stamps,adjusted) if number(c)]
     closes=data['indicators']['quote'][0]['close']
     regular_time=meta.get('regularMarketTime',0)
     # Use the previous daily bar for a comparable regular-session price change.
@@ -60,7 +66,7 @@ def fetch_quote(symbol):
     previous=valid[-2][1] if len(valid)>1 else None
     return dict(symbol=meta.get('symbol'),currency=meta.get('currency'),price=number(meta.get('regularMarketPrice')),
                 time=regular_time,previous=previous,type=meta.get('instrumentType'),
-                splits=[int(s['date']) for s in data.get('events',{}).get('splits',{}).values()])
+                history=history, splits=[int(s['date']) for s in data.get('events',{}).get('splits',{}).values()])
 
 def value_profile(profile,mappings,quotes,now):
     source_date=period_date(profile)
@@ -90,13 +96,15 @@ def run(output):
     now=datetime.now(timezone.utc)
     mappings=json.loads((ROOT/'src/data/investorProfiles/priceMappings.json').read_text())
     profiles=[json.loads(p.read_text()) for p in sorted((ROOT/'src/data/investorProfiles/holdings').glob('*.json'))]
-    symbols=sorted({eligible(p,r,mappings)[0] for p in profiles for r in p['rows']} - {None})
+    briefs=json.loads((ROOT/'public/data/institution-briefs.json').read_text())
+    research_symbols={s for o in briefs['observations'] for s in (o['symbol'],o['benchmark'])}
+    symbols=sorted(({eligible(p,r,mappings)[0] for p in profiles for r in p['rows']} - {None}) | research_symbols)
     quotes={}; failures=0
     # Small bounded batches; abort on widespread provider errors and retain published file.
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
         for offset in range(0,len(symbols),12):
             batch=symbols[offset:offset+12]
-            for symbol,future in zip(batch,[pool.submit(fetch_quote,s) for s in batch]):
+            for symbol,future in zip(batch,[pool.submit(fetch_quote,s,'max' if s in research_symbols else '1y') for s in batch]):
                 try: quotes[symbol]=future.result()
                 except (Exception,): failures+=1
             if failures>=6 and failures/(offset+len(batch))>.25:
@@ -106,9 +114,10 @@ def run(output):
     now=datetime.now(timezone.utc)
     results={p['country'].lower()+'-'+p['slug']:value_profile(p,mappings,quotes,now) for p in profiles}
     if not any(p['pricedCount'] for p in results.values()): raise RuntimeError('No usable prices; refusing publication')
-    data=dict(schemaVersion=1,updatedAt=now.isoformat(),provider='Yahoo Finance',schedule='Daily at 02:00 Asia/Kolkata',profiles=results)
+    data=dict(schemaVersion=1,updatedAt=now.isoformat(),provider='Yahoo Finance',schedule='Daily at 04:15 Asia/Kolkata, after US regular close',profiles=results)
     target=Path(output); target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(json.dumps(data,ensure_ascii=False,separators=(',',':'))+'\n')
+    target.with_name('quotes.json').write_text(json.dumps(quotes,separators=(',',':')))
     print(json.dumps({'profiles':len(results),'pricedRows':sum(p['pricedCount'] for p in results.values()),'symbols':len(quotes),'failedSymbols':failures}))
 if __name__=='__main__':
     import sys
