@@ -37,6 +37,7 @@ import {
 import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
 import InstitutionalIntelligenceWorkbench from '@/components/Research/InstitutionalIntelligenceWorkbench';
 import InstitutionalResearchLayer from '@/components/Research/InstitutionalResearchLayer';
+import HedgeFundSourceAudit from '@/components/Research/HedgeFundSourceAudit';
 import ResearchIntelligence from '@/components/institutions/ResearchIntelligence';
 import { coverageCounts, filingStatus, latestFilingEvents, secManagerUrl, secPublicationDate } from '@/lib/hedgeFundDisclosure';
 import ManagerSaid from '@/components/Research/ManagerSaid';
@@ -704,6 +705,7 @@ function OverviewPage() {
           <p>Overview checked {shortDate(data?.generated_at)}. Daily prices cannot reveal a manager’s undisclosed trades.</p>
         </section>
         <ResearchIntelligence country="US" />
+        <HedgeFundSourceAudit />
         {error ? <div className="mt-8"><Empty error={error} /></div> : (
           <>
             <MarketIntelligencePanel data={data} />

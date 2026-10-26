@@ -1,0 +1,16 @@
+{
+ "reviewedAt":"2026-10-26",
+ "whaleWisdomChecks":[{"slug":"appaloosa-management","url":"https://whalewisdom.com/filer/appaloosa-lp","period":"2026-06-30","reportedValue":7725383349,"reportedRowCount":27,"nonOptionSecondaryValue":7471264000,"note":"Rendered profile checked. Two put rows use underlying-share values, not premiums. Dataroma excludes those rows. Different scopes change portfolio weights."}],
+ "corporateActions":[
+  {"symbol":"MNST","factor":2,"date":"2026-08-11","source":"https://monsterenergycompany.gcs-web.com/news-releases/news-release-details/monster-beverage-declares-two-one-stock-split"},
+  {"symbol":"APH","factor":2,"date":"2026-09-03","source":"https://investors.amphenol.com/news-and-events/news-details/2026/Amphenol-Announces-Two-for-One-Stock-Split-and-Third-Quarter-2026-Dividend/default.aspx"},
+  {"symbol":"CRWD","factor":4,"date":"2026-07-02","source":"https://ir.crowdstrike.com/static-files/f774ef12-cf94-48bf-ace2-c7f3dcf8ec97"},
+  {"symbol":"GUTS","factor":0.08333333333333333,"date":"2026-10-05","source":"https://www.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-709"},
+  {"symbol":"CRIS","factor":0.05,"date":"2026-07-06","source":"https://m.nasdaqtrader.com/TraderNews.aspx?id=ECA2026-454"}
+ ],
+ "insights":[
+  {"slug":"tiger-global","period":"2026-06-30","title":"Technology managers did not move together","fact":"Tiger Global's reported quantities declined approximately 45.39% for Alphabet Class A, 12.29% for TSMC, 8.54% for Meta, 6.77% for Nvidia and 3.16% for Amazon versus March.","interpretation":"This contrasts with Appaloosa's increases in Amazon, Meta and TSMC. It does not support a unanimous technology-buying narrative.","watch":"Compare earnings and valuation stock by stock; manager motives and current October positions are unknown."},
+  {"slug":"akre-capital","period":"2026-06-30","title":"Quality-oriented ownership can coexist with reductions","fact":"Akre's reported quantities declined approximately 32.21% for Visa, 28.82% for Brookfield, 25.85% for KKR and 12.77% for Mastercard versus March.","interpretation":"A large existing holding does not establish ongoing accumulation. These are reported quantity changes, not a confirmed explanation of why the positions changed.","watch":"Distinguish existing concentration from additions; do not translate a reduction into a short recommendation."},
+  {"slug":"appaloosa-management","period":"2026-06-30","title":"Selective China exposure and a critical options distinction","fact":"Appaloosa's reported Baidu quantity increased approximately 87.11%, while Alibaba declined 42.28%. Apple and Berkshire entries in the June table are puts, not ordinary long stock positions.","interpretation":"A blanket China exit or a headline that Appaloosa bought Apple stock would misdescribe the filing. Option underlying-share value is not the premium paid.","watch":"Review security type, share-count changes and the portfolio-value denominator before drawing a conclusion."}
+ ]
+}
