@@ -1,0 +1,2815 @@
+{
+  "checkedAt": "2026-10-26",
+  "profiles": 275,
+  "currentDirectoryProfiles": 269,
+  "historicalRoutesRetained": 6,
+  "sourceRefreshed": 261,
+  "latestTableUnavailable": 14,
+  "officialSEC": [
+    {
+      "name": "Warren Buffett",
+      "manager": "berkshire-hathaway",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:05:04+00:00",
+      "rows": 29,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1067983/000119312526352200/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Baillie Gifford",
+      "manager": "baillie-gifford",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-06T15:09:59+00:00",
+      "rows": 275,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1088875/000108887526000057/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Kenneth C. Griffin",
+      "manager": "citadel-advisors",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-09-01T22:14:00+00:00",
+      "rows": 13572,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1423053/000110465926104387/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Jim Simons",
+      "manager": "renaissance-technologies",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-13T20:34:33+00:00",
+      "rows": 3140,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1037389/000103738926000059/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Bill Gates",
+      "manager": "gates-foundation-trust",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:15:28+00:00",
+      "rows": 24,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1166559/000110465926097175/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Ole Andreas Halvorsen",
+      "manager": "viking-global",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:02:11+00:00",
+      "rows": 90,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000006/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Raymond Thomas Dalio",
+      "manager": "bridgewater-associates",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:08:20+00:00",
+      "rows": 997,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1350694/000135069426000003/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Philippe Laffont",
+      "manager": "coatue-management",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:03:06+00:00",
+      "rows": 66,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Charles T. Akre",
+      "manager": "akre-capital",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:21:27+00:00",
+      "rows": 20,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Steve Mandel",
+      "manager": "lone-pine-capital",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:06:46+00:00",
+      "rows": 34,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426005485/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Bill Ackman",
+      "manager": "pershing-square",
+      "reportDate": "2026-03-31",
+      "filedAt": "2026-05-15T20:19:58+00:00",
+      "rows": 11,
+      "status": "reports_elsewhere",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1336528/000117266126002336/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Daniel Loeb",
+      "manager": "third-point",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T21:18:08+00:00",
+      "rows": 43,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1040273/000104027326000003/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Seth Klarman",
+      "manager": "baupost-group",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-13T20:46:45+00:00",
+      "rows": 23,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1061768/000106176826000010/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Lee Ainslie",
+      "manager": "maverick-capital",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:25:15+00:00",
+      "rows": 179,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/934639/000094787126000793/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "George Soros",
+      "manager": "soros-fund-management",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:10:21+00:00",
+      "rows": 266,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1029160/000090266426003507/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Stanley Druckenmiller",
+      "manager": "duquesne-family-office",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T19:55:57+00:00",
+      "rows": 95,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1536411/000153641126000006/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Li Lu",
+      "manager": "himalaya-capital",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T19:28:42+00:00",
+      "rows": 8,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1709323/000204358526000022/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "David Tepper",
+      "manager": "appaloosa-management",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-14T20:00:15+00:00",
+      "rows": 27,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Mohnish Pabrai",
+      "manager": "dalal-street",
+      "reportDate": "2026-06-30",
+      "filedAt": "2026-08-13T11:50:17+00:00",
+      "rows": 4,
+      "status": "success",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1549575/000154957526000015/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    },
+    {
+      "name": "Michael Burry",
+      "manager": "scion-asset-management",
+      "reportDate": "2025-09-30",
+      "filedAt": "2025-11-03T16:33:10+00:00",
+      "rows": 8,
+      "status": "stale",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1649339/000164933925000007/xslForm13F_X02/primary_doc.xml",
+      "complete": true
+    }
+  ],
+  "fundSources": [
+    {
+      "name": "Richard Pzena",
+      "result": "refreshed",
+      "rows": 159,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Christopher Davis",
+      "result": "refreshed",
+      "rows": 112,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "John Rogers",
+      "result": "refreshed",
+      "rows": 106,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Tom Russo",
+      "result": "refreshed",
+      "rows": 84,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Mairs and Power",
+      "result": "refreshed",
+      "rows": 254,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "First Pacific Advisors",
+      "result": "refreshed",
+      "rows": 72,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Ruane Cunniff",
+      "result": "refreshed",
+      "rows": 54,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Sarah Ketterer",
+      "result": "refreshed",
+      "rows": 121,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Nelson Peltz",
+      "result": "refreshed",
+      "rows": 8,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Glenn Greenberg",
+      "result": "refreshed",
+      "rows": 40,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Mason Hawkins",
+      "result": "refreshed",
+      "rows": 47,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "David Einhorn",
+      "result": "refreshed",
+      "rows": 46,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Tweedy Browne",
+      "result": "refreshed",
+      "rows": 91,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Prem Watsa",
+      "result": "refreshed",
+      "rows": 32,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Bruce Berkowitz",
+      "result": "refreshed",
+      "rows": 13,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Kahn Brothers",
+      "result": "refreshed",
+      "rows": 47,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "David Rolfe",
+      "result": "refreshed",
+      "rows": 18,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Mark Hillman",
+      "result": "refreshed",
+      "rows": 54,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Ronald Muhlenkamp",
+      "result": "refreshed",
+      "rows": 28,
+      "reportPeriod": "30 Jun 2026"
+    },
+    {
+      "name": "Ronald S. Baron",
+      "result": "excerpt-verified",
+      "rows": 40,
+      "reportPeriod": "2026 Q2"
+    },
+    {
+      "name": "Robert Karr",
+      "result": "primary-dns-unavailable-prior-retained",
+      "rows": 10,
+      "reportPeriod": "2026 Q1"
+    }
+  ],
+  "profilesAudit": [
+    {
+      "name": "Mukesh Ambani And Family",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2214734/latest/mukesh-ambani-and-family/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Radhakishan Damani",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/178317/latest/radhakishan-damani/",
+      "result": "refreshed",
+      "rows": 15,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Premji And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584333/latest/premji-and-associates/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Rakesh Jhunjhunwala And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53781/latest/rakesh-jhunjhunwala-and-associates/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Rekha Jhunjhunwala",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53782/latest/rekha-jhunjhunwala/",
+      "result": "refreshed",
+      "rows": 29,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mukul Agrawal",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53774/latest/mukul-agrawal/",
+      "result": "refreshed",
+      "rows": 100,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Akash Bhanshali",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53740/latest/akash-bhanshali/",
+      "result": "refreshed",
+      "rows": 20,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sanjay Gupta",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53787/latest/sanjay-gupta/",
+      "result": "refreshed",
+      "rows": 20,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sunil Singhania",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/182955/latest/sunil-singhania/",
+      "result": "refreshed",
+      "rows": 57,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nemish S Shah",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53776/latest/nemish-s-shah/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ashish Kacholia",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53746/latest/ashish-kacholia/",
+      "result": "refreshed",
+      "rows": 67,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Dheeraj Kumar Lohia And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53754/latest/dheeraj-kumar-lohia-and-associates/",
+      "result": "refreshed",
+      "rows": 76,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Raj Kumar Lohia",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53779/latest/raj-kumar-lohia/",
+      "result": "refreshed",
+      "rows": 76,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Anil Kumar Goel And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53743/latest/anil-kumar-goel-and-associates/",
+      "result": "refreshed",
+      "rows": 40,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Madhusudan Kela",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584325/latest/madhusudan-kela/",
+      "result": "refreshed",
+      "rows": 23,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ashish Dhawan",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53745/latest/ashish-dhawan/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Govindlal M Parikh",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/3130116/latest/govindlal-m-parikh/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Anuj Anantrai Sheth And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53744/latest/anuj-anantrai-sheth-and-associates/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vanaja Sundar Iyer",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53804/latest/vanaja-sundar-iyer/",
+      "result": "refreshed",
+      "rows": 28,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vijay Kishanlal Kedia",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53805/latest/vijay-kishanlal-kedia/",
+      "result": "refreshed",
+      "rows": 28,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Dilipkumar Lakhi",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53755/latest/dilipkumar-lakhi/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ajay Upadhyaya",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53739/latest/ajay-upadhyaya/",
+      "result": "refreshed",
+      "rows": 27,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bhavook Tripathi",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584330/latest/bhavook-tripathi/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hitesh Satishchandra Doshi",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53763/latest/hitesh-satishchandra-doshi/",
+      "result": "refreshed",
+      "rows": 15,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hitesh Ramji Javeri And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53762/latest/hitesh-ramji-javeri-and-associates/",
+      "result": "refreshed",
+      "rows": 56,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Suresh Kumar Agarwal",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53802/latest/suresh-kumar-agarwal/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sanjiv Dhireshbhai Shah",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53791/latest/sanjiv-dhireshbhai-shah/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hiten Anantrai Sheth",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53761/latest/hiten-anantrai-sheth/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ricky Ishwardas Kirpalani",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53783/latest/ricky-ishwardas-kirpalani/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Keswani Haresh",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53765/latest/keswani-haresh/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ashok Kumar Jain",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53748/latest/ashok-kumar-jain/",
+      "result": "refreshed",
+      "rows": 49,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sangeetha S",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53786/latest/sangeetha-s/",
+      "result": "refreshed",
+      "rows": 115,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Atim Kabra",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53749/latest/atim-kabra/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Girish Gulati",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584324/latest/girish-gulati/",
+      "result": "refreshed",
+      "rows": 19,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lata Bhanshali",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53767/latest/lata-bhanshali/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Dolly Khanna",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53757/latest/dolly-khanna/",
+      "result": "refreshed",
+      "rows": 29,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Shivani Tejas Trivedi",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53798/latest/shivani-tejas-trivedi/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Amal Parikh",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584331/latest/amal-parikh/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sharad Kanayalal Shah And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53796/latest/sharad-kanayalal-shah-and-associates/",
+      "result": "refreshed",
+      "rows": 103,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bharat Jayantilal Patel And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53751/latest/bharat-jayantilal-patel-and-associates/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nikhil Vora",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584329/latest/nikhil-vora/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mahendra Girdharilal",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53771/latest/mahendra-girdharilal/",
+      "result": "refreshed",
+      "rows": 204,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Minal Bharat Patel",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53772/latest/minal-bharat-patel/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vinodchandra Mansukhlal Parekh And Associates",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53807/latest/vinodchandra-mansukhlal-parekh-and-associates/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Porinju V Veliyath",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53777/latest/porinju-v-veliyath/",
+      "result": "refreshed",
+      "rows": 23,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Dipak Kanayalal Shah",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53756/latest/dipak-kanayalal-shah/",
+      "result": "refreshed",
+      "rows": 73,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vallabh Roopchand Bhanshali",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53803/latest/vallabh-roopchand-bhanshali/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Satpal Khattar",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53793/latest/satpal-khattar/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Shaunak Jagdish Shah",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53797/latest/shaunak-jagdish-shah/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jayesh Patel",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584332/latest/jayesh-patel/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Amit Gupta",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53741/latest/amit-gupta/",
+      "result": "refreshed",
+      "rows": 15,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sanjeev Vinodchandra Parekh",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53790/latest/sanjeev-vinodchandra-parekh/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Harsha Hitesh Javeri",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53759/latest/harsha-hitesh-javeri/",
+      "result": "refreshed",
+      "rows": 34,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lincoln P Coelho",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53768/latest/lincoln-p-coelho/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Shankar Sharma",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584326/latest/shankar-sharma/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sunil Kumar",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53800/latest/sunil-kumar/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Madhukar Sheth",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53770/latest/madhukar-sheth/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ramesh Damani",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/62728/latest/ramesh-damani/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Aadi Financial Advisors Llp",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53808/latest/aadi-financial-advisors-llp/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Abg Capital",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53810/latest/abg-capital/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Abu Dhabi Investment Authority",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53812/latest/abu-dhabi-investment-authority/",
+      "result": "refreshed",
+      "rows": 44,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Acacia Conservation Fund Lp",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53814/latest/acacia-conservation-fund-lp/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Acacia Institutional Partners Lp",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53815/latest/acacia-institutional-partners-lp/",
+      "result": "refreshed",
+      "rows": 18,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Albula Investment Fund Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53818/latest/albula-investment-fund-ltd/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Alternate Investment Funds",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53820/latest/alternate-investment-funds/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Amansa Holdings Private Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53821/latest/amansa-holdings-private-limited/",
+      "result": "refreshed",
+      "rows": 40,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "American Funds Insurance Series",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53822/latest/american-funds-insurance-series/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Antara India Evergreen Fund Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53825/latest/antara-india-evergreen-fund-ltd/",
+      "result": "refreshed",
+      "rows": 15,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ares Diversified",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53829/latest/ares-diversified/",
+      "result": "refreshed",
+      "rows": 15,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Arihant Capital Mkt. Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53830/latest/arihant-capital-mkt-ltd/",
+      "result": "refreshed",
+      "rows": 12,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Atyant Capital India Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53833/latest/atyant-capital-india-fund/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bajaj Allianz Life Insurance Company Ltd.",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53836/latest/bajaj-allianz-life-insurance-company-ltd/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bank Muscat India Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53837/latest/bank-muscat-india-fund/",
+      "result": "refreshed",
+      "rows": 8,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bank Of Baroda",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53838/latest/bank-of-baroda/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bank Of Maharashtra",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53840/latest/bank-of-maharashtra/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Baron Emerging Markets Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53841/latest/baron-emerging-markets-fund/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bridge India Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53847/latest/bridge-india-fund/",
+      "result": "refreshed",
+      "rows": 46,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Central Bank Of India",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53850/latest/central-bank-of-india/",
+      "result": "refreshed",
+      "rows": 9,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Clsa Global Markets Pte. Ltd.",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53853/latest/clsa-global-markets-pte-ltd/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Cresta Fund Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53858/latest/cresta-fund-ltd/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "East Bridge Capital Master Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53873/latest/east-bridge-capital-master-fund-limited/",
+      "result": "refreshed",
+      "rows": 8,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Eastspring Investments India Infrastructure Equity Open Limi",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53874/latest/eastspring-investments-india-infrastructure-equity-open-limi/",
+      "result": "refreshed",
+      "rows": 12,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Elm Park Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53877/latest/elm-park-fund-limited/",
+      "result": "refreshed",
+      "rows": 12,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Em Resurgent Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53878/latest/em-resurgent-fund/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Emerging India Focus Funds",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53879/latest/emerging-india-focus-funds/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Enam Securities Pvt Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53880/latest/enam-securities-pvt-ltd/",
+      "result": "refreshed",
+      "rows": 39,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Eriska Investment Fund Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53882/latest/eriska-investment-fund-ltd/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Europacific Growth Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53883/latest/europacific-growth-fund/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Fidelity Puritan Trust",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53885/latest/fidelity-puritan-trust/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Gagandeep Credit Capital Pvt Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53894/latest/gagandeep-credit-capital-pvt-ltd/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "General Insurance Corporation Of India",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53895/latest/general-insurance-corporation-of-india/",
+      "result": "refreshed",
+      "rows": 27,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Goldman Sachs (Singapore) Pte",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53900/latest/goldman-sachs-singapore-pte/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Goldman Sachs India Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53901/latest/goldman-sachs-india-limited/",
+      "result": "refreshed",
+      "rows": 76,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Government Of Singapore",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53902/latest/government-of-singapore/",
+      "result": "refreshed",
+      "rows": 88,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Government Pension Fund Global",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53903/latest/government-pension-fund-global/",
+      "result": "refreshed",
+      "rows": 156,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hasham Investment And Trading Company Private Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53906/latest/hasham-investment-and-trading-company-private-limited/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hsbc Global Investment Funds",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53916/latest/hsbc-global-investment-funds/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Idbi Bank Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53926/latest/idbi-bank-limited/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "India Capital Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53931/latest/india-capital-fund-limited/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "India Max Investment Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53934/latest/india-max-investment-fund-limited/",
+      "result": "refreshed",
+      "rows": 20,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Indian Bank",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53936/latest/indian-bank/",
+      "result": "refreshed",
+      "rows": 19,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Indian Overseas Bank",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53937/latest/indian-overseas-bank/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "International Finance Corporation",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53939/latest/international-finance-corporation/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jm Financial Services Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53941/latest/jm-financial-services-limited/",
+      "result": "refreshed",
+      "rows": 28,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Kotak Mahindra Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53945/latest/kotak-mahindra-group/",
+      "result": "refreshed",
+      "rows": 307,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lotus Global Investments Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53951/latest/lotus-global-investments-ltd/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Malabar Investments",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53954/latest/malabar-investments/",
+      "result": "refreshed",
+      "rows": 29,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Matthews India Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53956/latest/matthews-india-fund/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mentor Capital Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53958/latest/mentor-capital-limited/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mirae Asset Emerging Bluechip Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53960/latest/mirae-asset-emerging-bluechip-fund/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Morgan Stanley Asia (Singapore) Pte.",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53963/latest/morgan-stanley-asia-singapore-pte/",
+      "result": "refreshed",
+      "rows": 25,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nalanda India Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53966/latest/nalanda-india-fund-limited/",
+      "result": "refreshed",
+      "rows": 25,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "National Insurance Company Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53967/latest/national-insurance-company-ltd/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "New World Fund Inc",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53972/latest/new-world-fund-inc/",
+      "result": "refreshed",
+      "rows": 20,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nomura India Investment Fund Mother Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53973/latest/nomura-india-investment-fund-mother-fund/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nomura Singapore Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53974/latest/nomura-singapore-limited/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ntasian Discovery Master Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53975/latest/ntasian-discovery-master-fund/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Pi Opportunities Fund I",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53985/latest/pi-opportunities-fund-i/",
+      "result": "refreshed",
+      "rows": 66,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Platinum Asia Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53987/latest/platinum-asia-fund/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Premier Investment Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53990/latest/premier-investment-fund-limited/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "President Of India",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53991/latest/president-of-india/",
+      "result": "refreshed",
+      "rows": 78,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Priyanka Finance Private Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53992/latest/priyanka-finance-private-limited/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Punjab National Bank",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53993/latest/punjab-national-bank/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Rajasthan Global Securities Private Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53995/latest/rajasthan-global-securities-private-limited/",
+      "result": "refreshed",
+      "rows": 83,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Shriram Credit Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54012/latest/shriram-credit-company-limited/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Smallcap World Fund Inc",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54015/latest/smallcap-world-fund-inc/",
+      "result": "refreshed",
+      "rows": 74,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sparrow Asia Diversified Opportunities Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54016/latest/sparrow-asia-diversified-opportunities-fund/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-25",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mohnish Pabrai",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/69664/latest/mohnish-pabrai/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Apms Investment Fund Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53827/latest/apms-investment-fund-ltd/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Fil Investments Mauritius Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53886/latest/fil-investments-mauritius-ltd/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Hypnos Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53917/latest/hypnos-fund-limited/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "India Midcap Mauritius Ltd.",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53935/latest/india-midcap-mauritius-ltd/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jupiter South Asia Investment Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53942/latest/jupiter-south-asia-investment-company-limited/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jwalamukhi Investment Holdings",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53943/latest/jwalamukhi-investment-holdings/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lavender Investments Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53948/latest/lavender-investments-limited/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lsv Emerging Markets Equity Fund Lp",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53952/latest/lsv-emerging-markets-equity-fund-lp/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Master Capital Services Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53955/latest/master-capital-services-ltd/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Matthews Pacific Tiger Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53957/latest/matthews-pacific-tiger-fund/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "New Horizon Opportunities Master Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53970/latest/new-horizon-opportunities-master-fund/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Oppenheimer Developing Markets Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53976/latest/oppenheimer-developing-markets-fund/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Steadview Capital Mauritius Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54021/latest/steadview-capital-mauritius-limited/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Stichting Depositary Apg Emerging Markets Equity Pool",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54022/latest/stichting-depositary-apg-emerging-markets-equity-pool/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tata Balanced Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54031/latest/tata-balanced-fund/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "The New India Assurance Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54032/latest/the-new-india-assurance-company-limited/",
+      "result": "refreshed",
+      "rows": 31,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "The Oriental Insurance Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54033/latest/the-oriental-insurance-company-limited/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tree Line Asia Master Fund (Singapore) Pte Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54034/latest/tree-line-asia-master-fund-singapore-pte-ltd/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Uco Bank",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54036/latest/uco-bank/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Union Bank Of India",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54037/latest/union-bank-of-india/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "United India Insurance Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54039/latest/united-india-insurance-company-limited/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Uno Metals Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54040/latest/uno-metals-ltd/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Va Realcon Private Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54041/latest/va-realcon-private-limited/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Valiant Mauritius Partners Offshore Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54042/latest/valiant-mauritius-partners-offshore-limited/",
+      "result": "refreshed",
+      "rows": 5,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Valuequest India Moat Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54043/latest/valuequest-india-moat-fund-limited/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vanguard Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54044/latest/vanguard-fund/",
+      "result": "refreshed",
+      "rows": 71,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vistra Itcl India Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54047/latest/vistra-itcl-india-limited/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Vls Finance Ltd",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54048/latest/vls-finance-ltd/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Westbridge Crossover Fund Llc",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/54050/latest/westbridge-crossover-fund-llc/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Aquamarine Master And Trading",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/178318/latest/aquamarine-master-and-trading/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Plutus Wealth",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/407405/latest/plutus-wealth/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Abakkus Fund",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584233/latest/abakkus-fund/",
+      "result": "refreshed",
+      "rows": 57,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "SBI Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597531/latest/sbi-group/",
+      "result": "refreshed",
+      "rows": 481,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "HDFC Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597532/latest/hdfc-group/",
+      "result": "refreshed",
+      "rows": 411,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "ICICI Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597533/latest/icici-group/",
+      "result": "refreshed",
+      "rows": 482,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Birla Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597534/latest/birla-group/",
+      "result": "refreshed",
+      "rows": 222,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Axis Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597535/latest/axis-group/",
+      "result": "refreshed",
+      "rows": 188,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Franklin India Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/597536/latest/franklin-india-group/",
+      "result": "refreshed",
+      "rows": 142,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "CANARA-GROUP",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/621950/latest/canara-group/",
+      "result": "refreshed",
+      "rows": 133,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "DSP-BLACKROCK-GROUP",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/621951/latest/dsp-blackrock-group/",
+      "result": "no-latest-table",
+      "rows": 0,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "SUNDARAM-GROUP",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/621955/latest/sundaram-group/",
+      "result": "refreshed",
+      "rows": 105,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Reliance Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/621962/latest/reliance-group/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Massachusetts Institute Of Technology",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/1537932/latest/massachusetts-institute-of-technology/",
+      "result": "refreshed",
+      "rows": 43,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sequoia",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/1537933/latest/sequoia/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Saif Partners",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/1537934/latest/saif-partners/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "TATA Sons",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2214735/latest/tata-sons/",
+      "result": "refreshed",
+      "rows": 17,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Catamaran Ventures",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2214739/latest/catamaran-ventures/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ant Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2214744/latest/ant-group/",
+      "result": "refreshed",
+      "rows": 2,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "SoftBank Group",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2214749/latest/softbank-group/",
+      "result": "refreshed",
+      "rows": 1,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Societe Generale",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2594272/latest/societe-generale/",
+      "result": "refreshed",
+      "rows": 31,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Zerodha Broking",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2594291/latest/zerodha-broking/",
+      "result": "refreshed",
+      "rows": 9,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Monetary Authority Of Singapore",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2658406/latest/monetary-authority-of-singapore/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Morgan Stanley",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2809265/latest/morgan-stanley/",
+      "result": "refreshed",
+      "rows": 41,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "GQG Partners",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2809274/latest/gqg-partners/",
+      "result": "refreshed",
+      "rows": 16,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Warren Buffett",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2107312/latest/warren-buffett-portfolio/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ken Fisher",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158574/latest/ken-fisher-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Kenneth C. Griffin",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158577/latest/kenneth-c-griffin-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Baillie Gifford",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158576/latest/baillie-gifford-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jim Simons",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158578/latest/jim-simons-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Paul Tudor Jones",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158617/latest/paul-tudor-jones-portfolio/",
+      "result": "refreshed",
+      "rows": 195,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Steven Cohen",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158583/latest/steven-cohen-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jeremy Grantham",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158593/latest/jeremy-grantham-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Philippe Laffont",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158598/latest/philippe-laffont-portfolio/",
+      "result": "refreshed",
+      "rows": 64,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "HOTCHKIS & WILEY",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158585/latest/hotchkis-wiley-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Richard Pzena",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158587/latest/richard-pzena-portfolio/",
+      "result": "refreshed",
+      "rows": 161,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ole Andreas Halvorsen",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158591/latest/ole-andreas-halvorsen-portfolio/",
+      "result": "refreshed",
+      "rows": 94,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Barrow, Hanley, Mewhinney & Strauss",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158586/latest/barrow-hanley-mewhinney-strauss-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bill Gates",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158581/latest/bill-gates-portfolio/",
+      "result": "refreshed",
+      "rows": 27,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Joel Greenblatt",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158632/latest/joel-greenblatt-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Frank Sands",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158584/latest/frank-sands-portfolio/",
+      "result": "refreshed",
+      "rows": 70,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Christopher Davis",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158597/latest/christopher-davis-portfolio/",
+      "result": "refreshed",
+      "rows": 107,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Raymond Thomas Dalio",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158596/latest/raymond-thomas-dalio-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Charles Brandes",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158625/latest/charles-brandes-portfolio/",
+      "result": "refreshed",
+      "rows": 185,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Catherine Wood",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158600/latest/catherine-wood-portfolio/",
+      "result": "refreshed",
+      "rows": 175,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bill Ackman",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158607/latest/bill-ackman-portfolio/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Diamond Hill Capital",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158590/latest/diamond-hill-capital-portfolio/",
+      "result": "refreshed",
+      "rows": 177,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tom Gayner",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158614/latest/tom-gayner-portfolio/",
+      "result": "refreshed",
+      "rows": 131,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Albert A. Gore, Jr",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158594/latest/albert-a-gore-jr-portfolio/",
+      "result": "refreshed",
+      "rows": 28,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Steve Mandel",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158605/latest/steve-mandel-portfolio/",
+      "result": "refreshed",
+      "rows": 34,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mairs And Power",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158612/latest/mairs-and-power-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jefferies Group",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158602/latest/jefferies-group-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mario Gabelli",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158611/latest/mario-gabelli-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Lee Ainslie",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158634/latest/lee-ainslie-portfolio/",
+      "result": "refreshed",
+      "rows": 181,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "John Rogers",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158606/latest/john-rogers-portfolio/",
+      "result": "refreshed",
+      "rows": 102,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "First Pacific Advisors",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158618/latest/first-pacific-advisors-portfolio/",
+      "result": "refreshed",
+      "rows": 69,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sarah Ketterer",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158631/latest/sarah-ketterer-portfolio/",
+      "result": "refreshed",
+      "rows": 105,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "George Soros",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158639/latest/george-soros-portfolio/",
+      "result": "refreshed",
+      "rows": 199,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tom Russo",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158610/latest/tom-russo-portfolio/",
+      "result": "refreshed",
+      "rows": 56,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ruane Cunniff",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158620/latest/ruane-cunniff-portfolio/",
+      "result": "refreshed",
+      "rows": 48,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "David Tepper",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158651/latest/david-tepper-portfolio/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Seth Klarman",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158622/latest/seth-klarman-portfolio/",
+      "result": "refreshed",
+      "rows": 24,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Charles T. Akre",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158603/latest/charles-t-akre-portfolio/",
+      "result": "refreshed",
+      "rows": 19,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Larry Robbins",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158628/latest/larry-robbins-portfolio/",
+      "result": "refreshed",
+      "rows": 44,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Daniel Loeb",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158621/latest/daniel-loeb-portfolio/",
+      "result": "refreshed",
+      "rows": 37,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Stanley Druckenmiller",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158649/latest/stanley-druckenmiller-portfolio/",
+      "result": "refreshed",
+      "rows": 85,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Glenn Greenberg",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158641/latest/glenn-greenberg-portfolio/",
+      "result": "refreshed",
+      "rows": 40,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Nelson Peltz",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158637/latest/nelson-peltz-portfolio/",
+      "result": "refreshed",
+      "rows": 7,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Louis Moore Bacon",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158627/latest/louis-moore-bacon-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Caxton Associates",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158673/latest/caxton-associates-portfolio/",
+      "result": "refreshed",
+      "rows": 152,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Li Lu",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158650/latest/li-lu-portfolio/",
+      "result": "refreshed",
+      "rows": 8,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "David Einhorn",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158652/latest/david-einhorn-portfolio/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "John Paulson",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158661/latest/john-paulson-portfolio/",
+      "result": "refreshed",
+      "rows": 9,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Prem Watsa",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158655/latest/prem-watsa-portfolio/",
+      "result": "refreshed",
+      "rows": 31,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mason Hawkins",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158646/latest/mason-hawkins-portfolio/",
+      "result": "refreshed",
+      "rows": 48,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jana Partners",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158658/latest/jana-partners-portfolio/",
+      "result": "refreshed",
+      "rows": 6,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bruce Berkowitz",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158660/latest/bruce-berkowitz-portfolio/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tweedy Browne",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158653/latest/tweedy-browne-portfolio/",
+      "result": "refreshed",
+      "rows": 91,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Peter Schiff",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158682/latest/peter-schiff-portfolio/",
+      "result": "refreshed",
+      "rows": 69,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Jeff Auxier",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158678/latest/jeff-auxier-portfolio/",
+      "result": "refreshed",
+      "rows": 182,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Robert Olstein",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158674/latest/robert-olstein-portfolio/",
+      "result": "refreshed",
+      "rows": 99,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "David Rolfe",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158676/latest/david-rolfe-portfolio/",
+      "result": "refreshed",
+      "rows": 18,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Kahn Brothers",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158672/latest/kahn-brothers-portfolio/",
+      "result": "refreshed",
+      "rows": 36,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "John Hussman",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158675/latest/john-hussman-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Robert Karr",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158687/latest/robert-karr-portfolio/",
+      "result": "refreshed",
+      "rows": 10,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sallie Krawcheck",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158659/latest/sallie-krawcheck-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Robert Bruce",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158688/latest/robert-bruce-portfolio/",
+      "result": "refreshed",
+      "rows": 40,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mohnish Pabrai",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158697/latest/mohnish-pabrai-portfolio/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ronald Muhlenkamp",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158693/latest/ronald-muhlenkamp-portfolio/",
+      "result": "refreshed",
+      "rows": 23,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Alan Fournier",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158692/latest/alan-fournier-portfolio/",
+      "result": "refreshed",
+      "rows": 16,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Ronald S. Baron",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158582/latest/ronald-s-baron-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Francis Chou",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158701/latest/francis-chou-portfolio/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mark Hillman",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158691/latest/mark-hillman-portfolio/",
+      "result": "refreshed",
+      "rows": 51,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Mario Cibelli",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158700/latest/mario-cibelli-portfolio/",
+      "result": "refreshed",
+      "rows": 14,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Michael Dell",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158685/latest/michael-dell-portfolio/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Michael Burry",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158698/latest/michael-burry-portfolio/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "PRIMECAP Management",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158575/latest/primecap-management-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Oakmark Intl Small Cap",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158657/latest/oakmark-intl-small-cap-portfolio/",
+      "result": "refreshed",
+      "rows": 150,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "EDGEPOINT CANADIAN PORTFOLIO",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158648/latest/edgepoint-canadian-portfolio-portfolio/",
+      "result": "refreshed",
+      "rows": 39,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Wasatch International Growth",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158679/latest/wasatch-international-growth-portfolio/",
+      "result": "refreshed",
+      "rows": 200,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Yacktman Asset Management",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158608/latest/yacktman-asset-management-portfolio/",
+      "result": "refreshed",
+      "rows": 72,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Causeway International Value",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158616/latest/causeway-international-value-portfolio/",
+      "result": "refreshed",
+      "rows": 105,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "ValueAct Capital",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158619/latest/valueact-capital-portfolio/",
+      "result": "refreshed",
+      "rows": 18,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Donald Smith & Co",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158647/latest/donald-smith-co-portfolio/",
+      "result": "refreshed",
+      "rows": 60,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Bruce Kovner",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158706/latest/bruce-kovner-portfolio/",
+      "result": "refreshed",
+      "rows": 152,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Value Partners Group",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158663/latest/value-partners-group-portfolio/",
+      "result": "refreshed",
+      "rows": 102,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Fairholme Focused Income Fund",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158699/latest/fairholme-focused-income-fund-portfolio/",
+      "result": "refreshed",
+      "rows": 13,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Tweedy Browne International Value",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158633/latest/tweedy-browne-international-value-portfolio/",
+      "result": "refreshed",
+      "rows": 91,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Keeley-Teton Advisors, LLC",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158667/latest/keeley-teton-advisors-llc-portfolio/",
+      "result": "refreshed",
+      "rows": 166,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Private Capital",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158666/latest/private-capital-portfolio/",
+      "result": "refreshed",
+      "rows": 171,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Third Avenue Management",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158677/latest/third-avenue-management-portfolio/",
+      "result": "refreshed",
+      "rows": 52,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Chou RRSP Fund",
+      "country": "US",
+      "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158707/latest/chou-rrsp-fund-portfolio/",
+      "result": "refreshed",
+      "rows": 30,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": false
+    },
+    {
+      "name": "Sanjay Kumar Agarwal",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53788/latest/sanjay-kumar-agarwal/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    },
+    {
+      "name": "Seetha Kumari",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53795/latest/seetha-kumari/",
+      "result": "refreshed",
+      "rows": 11,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    },
+    {
+      "name": "Urjita Master",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/584327/latest/urjita-master/",
+      "result": "refreshed",
+      "rows": 3,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    },
+    {
+      "name": "Ashish Chugh",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/3658383/latest/ashish-chugh/",
+      "result": "refreshed",
+      "rows": 28,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    },
+    {
+      "name": "Bennett And Coleman And Company Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53842/latest/bennett-and-coleman-and-company-limited/",
+      "result": "refreshed",
+      "rows": 8,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    },
+    {
+      "name": "Passage To India Master Fund Limited",
+      "country": "IN",
+      "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/53982/latest/passage-to-india-master-fund-limited/",
+      "result": "refreshed",
+      "rows": 4,
+      "checkedAt": "2026-10-26",
+      "historicalRoute": true
+    }
+  ]
+}
