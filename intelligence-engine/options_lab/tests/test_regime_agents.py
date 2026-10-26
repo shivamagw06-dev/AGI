@@ -259,3 +259,29 @@ def test_pending_unknown_event_never_enters_and_calendar_validation():
     assert r.calendar(payload)['windows']==payload['windows']
     payload['windows'][0]['end']='2099-01-01T12:00:00+05:30'
     with pytest.raises(ValueError):r.calendar(payload)
+
+
+@pytest.mark.parametrize('old_event,new_event', [('UNREVIEWED','CLEAR'), ('BLACKOUT','POST_EVENT')])
+def test_calendar_transition_refreshes_cached_event_risk_without_new_candle(old_event,new_event):
+    state=ready();state['regime']=ctx('EVENT_RISK',old_event)
+    state['iv_history']=[dict(day=(NOW-timedelta(days=i+1)).date().isoformat(),iv=10) for i in range(20)]
+    if new_event=='POST_EVENT':
+        state['calendar']['windows']=[dict(start=(NOW-timedelta(minutes=5)).isoformat(),end=(NOW-timedelta(seconds=1)).isoformat())]
+    saved=copy.deepcopy(state['candles'])
+    with patch.object(r.s,'candle_sample',return_value=None):
+        r.advance(state,chain(),NOW,True)
+    assert state['regime']['event']==new_event
+    assert state['regime']['name']=='RANGE_HIGH_IV'
+    assert state['candles']==saved and state['session_bars']==3
+    assert all(not a['pending'] and not a['position'] and not a['trades'] for a in state['agents'].values())
+
+
+def test_calendar_clear_preserves_warmup_and_cannot_fill_a_stale_pending_signal():
+    state=ready();state['regime']=ctx('EVENT_RISK','UNREVIEWED');state['session_bars']=0
+    pending(state);cash=state['agents']['long_straddle']['cash']
+    with patch.object(r.s,'candle_sample',return_value=None):
+        r.advance(state,chain(),NOW,True)
+    assert state['regime']['event']=='CLEAR' and state['regime']['name']=='WARMUP'
+    a=state['agents']['long_straddle']
+    assert a['status']=='Needs 50 complete bars and 3 fresh session bars'
+    assert not a['position'] and not a['trades'] and not a['pending'] and a['cash']==cash

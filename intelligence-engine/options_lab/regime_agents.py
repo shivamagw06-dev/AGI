@@ -305,10 +305,13 @@ def advance(state, rows, now, allow_entries):
         state['candles']=(history+[completed])[-100:] if completed else history
         if completed:state['session_bars']+=1
         state['evidence_frames']+=1;state['first_observation']=state['first_observation'] or at
-    if completed or newday or not valid or state.pop('iv_recompute',False) or not state['regime'].get('iv'):
+    # A dated review or blackout transition must invalidate cached event risk
+    # immediately; indicators still use only already completed candles.
+    event=event_state(state['calendar'],now)
+    event_changed=state['regime'].get('event')!=event
+    if completed or newday or not valid or event_changed or state.pop('iv_recompute',False) or not state['regime'].get('iv'):
         state['regime']=context(state,list(quotes.values()),now)
     # Event gates are evaluated each second even between bar boundaries.
-    event=event_state(state['calendar'],now)
     ctx=dict(state['regime'],event=event)
     if event in ('UNREVIEWED','BLACKOUT'):ctx['name']='EVENT_RISK'
     state['regime']=ctx
@@ -348,6 +351,8 @@ def advance(state, rows, now, allow_entries):
             a['status']=('Shared account halted' if state['halted'] else 'New entries paused' if not allow_entries else
                          'Review today’s event calendar' if event=='UNREVIEWED' else 'Event blackout' if event=='BLACKOUT' else
                          'Waiting for market / fresh quotes' if not valid else 'Outside 10:00–14:15 entry window');continue
+        if ctx['name']=='WARMUP':
+            a['status']='Needs 50 complete bars and 3 fresh session bars';continue
         if pending:
             fills=execute(pending['legs'],quotes,now,True,pending['signal_at']) if not gap and 0<(now-p.timestamp(pending['signal_at'])).total_seconds()<=5 else None
             t=terms(fills,pending['context']) if fills else None
