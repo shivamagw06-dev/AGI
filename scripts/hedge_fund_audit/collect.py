@@ -1,7 +1,7 @@
 """Read-only, rate-limited SEC audit of the selected public manager directory.
 No broker/database mutations. Unknown, amended and missing sources remain explicit.
 """
-import concurrent.futures, hashlib, json, re, threading, time, ssl
+import concurrent.futures, hashlib, json, re, threading, time, ssl, tempfile
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 from xml.etree import ElementTree as ET
 
 ROOT=Path(__file__).resolve().parents[2]
-CACHE=Path('/private/tmp/agi-hedge-source-cache-'+datetime.now(timezone.utc).strftime('%Y%m%d'));CACHE.mkdir(exist_ok=True)
+CACHE=Path(tempfile.gettempdir())/('agi-hedge-source-cache-'+datetime.now(timezone.utc).strftime('%Y%m%d'))
 try:
  import certifi
  TLS=ssl.create_default_context(cafile=certifi.where())
@@ -22,6 +22,7 @@ SECONDARY={'akre-capital':'AC','appaloosa-management':'AM','berkshire-hathaway':
 
 def get(url):
  global LAST
+ CACHE.mkdir(parents=True,exist_ok=True)
  path=CACHE/(hashlib.sha256(url.encode()).hexdigest()+'.raw')
  if path.exists():return path.read_bytes()
  for attempt in range(3):
