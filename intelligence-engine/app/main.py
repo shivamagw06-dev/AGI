@@ -66,11 +66,12 @@ async def lifespan(_app: FastAPI):
         threading.Thread(target=_seed_financials_valuation, name="financials-valuation-seed", daemon=True).start()
     except Exception as exc:
         log.warning("financials_valuation_seed_thread_failed", extra={"error": str(exc)[:160]})
-    # Reload durable KIP snapshot (disk / optional Supabase) before serving traffic.
+    # Reuse the API singleton's successful import-time load. A second full load
+    # temporarily duplicates the research store and can exhaust startup memory.
     try:
         from app.api.routes import _kip
 
-        boot = _kip.reload_snapshot()
+        boot = _kip.ensure_snapshot_loaded()
         log.info(
             "kip_snapshot_loaded",
             extra={

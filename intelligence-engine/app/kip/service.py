@@ -503,6 +503,18 @@ class KipService:
             self._pending_saves = 0
             return result
 
+    def ensure_snapshot_loaded(self) -> dict[str, Any]:
+        """Reuse a successful boot load instead of duplicating the full store.
+
+        The shared API service is constructed before FastAPI's lifespan runs.
+        Loading again there holds the old store, parsed JSON and replacement
+        models concurrently, exceeding the web service's memory budget.
+        Explicit reload_snapshot calls still force a refresh.
+        """
+        if self._persist_meta.get("loaded"):
+            return self._persist_meta
+        return self.reload_snapshot()
+
     def reload_snapshot(self) -> dict[str, Any]:
         self._persist_meta = kip_persist.load_store(self.store)
         return self._persist_meta
