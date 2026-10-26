@@ -959,7 +959,7 @@ function FundPage({ slug }) {
                 <a key={filing.id} href={filing.source_url} target="_blank" rel="noreferrer" className="group block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-[#bbbbbb]/50 hover:bg-white/10">
                   <div className="flex items-center justify-between gap-3"><strong className="text-lg">{filing.report_date}</strong><span className="rounded-full bg-white/10 px-2 py-1 text-[9px] font-bold uppercase text-[#dddddd]">{filing.form_type}</span></div>
                   <p className="mt-2 text-xs text-[#cccccc]">{filing.holdings_count} lines / {money(filing.total_value_usd)}</p>
-                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-[9px] uppercase tracking-[.08em] text-[#999999]"><span>Accepted {shortDate(filing.filed_at)}</span><ChevronRight className="h-3 w-3 transition group-hover:translate-x-1" /></div>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-[9px] uppercase tracking-[.08em] text-[#999999]"><span>Accepted (US Eastern) {secPublicationDate(filing.filed_at)}</span><ChevronRight className="h-3 w-3 transition group-hover:translate-x-1" /></div>
                 </a>
               ))}
             </div>
