@@ -1,3 +1,4 @@
+import ClientHoldingsIntelligence from '@/components/institutions/ClientHoldingsIntelligence';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -704,6 +705,7 @@ function OverviewPage() {
           <p>September 2026 Form 13F reports are due 16 November 2026; earlier submissions may arrive before that date. <a className="underline" href="https://www.sec.gov/rules-regulations/staff-guidance/division-investment-management-frequently-asked-questions/frequently-asked-questions-about-form-13f" target="_blank" rel="noreferrer">SEC filing calendar ↗</a></p>
           <p>Overview checked {shortDate(data?.generated_at)}. Daily prices cannot reveal a manager’s undisclosed trades.</p>
         </section>
+        <ClientHoldingsIntelligence country="US" />
         <ResearchIntelligence country="US" />
         <HedgeFundSourceAudit />
         {error ? <div className="mt-8"><Empty error={error} /></div> : (
