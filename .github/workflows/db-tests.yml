@@ -33,7 +33,8 @@ concurrency:
 jobs:
   rpc-tests:
     name: CAS import RPCs
-    runs-on: ubuntu-latest
+    # PostgreSQL 16 extension packages are supplied by this LTS image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     env:
@@ -510,7 +511,8 @@ jobs:
 
   institutional-collection-runs:
     name: Institutional collection run records
-    runs-on: ubuntu-latest
+    # PostgreSQL 16 extension packages are supplied by this LTS image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     # The chain-wide job above applies only the portfolio, broker and CAS

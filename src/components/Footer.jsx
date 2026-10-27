@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Logo from '@/components/Layout/Logo';
 
 const LINKS = [
+  { label: 'AGI Plus · ₹199', to: '/pricing' },
   { label: 'Tools', to: '/tools' },
   { label: 'Research', to: '/research' },
   { label: 'Markets', to: '/market-intelligence' },

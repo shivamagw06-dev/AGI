@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
       description="How Agarwal Global Investments collects, uses, and protects your information."
       metaTitle="Privacy Policy | Agarwal Global Investments"
     >
-      <p className="text-sm text-slate-500 mb-10">Last updated: September 2026</p>
+      <p className="text-sm text-slate-500 mb-10">Last updated: 27 October 2026</p>
 
       <LegalSection theme="light" title="Overview">
         <p>
@@ -27,6 +27,11 @@ export default function PrivacyPolicy() {
           We also collect standard usage data (pages visited, browser type, approximate location) through analytics
           to improve the platform.
         </p>
+      </LegalSection>
+
+      <LegalSection title="AGI Plus payment records">
+        <p>For paid membership, we store your account ID, email, submitted transaction reference, fixed payment amount, submission and review times, review notes and membership dates. Authorized administrators also record the verified bank reference and approval decision to reconcile payments and prevent a credit being reused. Your payment history is available to you and authorized administrators. Our backend and database providers process these records to operate the service.</p>
+        <p>Payments are authorised in your own UPI app. AGI does not request or store your UPI PIN, OTP, bank password or payment mandate. The checkout QR is generated locally in your browser. Payment records are retained as needed for membership support, reconciliation and applicable recordkeeping obligations.</p>
       </LegalSection>
 
       <LegalSection title="Finance Tools applications">

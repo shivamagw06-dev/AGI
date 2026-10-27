@@ -11,6 +11,7 @@ describe('accessPolicy', () => {
   it('keeps acquisition surfaces free', () => {
     assert.equal(getFeatureForPath('/'), null);
     assert.equal(getFeatureForPath('/research'), null);
+    assert.equal(getFeatureForPath('/equity-research'), null);
     assert.equal(getFeatureForPath('/article/nse-ipo'), null);
     assert.equal(getFeatureForPath('/markets'), null);
     assert.equal(getFeatureForPath('/markets/stocks'), null);
@@ -28,9 +29,9 @@ describe('accessPolicy', () => {
     assert.equal(getFeatureForPath('/workspace'), 'workspace');
   });
 
-  it('gates every page in the top menu, including the AI monitor behind Strategies', () => {
+  it('gates tool pages while article discovery remains free', () => {
     // Keep in step with PRIMARY_NAV and MORE_NAV in components/Layout/Header.jsx.
-    const menu = ['/equity-research', '/strategy', '/ipo-intelligence', '/portfolio', '/live-desk', '/live-alpha',
+    const menu = ['/strategy', '/ipo-intelligence', '/portfolio', '/live-desk', '/live-alpha',
       '/institutional-holdings', '/insider-activity', '/private-markets', '/global-markets', '/india-ai', '/wealth-intelligence'];
     for (const path of menu) {
       assert.ok(getFeatureForPath(path), `${path} is not gated`);
