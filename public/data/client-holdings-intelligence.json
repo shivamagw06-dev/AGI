@@ -450,6 +450,48 @@
       ]
     },
     {
+      "country": "US",
+      "stock": "Mastercard",
+      "ticker": "MA",
+      "unit": "shares",
+      "interpretation": "Akre reported fewer shares. This manager-specific reduction does not establish a market-wide view.",
+      "changes": [
+        {
+          "manager": "Akre Capital Management",
+          "direction": "reduced",
+          "before": 2281106.0,
+          "after": 1989906.0,
+          "changePct": -12.7657,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000009/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Moody\u2019s",
+      "ticker": "MCO",
+      "unit": "shares",
+      "interpretation": "Akre reported fewer shares. The filing does not explain the reason or establish a current trading signal.",
+      "changes": [
+        {
+          "manager": "Akre Capital Management",
+          "direction": "reduced",
+          "before": 1246114.0,
+          "after": 1156893.0,
+          "changePct": -7.1599,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000009/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/infotable.xml"
+        }
+      ]
+    },
+    {
       "country": "IN",
       "stock": "Swiggy",
       "ticker": "SWIGGY",
