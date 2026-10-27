@@ -56,6 +56,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/adminAuth';
 
 const authorNavItems = [
+  { to: '/admin/plus-payments', label: 'AGI Plus Payments', icon: Briefcase },
   { to: '/admin/articles', label: 'My Articles', icon: FileText },
   { to: '/admin/articles/new', label: 'New Article', icon: Plus },
 ];

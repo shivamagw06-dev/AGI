@@ -30,6 +30,7 @@ const PRIMARY_NAV = [
 ];
 
 const MORE_NAV = [
+  { name: 'AGI Plus · ₹199', path: '/pricing' },
   { name: 'Hedge Funds', path: '/institutional-holdings' },
   { name: 'Institutions', path: '/institutions' },
   { name: 'Insider Activity', path: '/insider-activity' },
@@ -252,10 +253,10 @@ export default function Header() {
                       <DropdownMenuItem onClick={() => go('/profile/edit')}>
                         <Settings className="w-4 h-4 mr-2" /> Settings
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => go('/#newsletter')}>
+                      <DropdownMenuItem onClick={() => go('/account/subscription')}>
                         <Briefcase className="w-4 h-4 mr-2" /> Subscription
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => go('/account/security')}>
+                      <DropdownMenuItem onClick={() => go('/account/subscription')}>
                         <CreditCard className="w-4 h-4 mr-2" /> Billing
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => go('/account/security')}>

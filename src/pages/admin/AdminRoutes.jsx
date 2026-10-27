@@ -8,6 +8,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import RequireAdmin from '@/components/admin/RequireAdmin';
 import AdminLayout from '@/pages/admin/AdminLayout';
 
+const PlusPayments = lazy(() => import('@/pages/admin/PlusPayments'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const ArticleEditor = lazy(() => import('@/pages/admin/ArticleEditor'));
 const CategoryManager = lazy(() => import('@/pages/admin/CategoryManager'));
@@ -143,6 +144,7 @@ export default function AdminRoutes() {
           <Route path="finance-tools" element={<FinanceToolsAdmin />} />
           <Route path="website-analytics" element={<WebsiteAnalytics />} />
           <Route path="investor-mappings" element={<InvestorMappings />} />
+          <Route path="plus-payments" element={<PlusPayments />} />
           <Route path="institutions-paste" element={<InstitutionsPaste />} />
           <Route path="low-pe-screener" element={<LowPeScreenerPaste />} />
           <Route path="promoter-screener" element={<PromoterScreenerPaste />} />

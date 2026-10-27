@@ -1,3 +1,5 @@
+import { PlusProvider } from '@/contexts/PlusContext';
+import PaidAccessBoundary from '@/components/billing/PaidAccessBoundary';
 // src/App.jsx
 import MobileTables from '@/components/mobile/MobileTables';
 import InvestorPortfolioPage from '@/pages/InvestorPortfolioPage';
@@ -14,6 +16,7 @@ import RequireAskAgiAdmin, { AskAgiVisibility } from '@/components/auth/AskAgiAd
 import WebsiteTracker from '@/components/analytics/WebsiteTracker';
 import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
+const PlusMembership = React.lazy(() => import('@/pages/PlusMembership'));
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
 const ArticlesFeed = React.lazy(() => import('@/components/ArticlesFeed'));
@@ -230,6 +233,9 @@ function PublicRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomeLayout />} />
+      <Route path="/pricing" element={<PlusMembership />} />
+      <Route path="/subscribe" element={<PlusMembership />} />
+      <Route path="/account/subscription" element={<PlusMembership />} />
       <Route path="/ask" element={<RequireAskAgiAdmin><AskAgiPage /></RequireAskAgiAdmin>} />
       <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
       <Route path="/financial-modeling" element={<FinancialModelingPage />} />
@@ -241,7 +247,7 @@ function PublicRoutes() {
       <Route path="/company-updates" element={<SectionArticlesPage overrideId="company-updates" />} />
 
       <Route path="/research" element={<ArticlesFeed variant="light" />} />
-      <Route path="/equity-research" element={gate('equity_research', <EquityResearchPage />)} />
+      <Route path="/equity-research" element={<EquityResearchPage />} />
       <Route path="/strategy" element={gate('strategies', <StrategyPage />)} />
       <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
       <Route path="/index-rebalance" element={<IndexRebalancePage />} />
@@ -394,7 +400,7 @@ function App() {
           <AskAgiVisibility />
           <RiskDisclosureModal />
           <FunnelRouteTracker />
-          <AppShell />
+          <PlusProvider><PaidAccessBoundary><AppShell /></PaidAccessBoundary></PlusProvider>
         </div>
       </BrowserRouter>
     </HelmetProvider>
