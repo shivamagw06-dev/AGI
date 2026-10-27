@@ -188,6 +188,11 @@ def main():
  (CACHE/'full-audit.json').write_text(json.dumps(report,indent=2)+'\n')
  for record in out:record['secondary']=secondary(by[record['slug']],record)
  (CACHE/'full-audit.json').write_text(json.dumps(report,indent=2)+'\n')
+ # Save full activity inputs before the display-only audit drops raw rows and truncates changes.
+ import importlib.util
+ spec=importlib.util.spec_from_file_location('holdings_activity_snapshot',ROOT/'scripts/holdings_activity/snapshot.py')
+ snapshot_module=importlib.util.module_from_spec(spec);spec.loader.exec_module(snapshot_module)
+ snapshot_module.write_snapshot(report,ROOT/'scripts/holdings_activity/sec-snapshot.json.gz')
  apply_reviews(report)
  for record in report['managers']:
   record.pop('auditHoldings',None)
