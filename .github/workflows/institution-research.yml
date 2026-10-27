@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'src/lib/institutionResearch*'
+      - 'src/lib/holdingsActivity*'
+      - 'scripts/holdings_activity/**'
+      - 'public/data/holdings-activity/**'
       - 'src/data/institutionResearch.json'
       - 'src/components/institutions/**'
       - 'src/pages/RichKidsPage.jsx'
@@ -37,14 +40,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: node --test src/lib/institutionResearch.test.js src/lib/hedgeFundDisclosure.test.js
+      - run: node --test src/lib/institutionResearch.test.js src/lib/hedgeFundDisclosure.test.js src/lib/holdingsActivity.test.js scripts/holdings_activity/model.test.mjs
       - run: python -m unittest discover -s scripts/hedge_fund_audit -p 'test_*.py'
+      - run: python -m unittest discover -s scripts/holdings_activity -p 'test_*.py'
       - run: python -m unittest discover -s scripts/institution_intelligence -p 'test_*.py'
       - run: python -m unittest discover -s scripts/investor_valuation -p 'test_*.py'
       - name: Check reproducible saved disclosures
         run: |
           node scripts/institution_intelligence/build.mjs
-          git diff --exit-code -- src/data/institutionResearch.json
+          node scripts/holdings_activity/build.mjs
+          git diff --exit-code -- src/data/institutionResearch.json public/data/holdings-activity
   register:
     if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
     needs: evidence
