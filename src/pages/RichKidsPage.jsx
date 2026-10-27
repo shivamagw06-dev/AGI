@@ -1,3 +1,4 @@
+import ClientHoldingsIntelligence from '@/components/institutions/ClientHoldingsIntelligence';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
@@ -46,6 +47,7 @@ export default function InstitutionsPage(){
  <section id="rk-panel" role="tabpanel" aria-labelledby={`rk-tab-${country}`} tabIndex={0}>
  <div className="institutions-status"><p>Saved holdings checked through {research.sourceThrough}. <span className="institutions-schedule">{valuations?`Prices refreshed ${valuationTime(valuations.updatedAt)}${valuationStale(valuations)?' · overdue':''}`:'Price refresh pending'}</span></p><button className="rk-refresh" disabled={busy} onClick={()=>setRefresh(x=>x+1)}>{busy?'Checking refresh…':'Refresh directory status'}</button></div>
  {(error||busy)&&<p className="ip-notice" role="status">{error||'Checking for a newer directory summary. Saved holdings are available now.'}</p>}
+ <ClientHoldingsIntelligence key={country} country={country}/>
  <ResearchIntelligence country={country}/>
  <div className="rk-section-title"><div><p className="institutions-kicker">DISCLOSURE DIRECTORY</p><h2>Explore investor holdings</h2></div></div><p className="rk-table-hint">Counts are reconciled to each saved holdings file: current-period disclosed rows are separated from historical or unavailable rows. Summaries may cover different dates; no return is inferred from portfolio-value changes.</p>
  <InvestorSelector key={selectionKey} investors={investors} selected={selected} onChange={changeSelection}/>
