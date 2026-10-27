@@ -9,7 +9,7 @@ export default function TermsOfService() {
       description="Terms governing use of the Agarwal Global Investments research platform."
       metaTitle="Terms of Service | Agarwal Global Investments"
     >
-      <p className="text-sm text-slate-500 mb-10">Last updated: July 2026</p>
+      <p className="text-sm text-slate-500 mb-10">Last updated: 27 October 2026</p>
 
       <LegalSection title="Acceptance of terms">
         <p>
@@ -24,6 +24,12 @@ export default function TermsOfService() {
           for informational purposes. Access to certain features may require registration.
           We may modify, suspend, or discontinue any part of the service at any time.
         </p>
+      </LegalSection>
+
+      <LegalSection title="AGI Plus membership">
+        <p>Articles remain free. AGI Plus provides access to paid tool pages for ₹199 total per 30-day period. Payment is manual through the UPI destination shown at checkout; there is no automatic debit or renewal. Check the payee name and amount in your payment app before paying.</p>
+        <p>Submitting a transaction reference does not confirm payment or activate access. Access begins after an administrator verifies the actual bank credit and approves the claim. A verified renewal adds 30 days after any remaining active period. Your membership page shows the current expiry and review status.</p>
+        <p>Membership provides informational research tools, not investment execution or a promise of investment returns. Source delays and data limitations still apply. For an unmatched payment, duplicate payment, correction or refund review, contact shivam@agarwalglobalinvestments.com with your account email and transaction reference. Never send a UPI PIN or OTP.</p>
       </LegalSection>
 
       <LegalSection title="Accounts & acceptable use">
