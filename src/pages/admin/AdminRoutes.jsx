@@ -79,6 +79,7 @@ const FinanceToolsAdmin = lazy(() => import('@/pages/admin/FinanceToolsAdmin'));
 const WebsiteAnalytics = lazy(() => import('@/pages/admin/WebsiteAnalytics'));
 const InvestorMappings = lazy(() => import('@/pages/admin/InvestorMappings'));
 const InstitutionsPaste = lazy(() => import('@/pages/admin/InstitutionsPaste'));
+const ScreenerImporter = lazy(() => import('@/pages/admin/ScreenerImporter'));
 const LowPeScreenerPaste = lazy(() => import('@/pages/admin/LowPeScreenerPaste'));
 const PromoterScreenerPaste = lazy(() => import('@/pages/admin/PromoterScreenerPaste'));
 const PiotroskiScreenerPaste = lazy(() => import('@/pages/admin/PiotroskiScreenerPaste'));
@@ -146,6 +147,7 @@ export default function AdminRoutes() {
           <Route path="investor-mappings" element={<InvestorMappings />} />
           <Route path="plus-payments" element={<PlusPayments />} />
           <Route path="institutions-paste" element={<InstitutionsPaste />} />
+          <Route path="screener-import" element={<ScreenerImporter />} />
           <Route path="low-pe-screener" element={<LowPeScreenerPaste />} />
           <Route path="promoter-screener" element={<PromoterScreenerPaste />} />
           <Route path="piotroski-screener" element={<PiotroskiScreenerPaste />} />
