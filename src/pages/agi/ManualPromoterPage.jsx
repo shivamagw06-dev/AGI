@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_ORIGIN } from '@/config';
 import ManualScreenerTabs from './ManualScreenerTabs';
+import ScreenerIntelligence from '@/components/screeners/ScreenerIntelligence';
 import './manualLowPe.css';
 
 const decimal = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
@@ -36,15 +37,18 @@ export default function ManualPromoterPage() {
 
   useEffect(() => {
     let active = true;
-    fetch(`${API_ORIGIN || ''}/api/manual-screeners/promoter-holdings`, { cache: 'no-store' })
+    const refresh = () => { if (document.hidden) return; fetch(`${API_ORIGIN || ''}/api/manual-screeners/promoter-holdings`, { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load the screener.');
-        if (active) setSnapshot(data.snapshot);
+        if (active) { setSnapshot(data.snapshot); setError(''); }
       })
       .catch((cause) => { if (active) setError(cause.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => { if (active) setLoading(false); }); };
+    refresh();
+    const timer = setInterval(refresh, 300000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, []);
 
   const oldCount = useMemo(() => (snapshot?.rows || []).filter((row) => isOlderThan180Days(row.shareholdingDate, snapshot.as_of)).length, [snapshot]);
@@ -65,6 +69,7 @@ export default function ManualPromoterPage() {
     <ManualScreenerTabs />
     <div className="manual-low-pe__intro"><div><span className="manual-low-pe__kicker">AGI / INDIA / OWNERSHIP</span><h1>Promoter holdings rising</h1><p>Companies in the published table with a reported quarter-on-quarter promoter holding change above 0.1%.</p></div><div className="manual-low-pe__stat"><span>TABLE AS OF</span><strong>{snapshot ? dateLabel(snapshot.as_of) : 'Not published'}</strong><small>{snapshot ? `${integer.format(snapshot.row_count)} rows supplied` : 'Awaiting data'}</small></div></div>
     <div className="manual-low-pe__explain"><strong>Check the filing date.</strong> This is a dated administrator-published list, not a live ownership signal. Each row keeps its supplied shareholding date. Rows more than 180 days older than the table date are hidden by default. An increase alone does not establish investment merit.</div>
+    {snapshot && <ScreenerIntelligence slug="promoter-holdings" snapshotId={snapshot.id} />}
     {loading && <p className="manual-low-pe__state">Loading stocks…</p>}
     {error && <p className="manual-low-pe__state" role="alert">{error}</p>}
     {!loading && !error && !snapshot && <p className="manual-low-pe__state">No promoter holdings table has been published yet.</p>}

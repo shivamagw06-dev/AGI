@@ -3,17 +3,19 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { usePlus } from '@/contexts/PlusContext';
 import { libraryRequest, screenerDate, recordedTime } from '@/lib/screenerLibraryApi';
 import ScreenerTable from '@/components/screeners/ScreenerTable';
+import ScreenerIntelligence from '@/components/screeners/ScreenerIntelligence';
 import './screenerLibrary.css';
 export default function ImportedScreener() {
   const { slug } = useParams(), [params, setParams] = useSearchParams(), selected = params.get('snapshot') || '', plus = usePlus();
   const [data, setData] = useState(null), [history, setHistory] = useState([]), [error, setError] = useState(''), [loading, setLoading] = useState(true), [retry, setRetry] = useState(0);
   useEffect(() => { let active = true; setLoading(true); setError(''); setData(null); setHistory([]);
-    Promise.all([libraryRequest(`/${encodeURIComponent(slug)}${selected ? `?snapshot=${encodeURIComponent(selected)}` : ''}`), libraryRequest(`/${encodeURIComponent(slug)}/history`)]).then(([detail, list]) => { if (active) { setData(detail); setHistory(list.snapshots); } }).catch(e => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; };
+    const refresh = () => { if (document.hidden) return; Promise.all([libraryRequest(`/${encodeURIComponent(slug)}${selected ? `?snapshot=${encodeURIComponent(selected)}` : ''}`), libraryRequest(`/${encodeURIComponent(slug)}/history`)]).then(([detail, list]) => { if (active) { setData(detail); setHistory(list.snapshots); setError(''); } }).catch(e => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); }); }; refresh(); const timer = selected ? null : setInterval(refresh, 300000); document.addEventListener('visibilitychange',refresh); return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange',refresh); };
   }, [slug, selected, retry]);
   if (loading) return <main className="sl-page"><p role="status">Loading screener…</p></main>;
   if (error) return <main className="sl-page"><Link to="/agi/screeners">← Screener library</Link><p className="sl-error" role="alert">{error}</p><button onClick={() => setRetry(v => v + 1)}>Retry</button></main>;
   const { screen, snapshot, changes } = data, definition = snapshot?.definition || screen;
   return <main className="sl-page"><Link to="/agi/screeners" className="sl-back">← Screener library</Link><header className="sl-header"><div><p className="sl-eyebrow">{definition.category} / IMPORTED TABLE</p><h1>{definition.display_name}</h1><p>{definition.description}</p></div>{plus.isAdmin && <Link className="sl-primary" to={`/admin/screener-import?screen=${encodeURIComponent(slug)}`}>Update this table ↗</Link>}</header>
+    {snapshot && <ScreenerIntelligence slug={slug} snapshotId={snapshot.id} historical={Boolean(selected)} />}
     <section className="sl-definition"><h2>Screen definition</h2><p>{definition.rule_notes || 'No additional screening notes were supplied.'}</p><p className="sl-muted">These are imported candidates. Financial rules and provider scores are not independently recalculated by this importer.</p></section>
     {!snapshot ? <section className="sl-empty"><h2>Awaiting first import</h2><p>This definition is ready. No stock results, counts or performance are claimed until a table is published.</p></section> : <>
       <div className="sl-overview"><div><strong>{snapshot.row_count}</strong><span>stocks</span></div><div><strong>{screenerDate(snapshot.as_of)}</strong><span>data as of</span></div><div><strong>{snapshot.columns.length}</strong><span>source columns</span></div><p>Recorded {recordedTime(snapshot.created_at)}{snapshot.source_url && <> · <a href={snapshot.source_url} target="_blank" rel="noopener noreferrer">Source ↗</a></>}</p></div>

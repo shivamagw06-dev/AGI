@@ -15,4 +15,4 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci --prefix server --ignore-scripts --no-audit --no-fund
-      - run: node --test server/services/manualLowPeScreener.test.js src/lib/pastedTable.test.js src/lib/screenerTable.test.js server/routes/screenerLibrary.test.js
+      - run: node --test server/services/manualLowPeScreener.test.js src/lib/pastedTable.test.js src/lib/screenerTable.test.js src/lib/screenerIntelligence.test.js server/routes/screenerLibrary.test.js

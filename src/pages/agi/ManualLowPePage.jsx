@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_ORIGIN } from '@/config';
 import ManualScreenerTabs from './ManualScreenerTabs';
+import ScreenerIntelligence from '@/components/screeners/ScreenerIntelligence';
 import './manualLowPe.css';
 
 const integer = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
@@ -30,15 +31,18 @@ export default function ManualLowPePage() {
 
   useEffect(() => {
     let active = true;
-    fetch(`${API_ORIGIN || ''}/api/manual-screeners/low-pe`, { cache: 'no-store' })
+    const refresh = () => { if (document.hidden) return; fetch(`${API_ORIGIN || ''}/api/manual-screeners/low-pe`, { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load the screener.');
-        if (active) setSnapshot(data.snapshot);
+        if (active) { setSnapshot(data.snapshot); setError(''); }
       })
       .catch((cause) => { if (active) setError(cause.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => { if (active) setLoading(false); }); };
+    refresh();
+    const timer = setInterval(refresh, 300000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, []);
 
   const sectors = useMemo(() => [...new Set((snapshot?.rows || []).map((row) => row.sector))].sort(), [snapshot]);
@@ -59,6 +63,7 @@ export default function ManualLowPePage() {
     <ManualScreenerTabs />
     <div className="manual-low-pe__intro"><div><span className="manual-low-pe__kicker">AGI / INDIA / VALUATION</span><h1>Low P/E stocks</h1><p>Stocks in the published table whose current P/E is below their 3, 5 and 10-year averages.</p></div><div className="manual-low-pe__stat"><span>DATA AS OF</span><strong>{dateLabel(snapshot?.as_of)}</strong><small>{snapshot ? `${integer.format(snapshot.row_count)} stocks` : 'Awaiting data'}</small></div></div>
     <div className="manual-low-pe__explain"><strong>A dated screen, not a live signal.</strong> Figures reflect the last administrator-published table and change only when a new table is published. P/E comparisons alone do not establish that a stock is undervalued.</div>
+    {snapshot && <ScreenerIntelligence slug="low-pe" snapshotId={snapshot.id} />}
     {loading && <p className="manual-low-pe__state">Loading stocks…</p>}
     {error && <p className="manual-low-pe__state" role="alert">{error}</p>}
     {!loading && !error && !snapshot && <p className="manual-low-pe__state">No low P/E table has been published yet.</p>}
