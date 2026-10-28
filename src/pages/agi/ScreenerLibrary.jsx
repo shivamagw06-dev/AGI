@@ -11,8 +11,8 @@ const categoryVisuals = {
   Growth: [TrendingUp, '#17745b', '#e3f6ed'], Quality: [ShieldCheck, '#6550a3', '#f0ebfc'],
   Momentum: [Activity, '#b74e33', '#fff0e9'], Shareholding: [Users, '#216e9b', '#e5f3fc'],
   Technicals: [BarChart3, '#236e83', '#e4f4f8'], 'Moving averages': [Activity, '#4f60b2', '#edf0fc'],
-  Candlesticks: [CandlestickChart, '#9f4c88', '#faedf6'], Dividends: [Coins, '#6c771b', '#f1f5dd'],
-  'Analyst estimates': [Target, '#337b72', '#e7f5f1'], 'Risk flags': [AlertTriangle, '#a94e42', '#fceeea'],
+  Candlesticks: [CandlestickChart, '#9f4c88', '#faedf6'], Dividends: [Coins, '#646e19', '#f1f5dd'],
+  'Analyst estimates': [Target, '#2f7168', '#e7f5f1'], 'Risk flags': [AlertTriangle, '#a94e42', '#fceeea'],
   'Multi-factor': [Layers, '#725393', '#f1eafa'],
 };
 function visualStyle(category) { const [, ink, tint] = categoryVisuals[category] || categoryVisuals.All; return { '--sc-ink': ink, '--sc-tint': tint }; }
