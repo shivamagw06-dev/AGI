@@ -1,0 +1,60 @@
+{
+  "generated_at_utc": "2026-08-21T18:52:22.451701+00:00",
+  "code_commit": "d4b6987727af572740c4bc33a9777ac8dc87f679",
+  "production_commit_when_read": "d90bc0c53",
+  "data_source": "GET /v1/warehouse/tab/{tab}?limit=1500&offset=N over the full tab",
+  "rows_read": {
+    "financials_annual": 69156,
+    "financials_quarterly": 33666
+  },
+  "filters": "sys_published = 1; no symbol filter",
+  "detection": {
+    "method": "bounded pairwise, max_peers=24",
+    "windows": [
+      [
+        900000.0,
+        1100000.0
+      ],
+      [
+        9000000.0,
+        11000000.0
+      ]
+    ],
+    "excluded_gap": "10x \u2014 consolidated can genuinely be 10x standalone",
+    "impossible_million": 100000000.0
+  },
+  "note": "These are the sealed artifacts themselves, gzipped, not hashes alone. Regenerating from the live warehouse will not reproduce this snapshot.",
+  "hypothesis": "magnitude_only rows rest on one heuristic with no corroborating peer and must not be bulk-corrected",
+  "files": {
+    "manifest_financials_annual_magnitude_only.txt.gz": {
+      "row_ids": 9497,
+      "sha256_uncompressed": "fbeedcc162fc9b070ffc98b2472a2d76b6ec87ede8371531a4a901c7d4b1e7f8",
+      "sha256_gz": "9b55890adde1ca4e34e1ba3d936262d29cc3246d5a8999b88e2014d9327c221e"
+    },
+    "manifest_financials_annual_ratio_only.txt.gz": {
+      "row_ids": 549,
+      "sha256_uncompressed": "02f1fae47bc4d740b2ed00c473c0de59587f2168bb904e6ac22ca989d64c2a93",
+      "sha256_gz": "222db31e53d44f7d808b285302b8d02ee83f94f9e5cd05596aa6fe89047ace82"
+    },
+    "manifest_financials_annual_two_signals.txt.gz": {
+      "row_ids": 2385,
+      "sha256_uncompressed": "21f2f0c662067dab4270784b9ba270fc3dacd593eee61b87a284e34ac8ea95ea",
+      "sha256_gz": "396f8c438d32d0b3c02c81cd3bf30dc73f1312089e985042ada3614c068377f4"
+    },
+    "manifest_financials_quarterly_magnitude_only.txt.gz": {
+      "row_ids": 14957,
+      "sha256_uncompressed": "9c307fce90f1a2c4cc1a32003e835e06b50699c72ad07714f8cb691144880659",
+      "sha256_gz": "e6fca941c0466e538227a1393654bb27d0fc563822fbd2f68d53c671fa2cbda6"
+    },
+    "manifest_financials_quarterly_ratio_only.txt.gz": {
+      "row_ids": 0,
+      "sha256_uncompressed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_gz": "c107e60477f4e3b5591b36700b4d72af2c799fc48480712c138019356156b39d"
+    },
+    "manifest_financials_quarterly_two_signals.txt.gz": {
+      "row_ids": 0,
+      "sha256_uncompressed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_gz": "915f058e127b577782f7cdc4f56313dba7ae6857b239d11a58df7b5c4cd4c0e3"
+    }
+  }
+}

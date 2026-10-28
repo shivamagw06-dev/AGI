@@ -1,0 +1,72 @@
+name: Institutional Research Evidence and Registration
+on:
+  pull_request:
+    paths:
+      - 'src/lib/institutionResearch*'
+      - 'src/lib/holdingsActivity*'
+      - 'scripts/holdings_activity/**'
+      - 'public/data/holdings-activity/**'
+      - 'src/data/institutionResearch.json'
+      - 'src/components/institutions/**'
+      - 'src/pages/RichKidsPage.jsx'
+      - 'src/pages/InvestorPortfolioPage.jsx'
+      - 'scripts/institution_intelligence/**'
+      - 'scripts/investor_valuation/**'
+      - 'public/data/institution-briefs.json'
+      - 'public/data/hedge-fund-source-audit.json'
+      - 'scripts/hedge_fund_audit/**'
+      - 'src/components/Research/HedgeFundSourceAudit.jsx'
+      - 'src/components/Research/hedgeFundSourceAudit.css'
+      - '.github/workflows/institution-research.yml'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Publish to production branch']
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: institution-research-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  evidence:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test src/lib/institutionResearch.test.js src/lib/hedgeFundDisclosure.test.js src/lib/holdingsActivity.test.js scripts/holdings_activity/model.test.mjs
+      - run: python -m unittest discover -s scripts/hedge_fund_audit -p 'test_*.py'
+      - run: python -m unittest discover -s scripts/holdings_activity -p 'test_*.py'
+      - run: python -m unittest discover -s scripts/institution_intelligence -p 'test_*.py'
+      - run: python -m unittest discover -s scripts/investor_valuation -p 'test_*.py'
+      - name: Check reproducible saved disclosures
+        run: |
+          node scripts/institution_intelligence/build.mjs
+          node scripts/holdings_activity/build.mjs
+          git diff --exit-code -- src/data/institutionResearch.json public/data/holdings-activity
+  register:
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
+    needs: evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Register observations only after public deployment is visible
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          printf '{}' > /tmp/institution-research-quotes.json
+          python scripts/institution_intelligence/track.py /tmp/institution-research-quotes.json

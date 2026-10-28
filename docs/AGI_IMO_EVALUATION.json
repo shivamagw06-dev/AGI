@@ -1,0 +1,31 @@
+{
+  "company": "AGI",
+  "module": "institutional_monitoring_office",
+  "imo_version": "institutional-monitoring-office-v1.0.0",
+  "mqs_version": "mqs-v1.0.0",
+  "date": "2026-07-28",
+  "suites": {
+    "smoke": {"n": 20, "pass_pct": 100.0, "mean_score": 87.92, "mean_mqs": 99.5},
+    "cio_frozen_25": {"n": 25, "pass_pct": 100.0, "mean_score": 87.58, "mean_mqs": 99.5},
+    "institutional_1000": {
+      "n": 1000,
+      "pass_pct": 99.9,
+      "mean_score": 90.05,
+      "mean_mqs": 99.5,
+      "mqs_pass_pct": 100.0,
+      "mean_pqs": 94.57,
+      "mean_dqs": 99.44,
+      "mean_itqs": 97.56
+    }
+  },
+  "guarantees": {
+    "mutates_thesis": false,
+    "mutates_decision": false,
+    "mutates_portfolio": false,
+    "positions_emitted": false,
+    "orders_emitted": false,
+    "reasoning_changed": false,
+    "fabricated": false,
+    "mqs_independent_of_cio": true
+  }
+}

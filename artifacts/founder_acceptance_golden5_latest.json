@@ -1,0 +1,458 @@
+{
+  "suite": "AGI Founder Acceptance \u2014 Golden 5",
+  "version": "v1.0",
+  "timestamp": "2026-08-01T08:42:28.847374Z",
+  "base_url": "https://finance-news-backend-19i5.onrender.com",
+  "questions": [
+    {
+      "id": "G1",
+      "prompt": "What is Reliance Industries' business model?",
+      "http_status": 200,
+      "latency_ms": 21943,
+      "request_id": "ASK-20260801-72C6EF",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "engine_reached": true,
+      "entity": {
+        "name": "Reliance Industries Limited",
+        "detected": "RELIANCE",
+        "entity_name": "Reliance Industries Limited",
+        "entity_type": "Company",
+        "aliases_matched": [
+          "RELIANCE",
+          "Reliance Industries Limited"
+        ],
+        "confidence": 0.999,
+        "source": "ere",
+        "resolution_source": "ere",
+        "needs_clarification": false,
+        "low_confidence": false,
+        "silently_bound": false,
+        "question_excerpt": "What is Reliance Industries' business model?",
+        "rejected_candidates": []
+      },
+      "funnel": {
+        "retrieved": 82,
+        "ranked": 41,
+        "passed": 21,
+        "passed_to_ice": 21,
+        "referenced": 47,
+        "utilization": 1,
+        "efficiency": 0.573,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "stance": null,
+      "house_view_label": "Bearish",
+      "summary": "Analyse via Financial evidence (5 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: RELIANCE expectations",
+      "why": [
+        "AGIB's view on Reliance Industries starts here because own Reliance Industries only when franchise durability and financial quality justify the entry after macro transmission. Position sizing should respect the valuation cushion, live risk register, and committee conviction.",
+        "This matters because committee vote 7 / 9 \u2192 Neutral (Low conviction).",
+        "This matters because capital Allocation: Management's choices on deploying and returning capital across organic reinvestment, acquisitions, buybacks, dividends, debt repayment, and capital raising. Investor lens: Business quality via capital allocation and ROIC vs WACC",
+        "This matters because avoid: Single-multiple on blended conglomerate earnings"
+      ],
+      "evidence_count": 0,
+      "supporting_count": 12,
+      "evidence_sample": [],
+      "detail": null,
+      "status": "ok",
+      "policy": "evidence_pack_not_direct_advice",
+      "error": null,
+      "orchestration_latency": {
+        "entity_ms": 18,
+        "ikl_ms": 441,
+        "retrieval_ms": 2341,
+        "ranking_ms": 220,
+        "reasoning_ms": 12136,
+        "assembly_ms": 3141,
+        "serialization_ms": 704,
+        "http_ms": 21269,
+        "http_ingress_ms": 0,
+        "total_ms": 19004,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 18,
+          "ikl": 441,
+          "retrieval": 2341,
+          "reasoning": 12136,
+          "ranking": 220,
+          "response_assembly": 3141,
+          "serialization": 704
+        },
+        "warnings": [
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2341,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-72C6EF",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 3141,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-72C6EF",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "last_completed_stage": "response_assembly"
+    },
+    {
+      "id": "G2",
+      "prompt": "Compare Infosys vs TCS.",
+      "http_status": 200,
+      "latency_ms": 25830,
+      "request_id": "ASK-20260801-5AC65A",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "engine_reached": true,
+      "entity": {
+        "name": "INFY",
+        "detected": "INFY",
+        "entity_name": "INFY",
+        "entity_type": "Unknown",
+        "aliases_matched": [
+          "INFY"
+        ],
+        "confidence": 0.999,
+        "source": "alias",
+        "resolution_source": "alias",
+        "needs_clarification": true,
+        "low_confidence": false,
+        "silently_bound": false,
+        "question_excerpt": "Compare Infosys vs TCS.",
+        "rejected_candidates": []
+      },
+      "funnel": {
+        "retrieved": 50,
+        "ranked": 11,
+        "passed": 11,
+        "passed_to_ice": 11,
+        "referenced": 49,
+        "utilization": 1,
+        "efficiency": 0.98,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "stance": null,
+      "house_view_label": "Neutral",
+      "summary": "Analyse via Financial evidence (5 items) Analyse via Historical evidence (1 items) Analyse via Industry evidence (2 items) Evidence: LIDI validated publish",
+      "why": [
+        "AGIB's view on Infosys starts here because own Infosys only when franchise durability and financial quality justify the entry after macro transmission. Position sizing should respect the valuation cushion, live risk register, and committee conviction.",
+        "This matters because committee vote 8 / 9 \u2192 Neutral (Low conviction).",
+        "This matters because free Cash Flow: Cash available after funding operations and necessary reinvestment; FCFF is before debt payments, FCFE is after. Investor lens: Business quality: reliability of the scorecard and capital efficiency",
+        "This matters because avoid: Ignoring attrition/utilisation"
+      ],
+      "evidence_count": 0,
+      "supporting_count": 6,
+      "evidence_sample": [],
+      "detail": null,
+      "status": "ok",
+      "policy": "evidence_pack_not_direct_advice",
+      "error": null,
+      "orchestration_latency": {
+        "entity_ms": 14,
+        "ikl_ms": 186,
+        "retrieval_ms": 2026,
+        "ranking_ms": 198,
+        "reasoning_ms": 16772,
+        "assembly_ms": 3680,
+        "serialization_ms": 733,
+        "http_ms": 25227,
+        "http_ingress_ms": 0,
+        "total_ms": 23612,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 14,
+          "ikl": 186,
+          "retrieval": 2026,
+          "reasoning": 16772,
+          "ranking": 198,
+          "response_assembly": 3680,
+          "serialization": 733
+        },
+        "warnings": [
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2026,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-5AC65A",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 3680,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-5AC65A",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "last_completed_stage": "response_assembly"
+    },
+    {
+      "id": "G3",
+      "prompt": "What did Meta say in Q2 2026 about AI infrastructure spending?",
+      "http_status": 200,
+      "latency_ms": 30438,
+      "request_id": "ASK-20260801-1B8B56",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "engine_reached": true,
+      "entity": {
+        "name": "META",
+        "detected": "META",
+        "entity_name": "META",
+        "entity_type": "Unknown",
+        "aliases_matched": [
+          "META"
+        ],
+        "confidence": 0.995,
+        "source": "alias",
+        "resolution_source": "alias",
+        "needs_clarification": true,
+        "low_confidence": false,
+        "silently_bound": false,
+        "question_excerpt": "What did Meta say in Q2 2026 about AI infrastructure spending?",
+        "rejected_candidates": []
+      },
+      "funnel": {
+        "retrieved": 43,
+        "ranked": 5,
+        "passed": 5,
+        "passed_to_ice": 5,
+        "referenced": 43,
+        "utilization": 1,
+        "efficiency": 1,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "stance": null,
+      "house_view_label": "Bearish",
+      "summary": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: META expectations",
+      "why": [
+        "AGIB's view on META starts here because own META only when franchise durability and financial quality justify the entry after macro transmission. Position sizing should respect the valuation cushion, live risk register, and committee conviction.",
+        "This matters because committee vote 8 / 9 \u2192 Neutral (Low conviction).",
+        "This matters because working Capital: Capital tied in the operating cycle; analytically often non-cash net working capital (AR + Inventory - AP - deferred items, etc.). Investor lens: Business quality: reliability of the scorecard and capital efficiency",
+        "This matters because decision: Separate EPC profits from annuity/asset ownership"
+      ],
+      "evidence_count": 0,
+      "supporting_count": 0,
+      "evidence_sample": [],
+      "detail": null,
+      "status": "ok",
+      "policy": "evidence_pack_not_direct_advice",
+      "error": null,
+      "orchestration_latency": {
+        "entity_ms": 15,
+        "ikl_ms": 6351,
+        "retrieval_ms": 2818,
+        "ranking_ms": 263,
+        "reasoning_ms": 16887,
+        "assembly_ms": 1966,
+        "serialization_ms": 50,
+        "http_ms": 29788,
+        "http_ingress_ms": 0,
+        "total_ms": 28353,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 15,
+          "ikl": 6351,
+          "retrieval": 2818,
+          "reasoning": 16887,
+          "ranking": 263,
+          "response_assembly": 1966,
+          "serialization": 50
+        },
+        "warnings": [
+          {
+            "stage": "ikl",
+            "elapsed_ms": 6351,
+            "threshold_ms": 500,
+            "ask_trace_id": "ASK-20260801-1B8B56",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2818,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-1B8B56",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "last_completed_stage": "response_assembly"
+    },
+    {
+      "id": "G4",
+      "prompt": "Should I buy HDFC Bank tomorrow?",
+      "http_status": 200,
+      "latency_ms": 396,
+      "request_id": "ASK-20260801-3E62C6",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "engine_reached": true,
+      "entity": {
+        "name": "HDFC Bank Limited",
+        "detected": "HDFCBANK",
+        "entity_name": "HDFC Bank Limited",
+        "entity_type": "Company",
+        "aliases_matched": [
+          "HDFCBANK",
+          "HDFC Bank Limited"
+        ],
+        "confidence": 0.999,
+        "source": "ere",
+        "resolution_source": "ere",
+        "needs_clarification": false,
+        "low_confidence": false,
+        "silently_bound": false,
+        "question_excerpt": "Should I buy HDFC Bank tomorrow?",
+        "rejected_candidates": []
+      },
+      "funnel": {
+        "retrieved": 0,
+        "ranked": 1,
+        "passed": 1,
+        "passed_to_ice": 1,
+        "referenced": 1,
+        "utilization": 1,
+        "efficiency": 0,
+        "precision": 1,
+        "zero_stage": "retrieved"
+      },
+      "stance": "Neutral",
+      "house_view_label": "Monitoring",
+      "summary": "AGIB does not issue buy or sell recommendations. HDFC Bank can be monitored through franchise quality, asset quality, and valuation versus history \u2014 without a price target or transactional advice.",
+      "why": [
+        "AGIB explains evidence and risks; it does not tell investors what to trade.",
+        "Key watch items for HDFC Bank: earnings quality, balance-sheet strength, and valuation versus its own history.",
+        "Ask a monitoring-framed question (risks, peers, valuation drivers) for a full research brief."
+      ],
+      "evidence_count": 0,
+      "supporting_count": 0,
+      "evidence_sample": [],
+      "detail": null,
+      "status": "ok",
+      "policy": "no_buy_sell_recommendation",
+      "error": null,
+      "orchestration_latency": {
+        "entity_ms": 25,
+        "ikl_ms": 0,
+        "retrieval_ms": 0,
+        "ranking_ms": 0,
+        "reasoning_ms": 0,
+        "assembly_ms": 0,
+        "serialization_ms": 0,
+        "http_ms": 81,
+        "http_ingress_ms": 0,
+        "total_ms": 26,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 25,
+          "ikl": 0,
+          "retrieval": 0,
+          "ranking": 0,
+          "reasoning": 0,
+          "response_assembly": 0,
+          "serialization": 0
+        },
+        "warnings": []
+      },
+      "last_completed_stage": "response_assembly"
+    },
+    {
+      "id": "G5",
+      "prompt": "Explain XYZ Quantum Robotics Pvt Ltd.",
+      "http_status": 200,
+      "latency_ms": 21289,
+      "request_id": "ASK-20260801-A4161F",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "engine_reached": true,
+      "entity": {
+        "name": null,
+        "detected": null,
+        "entity_name": null,
+        "entity_type": "Unknown",
+        "aliases_matched": [],
+        "confidence": 0,
+        "source": null,
+        "resolution_source": null,
+        "needs_clarification": true,
+        "low_confidence": false,
+        "silently_bound": false,
+        "question_excerpt": "Explain XYZ Quantum Robotics Pvt Ltd.",
+        "rejected_candidates": [
+          "LT"
+        ]
+      },
+      "funnel": {
+        "retrieved": 55,
+        "ranked": 29,
+        "passed": 17,
+        "passed_to_ice": 17,
+        "referenced": 44,
+        "utilization": 1,
+        "efficiency": 0.8,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "stance": null,
+      "house_view_label": "Neutral",
+      "summary": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (5 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: LIDI validated publish",
+      "why": [
+        "AGIB's view on LT starts here because own LT only when franchise durability and financial quality justify the entry after macro transmission. Position sizing should respect the valuation cushion, live risk register, and committee conviction.",
+        "This matters because committee vote 8 / 9 \u2192 Neutral (Low conviction).",
+        "This matters because working Capital: Capital tied in the operating cycle; analytically often non-cash net working capital (AR + Inventory - AP - deferred items, etc.). Investor lens: Business quality: reliability of the scorecard and capital efficiency",
+        "This matters because avoid: Booking revenue quality from weak advances"
+      ],
+      "evidence_count": 0,
+      "supporting_count": 12,
+      "evidence_sample": [],
+      "detail": null,
+      "status": "ok",
+      "policy": "evidence_pack_not_direct_advice",
+      "error": null,
+      "orchestration_latency": {
+        "entity_ms": 2,
+        "ikl_ms": 57,
+        "retrieval_ms": 980,
+        "ranking_ms": 219,
+        "reasoning_ms": 16590,
+        "assembly_ms": 2058,
+        "serialization_ms": 0,
+        "http_ms": 20661,
+        "http_ingress_ms": 0,
+        "total_ms": 19910,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 2,
+          "ikl": 57,
+          "retrieval": 980,
+          "reasoning": 16590,
+          "ranking": 219,
+          "response_assembly": 2058,
+          "serialization": 0
+        },
+        "warnings": [
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 2058,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-A4161F",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "last_completed_stage": "response_assembly"
+    }
+  ],
+  "note": "Manual founder scoring required \u2014 see capacity/acceptance rubric (max 30)."
+}

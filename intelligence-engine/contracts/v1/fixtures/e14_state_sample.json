@@ -1,0 +1,63 @@
+{
+  "engine": "E14",
+  "version": "1.0.0",
+  "model_version": "e14-firm-prior-0.1.0",
+  "as_of": "2026-07-24",
+  "universe_id": "FIRM",
+  "symbol": null,
+  "score": {
+    "raw": 35.0,
+    "normalized_0_100": 35.0,
+    "normalized_signed": -0.3,
+    "unit": "score"
+  },
+  "confidence": {
+    "value": 0.74,
+    "components": {
+      "C_coverage": 0.7,
+      "C_freshness": 0.8,
+      "C_model": 0.7
+    },
+    "method_version": "conf-1.0"
+  },
+  "reliability": {
+    "sample_size": 60,
+    "historical_accuracy": null,
+    "stability": 0.6
+  },
+  "metadata": {
+    "risk_level": "elevated",
+    "size_mult": 0.75,
+    "confidence_adjustment": 0.85,
+    "playbook": "reduce_gross",
+    "block_promotion": false
+  },
+  "evidence": {
+    "positive": [],
+    "negative": [
+      {
+        "id": "e14_neg_corr",
+        "claim": "Pairwise correlation elevated vs 60d median"
+      }
+    ],
+    "contradictions": [],
+    "unknowns": [],
+    "risks": [
+      {
+        "id": "e14_risk_liquidity",
+        "claim": "Liquidity stress indicators rising"
+      }
+    ],
+    "missing_data": []
+  },
+  "explanation": {
+    "summary": "Firm risk prior is elevated; size multiplier haircut applied.",
+    "top_drivers": ["RK_CORR", "RK_LIQ"],
+    "falsifiers": ["corr_normalization", "liquidity_recovery"]
+  },
+  "warnings": ["e01_soft_dependency_ok"],
+  "stale_inputs": [],
+  "input_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "timestamp_generated": "2026-07-24T18:10:00+05:30"
+}

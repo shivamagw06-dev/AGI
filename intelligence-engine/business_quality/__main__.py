@@ -1,0 +1,72 @@
+"""CLI: python -m business_quality --company TCS"""
+
+from __future__ import annotations
+
+import json
+import sys
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = list(sys.argv[1:] if argv is None else argv)
+    if not args or args[0] in {"-h", "--help"}:
+        print(
+            "usage: python -m business_quality "
+            "--health|--dashboard|--company TICKER|--quality TICKER|--pillars TICKER"
+        )
+        return 0
+
+    cmd = args[0]
+
+    def _need_ticker() -> str | None:
+        if len(args) < 2:
+            print("ticker required", file=sys.stderr)
+            return None
+        return args[1]
+
+    if cmd == "--health":
+        from business_quality.production import health
+
+        print(json.dumps(health(), indent=2, default=str))
+        return 0
+    if cmd == "--dashboard":
+        from business_quality.production import dashboard
+
+        print(json.dumps(dashboard(), indent=2, default=str))
+        return 0
+    if cmd == "--company":
+        t = _need_ticker()
+        if not t:
+            return 2
+        from business_quality.production import company
+
+        print(json.dumps(company(t), indent=2, default=str))
+        return 0
+    if cmd == "--quality":
+        t = _need_ticker()
+        if not t:
+            return 2
+        from business_quality.production import quality
+
+        print(json.dumps(quality(t), indent=2, default=str))
+        return 0
+    if cmd == "--pillars":
+        t = _need_ticker()
+        if not t:
+            return 2
+        from business_quality.production import pillars
+
+        print(json.dumps(pillars(t), indent=2, default=str))
+        return 0
+
+    if not cmd.startswith("--"):
+        from business_quality.production import company
+
+        print(json.dumps(company(cmd), indent=2, default=str))
+        return 0
+
+    print(f"unknown command: {cmd}", file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

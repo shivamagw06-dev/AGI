@@ -1,0 +1,124 @@
+name: Deploy to Render
+
+# Triggers Render deploy hooks when server or intelligence-engine changes on main.
+# Requires repository secrets:
+#   RENDER_DEPLOY_HOOK_API     — Deploy Hook URL for finance-news-backend / agib-api
+#   RENDER_DEPLOY_HOOK_ENGINE  — Deploy Hook URL for agib-intelligence-engine
+# Create hooks in Render → Service → Settings → Deploy Hook.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'intelligence-engine/**'
+      - 'render.yaml'
+      - '.github/workflows/deploy-render.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-render
+  cancel-in-progress: false
+
+jobs:
+  trigger-render-deploys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout revision ancestry
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Trigger Node API deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_API secret is not set — skipping API redeploy trigger."
+            echo "Add a Render Deploy Hook secret so /api/ui/* reaches production."
+            exit 0
+          fi
+          # Render's hook answers 500 intermittently - three times on 20 Aug
+          # alone. A single curl turns that into a failed deploy and the commit
+          # sits unshipped until someone notices, so a transient answer is
+          # retried before the run is called a failure. Only 5xx and network
+          # errors are retried: a 4xx means the hook URL itself is wrong and
+          # retrying would just delay that finding.
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$HOOK" || echo 000)
+            case "$code" in
+              2*) echo "Triggered RENDER_DEPLOY_HOOK_API (attempt $attempt)"; exit 0 ;;
+              4*) echo "::error::RENDER_DEPLOY_HOOK_API rejected the hook with HTTP $code - check the secret."; exit 1 ;;
+            esac
+            echo "::warning::RENDER_DEPLOY_HOOK_API hook returned HTTP $code (attempt $attempt of 5); retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::RENDER_DEPLOY_HOOK_API hook still failing after 5 attempts."
+          exit 1
+
+      - name: Trigger Intelligence Engine deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_ENGINE }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_ENGINE secret is not set — skipping engine redeploy trigger."
+            echo "Add a Render Deploy Hook secret so /v1/ui/* backs /api/ui/*."
+            exit 0
+          fi
+          # Render's hook answers 500 intermittently - three times on 20 Aug
+          # alone. A single curl turns that into a failed deploy and the commit
+          # sits unshipped until someone notices, so a transient answer is
+          # retried before the run is called a failure. Only 5xx and network
+          # errors are retried: a 4xx means the hook URL itself is wrong and
+          # retrying would just delay that finding.
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$HOOK" || echo 000)
+            case "$code" in
+              2*) echo "Triggered RENDER_DEPLOY_HOOK_ENGINE (attempt $attempt)"; exit 0 ;;
+              4*) echo "::error::RENDER_DEPLOY_HOOK_ENGINE rejected the hook with HTTP $code - check the secret."; exit 1 ;;
+            esac
+            echo "::warning::RENDER_DEPLOY_HOOK_ENGINE hook returned HTTP $code (attempt $attempt of 5); retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::RENDER_DEPLOY_HOOK_ENGINE hook still failing after 5 attempts."
+          exit 1
+
+      - name: Verify exact Intelligence Engine revision is healthy
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          ENGINE_HEALTH_URL: https://agib-intelligence-engine.onrender.com/v1/health
+        run: |
+          for attempt in $(seq 1 80); do
+            payload="$(curl -fsS --max-time 20 "$ENGINE_HEALTH_URL" 2>/dev/null || true)"
+            running_sha="$(python -c 'import json,sys; print((json.load(sys.stdin).get("deployment") or {}).get("commit") or "")' <<<"$payload" 2>/dev/null || true)"
+            healthy="$(python -c 'import json,sys; print(str(json.load(sys.stdin).get("ok") is True).lower())' <<<"$payload" 2>/dev/null || true)"
+            if [ "$healthy" = "true" ] && [ -n "$running_sha" ]; then
+              if [ "$running_sha" = "$EXPECTED_SHA" ]; then
+                echo "Render is healthy on exact revision $running_sha"
+                exit 0
+              fi
+              # Hostinger's Git-sync workflow writes generated root artifacts
+              # back to main with [skip ci]. Render may therefore serve that
+              # descendant instead of the source parent this run requested.
+              # Accept it only when ancestry is proven and no source file
+              # changed between the two revisions.
+              git fetch --quiet origin "$running_sha" || true
+              if git cat-file -e "$running_sha^{commit}" 2>/dev/null \
+                && git merge-base --is-ancestor "$EXPECTED_SHA" "$running_sha"; then
+                unexpected="$(git diff --name-only "$EXPECTED_SHA" "$running_sha" -- \
+                  | grep -Ev '^(index\.html|\.htaccess|assets/)' || true)"
+                if [ -z "$unexpected" ]; then
+                  echo "Render is healthy on generated-artifact descendant $running_sha of $EXPECTED_SHA"
+                  exit 0
+                fi
+                echo "Descendant $running_sha contains non-artifact changes; refusing it:"
+                echo "$unexpected"
+              fi
+            fi
+            running_label="${running_sha:0:8}"
+            [ -n "$running_label" ] || running_label="unavailable"
+            echo "Waiting for Render revision ${EXPECTED_SHA:0:8}; running=$running_label; attempt=$attempt/80"
+            sleep 15
+          done
+          echo "::error::Render did not become healthy on revision $EXPECTED_SHA within 20 minutes."
+          exit 1

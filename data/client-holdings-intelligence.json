@@ -1,0 +1,579 @@
+{
+  "reviewedAt": "2026-10-27",
+  "sourceCheckedAt": "2026-10-26",
+  "stocks": [
+    {
+      "country": "US",
+      "stock": "Amazon",
+      "ticker": "AMZN",
+      "unit": "shares",
+      "interpretation": "Several managers increased exposure, while others reduced it.",
+      "changes": [
+        {
+          "manager": "Appaloosa",
+          "direction": "increased",
+          "before": 4320000.0,
+          "after": 5000000.0,
+          "changePct": 15.7407,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/Form13FInfoTable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/Form13FInfoTable.xml"
+        },
+        {
+          "manager": "Coatue Management",
+          "direction": "increased",
+          "before": 7930766.0,
+          "after": 11834799.0,
+          "changePct": 49.2264,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426003501/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/infotable.xml"
+        },
+        {
+          "manager": "Viking Global Investors",
+          "direction": "increased",
+          "before": 1195428.0,
+          "after": 3700862.0,
+          "changePct": 209.5847,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000004/MSFS13F033126.XML",
+          "source": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000006/Q2202613F.xml"
+        },
+        {
+          "manager": "Tiger Global Management",
+          "direction": "reduced",
+          "before": 10000000.0,
+          "after": 9683558.0,
+          "changePct": -3.1644,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426003362/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426005427/infotable.xml"
+        },
+        {
+          "manager": "D1 Capital Partners",
+          "direction": "reduced",
+          "before": 1807523.0,
+          "after": 628082.0,
+          "changePct": -65.2518,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1747057/000117266126002178/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1747057/000117266126003662/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Meta",
+      "ticker": "META",
+      "unit": "shares",
+      "interpretation": "Large additions and reductions coexist; institutional opinion is divided.",
+      "changes": [
+        {
+          "manager": "Appaloosa",
+          "direction": "increased",
+          "before": 436500.0,
+          "after": 675000.0,
+          "changePct": 54.6392,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/Form13FInfoTable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/Form13FInfoTable.xml"
+        },
+        {
+          "manager": "Viking Global Investors",
+          "direction": "increased",
+          "before": 1062575.0,
+          "after": 1867619.0,
+          "changePct": 75.7635,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000004/MSFS13F033126.XML",
+          "source": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000006/Q2202613F.xml"
+        },
+        {
+          "manager": "Tiger Global Management",
+          "direction": "reduced",
+          "before": 3086864.0,
+          "after": 2823180.0,
+          "changePct": -8.5421,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426003362/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426005427/infotable.xml"
+        },
+        {
+          "manager": "Coatue Management",
+          "direction": "reduced",
+          "before": 2812056.0,
+          "after": 2526048.0,
+          "changePct": -10.1708,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426003501/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/infotable.xml"
+        },
+        {
+          "manager": "Altimeter Capital Management",
+          "direction": "reduced",
+          "before": 1953373.0,
+          "after": 1354990.0,
+          "changePct": -30.6333,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1541617/000154161726000006/Q12613FvF.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1541617/000154161726000008/2026altimeterq2.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "TSMC",
+      "ticker": "TSM",
+      "unit": "shares",
+      "interpretation": "Semiconductor exposure differs substantially across these managers.",
+      "changes": [
+        {
+          "manager": "Appaloosa",
+          "direction": "increased",
+          "before": 1327500.0,
+          "after": 1650000.0,
+          "changePct": 24.2938,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/Form13FInfoTable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/Form13FInfoTable.xml"
+        },
+        {
+          "manager": "Duquesne Family Office",
+          "direction": "increased",
+          "before": 495280.0,
+          "after": 589680.0,
+          "changePct": 19.0599,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1536411/000153641126000004/form13f_20260331.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1536411/000153641126000006/form13f_20260630.xml"
+        },
+        {
+          "manager": "Third Point",
+          "direction": "increased",
+          "before": 275000.0,
+          "after": 460000.0,
+          "changePct": 67.2727,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1040273/000104027326000002/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1040273/000104027326000003/infotable.xml"
+        },
+        {
+          "manager": "Tiger Global Management",
+          "direction": "reduced",
+          "before": 5565074.0,
+          "after": 4881008.0,
+          "changePct": -12.2921,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426003362/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426005427/infotable.xml"
+        },
+        {
+          "manager": "Viking Global Investors",
+          "direction": "reduced",
+          "before": 4465127.0,
+          "after": 3168097.0,
+          "changePct": -29.048,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000004/MSFS13F033126.XML",
+          "source": "https://www.sec.gov/Archives/edgar/data/1103804/000110380426000006/Q2202613F.xml"
+        },
+        {
+          "manager": "Lone Pine Capital",
+          "direction": "reduced",
+          "before": 1389530.0,
+          "after": 101242.0,
+          "changePct": -92.7139,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426003439/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426005485/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Micron",
+      "ticker": "MU",
+      "unit": "shares",
+      "interpretation": "Opposing changes within the memory theme merit further earnings and valuation research.",
+      "changes": [
+        {
+          "manager": "Coatue Management",
+          "direction": "increased",
+          "before": 165931.0,
+          "after": 3142269.0,
+          "changePct": 1793.7203,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426003501/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/infotable.xml"
+        },
+        {
+          "manager": "Soros Fund Management",
+          "direction": "increased",
+          "before": 2824.0,
+          "after": 22422.0,
+          "changePct": 693.9802,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1029160/000090266426002529/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1029160/000090266426003507/infotable.xml"
+        },
+        {
+          "manager": "Appaloosa",
+          "direction": "reduced",
+          "before": 1665000.0,
+          "after": 975000.0,
+          "changePct": -41.4414,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/Form13FInfoTable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/Form13FInfoTable.xml"
+        },
+        {
+          "manager": "Atreides Management",
+          "direction": "reduced",
+          "before": 760426.0,
+          "after": 711364.0,
+          "changePct": -6.4519,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1777813/000177781326000006/Atreides13FXml.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1777813/000177781326000009/ATREIDES13FXMLQ2.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Nvidia",
+      "ticker": "NVDA",
+      "unit": "shares",
+      "interpretation": "Several selected managers trimmed; their net exposure and motives are not disclosed here.",
+      "changes": [
+        {
+          "manager": "Appaloosa",
+          "direction": "increased",
+          "before": 1471500.0,
+          "after": 1525000.0,
+          "changePct": 3.6357,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/Form13FInfoTable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/Form13FInfoTable.xml"
+        },
+        {
+          "manager": "Tiger Global Management",
+          "direction": "reduced",
+          "before": 12011752.0,
+          "after": 11198773.0,
+          "changePct": -6.7682,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426003362/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426005427/infotable.xml"
+        },
+        {
+          "manager": "Coatue Management",
+          "direction": "reduced",
+          "before": 6331620.0,
+          "after": 6055197.0,
+          "changePct": -4.3658,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426003501/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/infotable.xml"
+        },
+        {
+          "manager": "Whale Rock Capital Management",
+          "direction": "reduced",
+          "before": 1041128.0,
+          "after": 377204.0,
+          "changePct": -63.7697,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1387322/000117266126002159/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1387322/000117266126003733/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Alphabet Class A",
+      "ticker": "GOOGL",
+      "unit": "shares",
+      "interpretation": "Class A only. Class C holdings are a separate security and are not combined.",
+      "changes": [
+        {
+          "manager": "Coatue Management",
+          "direction": "increased",
+          "before": 4313426.0,
+          "after": 4856251.0,
+          "changePct": 12.5845,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426003501/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1135730/000091957426005478/infotable.xml"
+        },
+        {
+          "manager": "Lone Pine Capital",
+          "direction": "increased",
+          "before": 187561.0,
+          "after": 215574.0,
+          "changePct": 14.9354,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426003439/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426005485/infotable.xml"
+        },
+        {
+          "manager": "Third Point",
+          "direction": "increased",
+          "before": 175000.0,
+          "after": 1025000.0,
+          "changePct": 485.7143,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1040273/000104027326000002/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1040273/000104027326000003/infotable.xml"
+        },
+        {
+          "manager": "Tiger Global Management",
+          "direction": "reduced",
+          "before": 10631402.0,
+          "after": 5805687.0,
+          "changePct": -45.3911,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426003362/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1167483/000091957426005427/infotable.xml"
+        },
+        {
+          "manager": "Atreides Management",
+          "direction": "reduced",
+          "before": 555023.0,
+          "after": 488296.0,
+          "changePct": -12.0224,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1777813/000177781326000006/Atreides13FXml.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1777813/000177781326000009/ATREIDES13FXMLQ2.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Visa",
+      "ticker": "V",
+      "unit": "shares",
+      "interpretation": "Different managers took opposing positions in disclosed share quantities.",
+      "changes": [
+        {
+          "manager": "Akre Capital Management",
+          "direction": "reduced",
+          "before": 1638798.0,
+          "after": 1110881.0,
+          "changePct": -32.2137,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000009/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/infotable.xml"
+        },
+        {
+          "manager": "Lone Pine Capital",
+          "direction": "increased",
+          "before": 92775.0,
+          "after": 165960.0,
+          "changePct": 78.8844,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426003439/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1061165/000091957426005485/infotable.xml"
+        },
+        {
+          "manager": "Valley Forge Capital Management",
+          "direction": "reduced",
+          "before": 598753.0,
+          "after": 462978.0,
+          "changePct": -22.6763,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1697868/000169786826000003/form13finfotable_20260331.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1697868/000169786826000005/form13finfotable_20260630.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Mastercard",
+      "ticker": "MA",
+      "unit": "shares",
+      "interpretation": "Akre reported fewer shares. This manager-specific reduction does not establish a market-wide view.",
+      "changes": [
+        {
+          "manager": "Akre Capital Management",
+          "direction": "reduced",
+          "before": 2281106.0,
+          "after": 1989906.0,
+          "changePct": -12.7657,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000009/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "US",
+      "stock": "Moody\u2019s",
+      "ticker": "MCO",
+      "unit": "shares",
+      "interpretation": "Akre reported fewer shares. The filing does not explain the reason or establish a current trading signal.",
+      "changes": [
+        {
+          "manager": "Akre Capital Management",
+          "direction": "reduced",
+          "before": 1246114.0,
+          "after": 1156893.0,
+          "changePct": -7.1599,
+          "priorDate": "2026-03-31",
+          "date": "2026-06-30",
+          "filedAt": "2026-08-14",
+          "priorSource": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000009/infotable.xml",
+          "source": "https://www.sec.gov/Archives/edgar/data/1112520/000111252026000014/infotable.xml"
+        }
+      ]
+    },
+    {
+      "country": "IN",
+      "stock": "Swiggy",
+      "ticker": "SWIGGY",
+      "unit": "ownership",
+      "interpretation": "Domestic ownership support strengthened while foreign ownership declined. This is not unanimous institutional agreement.",
+      "changes": [
+        {
+          "manager": "Mutual funds",
+          "direction": "increased",
+          "before": 22.77,
+          "after": 29,
+          "changePp": 6.23,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_1872026114258_SP.html",
+          "source": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_13102026113258_SP.html"
+        },
+        {
+          "manager": "Foreign institutions",
+          "direction": "reduced",
+          "before": 13.96,
+          "after": 8.86,
+          "changePp": -5.1,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_1872026114258_SP.html",
+          "source": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_13102026113258_SP.html"
+        }
+      ]
+    },
+    {
+      "country": "IN",
+      "stock": "PNB Housing Finance",
+      "ticker": "PNBHOUSING",
+      "unit": "ownership",
+      "interpretation": "Increases and reductions coexist. HDFC Mutual Fund and HDFC Life must be considered separately; newly disclosed insurance ownership does not prove a new purchase.",
+      "changes": [
+        {
+          "manager": "ICICI Prudential Focus Equity Fund",
+          "direction": "increased",
+          "before": 2.85,
+          "after": 3.19,
+          "changePp": 0.34,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20June,%202026",
+          "source": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20September,%202026"
+        },
+        {
+          "manager": "SBI Life",
+          "direction": "increased",
+          "before": 2.52,
+          "after": 2.69,
+          "changePp": 0.17,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20June,%202026",
+          "source": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20September,%202026"
+        },
+        {
+          "manager": "Franklin India Small Cap Fund",
+          "direction": "reduced",
+          "before": 2.33,
+          "after": 1.37,
+          "changePp": -0.96,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20June,%202026",
+          "source": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20September,%202026"
+        },
+        {
+          "manager": "HDFC Multi Cap Fund",
+          "direction": "reduced",
+          "before": 2.38,
+          "after": 2.32,
+          "changePp": -0.06,
+          "priorDate": "2026-06-30",
+          "date": "2026-09-30",
+          "priorSource": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20June,%202026",
+          "source": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20September,%202026"
+        }
+      ]
+    }
+  ]
+}

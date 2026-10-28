@@ -1,0 +1,736 @@
+{
+  "as_of": null,
+  "assembled_at": "2026-07-28T16:17:17Z",
+  "avg_confidence": 0.7167,
+  "citations": [
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "market_expectations_intelligence",
+      "confidence": 0.65,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "exp_INFY",
+      "fabricated": false,
+      "knowledge_object": "ExpectationObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:17Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_INFY",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:17Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "historical_depth",
+      "confidence": 0.7,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "hist_INFY",
+      "fabricated": false,
+      "knowledge_object": "HistoricalCompanyObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:17Z",
+      "version": "1"
+    }
+  ],
+  "companies": [
+    "INFY"
+  ],
+  "conclusions": null,
+  "fabricated": false,
+  "item_count": 3,
+  "items": [
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "market_expectations_intelligence",
+        "confidence": 0.65,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "exp_INFY",
+        "fabricated": false,
+        "knowledge_object": "ExpectationObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:17Z",
+        "version": "1"
+      },
+      "evidence_id": "exp_INFY",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "as_of": null,
+        "expectations": [
+          {
+            "announcement_date": "2024-01-01",
+            "available_from": "2024-01-01",
+            "collector": "imei.collectors.consensus_licensed",
+            "confidence": 0.0,
+            "consensus": {
+              "basis": "licensed_feed_not_configured",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": "UNKNOWN",
+              "median": "UNKNOWN",
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "INFY",
+            "evidence": [
+              "phase_2_not_configured"
+            ],
+            "expectation_id": "EXP-ECA794B4CD926EB0",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": "UNKNOWN",
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "licensed_consensus",
+            "licensed_consensus": true,
+            "metric": "eps",
+            "notes": "External consensus unavailable \u2014 marked UNKNOWN. Modular Phase-2 collector.",
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.collectors.consensus_licensed",
+              "confidence": 0.0,
+              "derived_from": [
+                "phase_2_not_configured"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "licensed_consensus_feed",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "licensed_consensus_feed",
+            "unit": null,
+            "validation": {
+              "failures": [
+                "unknown_expectation"
+              ],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "FAIL"
+              },
+              "status": "fail"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-04-18",
+            "available_from": "2024-04-18",
+            "collector": "imei.fixtures.guidance",
+            "confidence": 0.92,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": 3.5,
+              "licensed_consensus": false,
+              "low": 1.0,
+              "mean": 3.5,
+              "median": 3.5,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "INFY",
+            "evidence": [
+              "INFY-Q4FY24-earnings-guidance"
+            ],
+            "expectation_id": "EXP-E07F12C2C0DC990D",
+            "fabricated": false,
+            "forecast_range": {
+              "high": 3.5,
+              "low": 1.0
+            },
+            "forecast_value": 3.5,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "guidance",
+            "licensed_consensus": false,
+            "metric": "growth",
+            "notes": "Company-issued constant-currency revenue growth guidance band (seed).",
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.fixtures.guidance",
+              "confidence": 0.92,
+              "derived_from": [
+                "INFY-Q4FY24-earnings-guidance"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_guidance",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_guidance",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-18",
+            "available_from": "2024-07-18",
+            "collector": "imei.fixtures.guidance",
+            "confidence": 0.92,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": 3.0,
+              "licensed_consensus": false,
+              "low": 1.0,
+              "mean": 3.0,
+              "median": 3.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "INFY",
+            "evidence": [
+              "INFY-Q1FY25-guidance-revision"
+            ],
+            "expectation_id": "EXP-D98D602A9B6D9718",
+            "fabricated": false,
+            "forecast_range": {
+              "high": 3.0,
+              "low": 1.0
+            },
+            "forecast_value": 3.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "guidance",
+            "licensed_consensus": false,
+            "metric": "growth",
+            "notes": "Company revised guidance (seed).",
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.fixtures.guidance",
+              "confidence": 0.92,
+              "derived_from": [
+                "INFY-Q1FY25-guidance-revision"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_guidance",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 1,
+            "source": "company_guidance",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-06-30",
+            "available_from": "2024-06-30",
+            "collector": "imei.fixtures.agib_forecast",
+            "confidence": 0.75,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 15.2,
+              "median": 15.2,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "INFY",
+            "evidence": [
+              "AGIB-timestamped-forecast-INFY-FY25Q1-EPS"
+            ],
+            "expectation_id": "EXP-29162B172954B542",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 15.2,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "internal_forecast",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": "AGIB timestamped internal forecast \u2014 not street consensus.",
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.agib_forecast",
+              "confidence": 0.75,
+              "derived_from": [
+                "AGIB-timestamped-forecast-INFY-FY25Q1-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "agib_internal_forecast",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "agib_internal_forecast",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-06-30",
+            "available_from": "2024-06-30",
+            "collector": "imei.fixtures.agib_forecast",
+            "confidence": 0.75,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 4715.0,
+              "median": 4715.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "INFY",
+            "evidence": [
+              "AGIB-timestamped-forecast-INFY-FY25Q1-REV"
+            ],
+            "expectation_id": "EXP-E7E83C6B52F13DDE",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 4715.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "internal_forecast",
+            "licensed_consensus": false,
+            "metric": "revenue",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.agib_forecast",
+              "confidence": 0.75,
+              "derived_from": [
+                "AGIB-timestamped-forecast-INFY-FY25Q1-REV"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "agib_internal_forecast",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "agib_internal_forecast",
+            "unit": "usd_mn",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-18",
+            "available_from": "2024-07-18",
+            "collector": "imei.fixtures.actuals",
+            "confidence": 0.95,
+            "consensus": null,
+            "entity": "INFY",
+            "evidence": [
+              "INFY-Q1FY25-reported-EPS"
+            ],
+            "expectation_id": "EXP-55FAF4E1872F71CD",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 15.8,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "actual",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.actuals",
+              "confidence": 0.95,
+              "derived_from": [
+                "INFY-Q1FY25-reported-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_earnings_release",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_earnings_release",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-18",
+            "available_from": "2024-07-18",
+            "collector": "imei.fixtures.actuals",
+            "confidence": 0.95,
+            "consensus": null,
+            "entity": "INFY",
+            "evidence": [
+              "INFY-Q1FY25-reported-revenue"
+            ],
+            "expectation_id": "EXP-549FE2C388620F4C",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 4740.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "actual",
+            "licensed_consensus": false,
+            "metric": "revenue",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.actuals",
+              "confidence": 0.95,
+              "derived_from": [
+                "INFY-Q1FY25-reported-revenue"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_earnings_release",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_earnings_release",
+            "unit": "usd_mn",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "fabricated": false,
+        "licensed_consensus_assumed": false,
+        "links": {
+          "alternative_data": {
+            "datasets": [],
+            "fabricated": false,
+            "n": 0,
+            "note": "Links from Phase-1 registry only \u2014 no invented company mapping.",
+            "ticker": "INFY",
+            "version": "institutional-alternative-data-intelligence-v2.0.0"
+          },
+          "government_policy_ids": [
+            "SEBI-LODR"
+          ],
+          "industry_id": "it_services"
+        },
+        "n_expectations": 7,
+        "narratives": [
+          {
+            "name": "AI Spending",
+            "narrative_id": "ai_spending"
+          }
+        ],
+        "revisions": [
+          {
+            "available_from": "2024-07-18",
+            "confidence": 0.92,
+            "direction": "downgrade",
+            "entity": "INFY",
+            "fabricated": false,
+            "from_expectation_id": "EXP-E07F12C2C0DC990D",
+            "from_value": 3.5,
+            "magnitude": -0.5,
+            "magnitude_pct": -0.142857,
+            "metric": "growth",
+            "period": "FY25",
+            "prediction": false,
+            "revision_id": "REV-EXP-D98D602A9B6D9718",
+            "revision_velocity": "sequential_observed",
+            "source": "company_guidance",
+            "to_expectation_id": "EXP-D98D602A9B6D9718",
+            "to_value": 3.0,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "surprises": [
+          {
+            "actual_expectation_id": "EXP-55FAF4E1872F71CD",
+            "actual_source": "company_earnings_release",
+            "actual_value": 15.8,
+            "available_from": "2024-07-18",
+            "beat_miss": "beat",
+            "beat_miss_history": [
+              "beat",
+              "beat"
+            ],
+            "difference": 0.6,
+            "entity": "INFY",
+            "expectation_id": "EXP-29162B172954B542",
+            "expectation_source": "agib_internal_forecast",
+            "expected_value": 15.2,
+            "fabricated": false,
+            "historical_percentile": 75.0,
+            "magnitude": 0.039474,
+            "metric": "eps",
+            "note": "Observed comparison against stored Phase-1 expectation only.",
+            "period": "FY25Q1",
+            "persistence": 1,
+            "prediction": false,
+            "surprise_id": "SUR-341E3CCE4788F0",
+            "surprise_pct": 0.039474,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "actual_expectation_id": "EXP-549FE2C388620F4C",
+            "actual_source": "company_earnings_release",
+            "actual_value": 4740.0,
+            "available_from": "2024-07-18",
+            "beat_miss": "beat",
+            "beat_miss_history": [
+              "beat",
+              "beat"
+            ],
+            "difference": 25.0,
+            "entity": "INFY",
+            "expectation_id": "EXP-E7E83C6B52F13DDE",
+            "expectation_source": "agib_internal_forecast",
+            "expected_value": 4715.0,
+            "fabricated": false,
+            "historical_percentile": 50.0,
+            "magnitude": 0.005302,
+            "metric": "revenue",
+            "note": "Observed comparison against stored Phase-1 expectation only.",
+            "period": "FY25Q1",
+            "persistence": 2,
+            "prediction": false,
+            "surprise_id": "SUR-EEE5997ACD8152",
+            "surprise_pct": 0.005302,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "ticker": "INFY",
+        "version": "institutional-market-expectations-intelligence-v2.0.0"
+      },
+      "rank": 4,
+      "rank_score": 0.761,
+      "title": "INFY expectations"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_INFY",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:17Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_INFY",
+      "evidence_type": "OWNERSHIP",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 5,
+      "rank_score": 0.752,
+      "title": "INFY company intelligence"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "historical_depth",
+        "confidence": 0.7,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "hist_INFY",
+        "fabricated": false,
+        "knowledge_object": "HistoricalCompanyObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:17Z",
+        "version": "1"
+      },
+      "evidence_id": "hist_INFY",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "keys": [
+          "accounting",
+          "business_quality",
+          "company_profile",
+          "corporate_actions",
+          "coverage",
+          "entity",
+          "evidence_packs",
+          "historical_financials",
+          "historical_valuation",
+          "kind",
+          "last_updated",
+          "macro_sensitivity",
+          "management",
+          "missing_fields",
+          "object_version",
+          "peer_group",
+          "provider",
+          "quality_score",
+          "risk",
+          "sector",
+          "timeline"
+        ]
+      },
+      "rank": 6,
+      "rank_score": 0.737,
+      "title": "INFY historical object"
+    }
+  ],
+  "kind": "COMPANY_EVIDENCE_PACK",
+  "pack_id": "iere_company_evidence_pack_iere_0091b0f57763",
+  "reasoning": false,
+  "recommendation": null,
+  "retrieval_id": "iere_0091b0f57763"
+}

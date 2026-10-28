@@ -1,0 +1,87 @@
+import { loadLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { getLiveAlphaWorkspace } from './liveAlphaWorkspace.js';
+import { buildConfluenceQueue } from './researchConfluence.js';
+import { getResearchEvidence } from './researchEvidenceCollector.js';
+import { completeDueConfluenceOutcomes, saveConfluenceEvents, saveEvidenceConvictionRanking } from './confluenceValidationStore.js';
+import { syncResearchMemory } from './researchMemoryStore.js';
+import { settleDueForecasts, syncProbabilisticForecasts } from './probabilisticForecastStore.js';
+import { syncForecastCrossSections } from './forecastV2Store.js';
+import { scopeQueueToLiveUniverse } from './confluenceCandidateScope.js';
+import { buildEvidenceConfirmedConvictionRanking } from './evidenceConfirmedConviction.js';
+import { indiaTradingDayAfterClose } from './dailyForecastSchedule.js';
+import { sessionState } from './liveAlphaSession.js';
+
+const CONVICTION_INTERVAL_MS = 30 * 60_000;
+let timer = null;
+let state = { enabled: false, status: 'disabled', last_run: null, last_capture: null, last_completion: null, last_error: null };
+
+export async function runConfluenceValidationCycle() {
+  if (state.status === 'running') return state;
+  state = { ...state, status: 'running', last_error: null };
+  try {
+    const [workspace, universe] = await Promise.all([getLiveAlphaWorkspace(), loadLiveAlphaUniverse()]);
+    const research = await getResearchEvidence({ workspace, limit: 25 });
+    const queue = scopeQueueToLiveUniverse(
+      buildConfluenceQueue({ workspace, research: research.evidence, limit: 500 }),
+      universe,
+    );
+    const conviction = buildEvidenceConfirmedConvictionRanking(queue, { limit: 500 });
+    const market = sessionState(new Date());
+    // A ranking is 500 rows. Saving one every five minutes, weekends included,
+    // would add about 144,000 rows a day that differ little; every 30 minutes
+    // of the session keeps the intraday history at about 6,500.
+    const convictionDue = market.open && (!state.last_conviction_saved_at
+      || Date.now() - Date.parse(state.last_conviction_saved_at) >= CONVICTION_INTERVAL_MS);
+    // A newly deployed app may briefly run before its database migration is
+    // applied. Keep validation, memory and forecast maintenance alive while
+    // surfacing the conviction persistence error in scheduler health.
+    const convictionSave = !convictionDue
+      ? { status: 'skipped', reason: market.open ? 'saved_within_30_minutes' : market.reason, rankings: 0 }
+      : await saveEvidenceConvictionRanking(conviction).catch((error) => ({
+        status: error.status === 404 ? 'database_setup_required' : 'degraded',
+        error: error.message,
+        rankings: 0,
+      }));
+    if (convictionDue && convictionSave.run_id) state.last_conviction_saved_at = new Date().toISOString();
+    // Outside the session the live anchors are the last session's prices, and
+    // an event captured from them measures nothing.
+    const capture = market.open
+      ? await saveConfluenceEvents(queue, universe)
+      : { skipped: true, reason: market.reason, events: 0, outcomes: 0 };
+    // Each maintenance step fails on its own. A statement timeout in outcome
+    // completion (19 Sep 2026) used to abort the cycle, so forecasts were
+    // never generated or scored behind it.
+    const stepErrors = {};
+    const step = async (name, run) => {
+      try { return await run(); }
+      catch (error) { stepErrors[name] = String(error?.message || error).slice(0, 300); return { status: 'failed', error: stepErrors[name] }; }
+    };
+    const completion = await step('completion', () => completeDueConfluenceOutcomes());
+    const memory = await step('memory', () => syncResearchMemory());
+    const forecastDate = indiaTradingDayAfterClose();
+    const forecasts = forecastDate && state.last_daily_forecast_date !== forecastDate
+      ? await step('forecast_sync', () => syncProbabilisticForecasts())
+      : { status: forecastDate ? 'already_completed_today' : 'waiting_for_15_40_ist', forecast_date: forecastDate || null, snapshots_created: 0, forecasts_created: 0 };
+    const forecastOutcomes = await step('forecast_settlement', () => settleDueForecasts());
+    const crossSections = await step('cross_sections', () => syncForecastCrossSections());
+    const forecastsDone = forecastDate && !['waiting_for_15_40_ist', 'failed'].includes(forecasts.status);
+    const failed = Object.keys(stepErrors);
+    state = { ...state, status: failed.length ? 'degraded' : 'idle', last_run: new Date().toISOString(), last_error: failed.length ? `${failed.join(', ')} failed` : null, step_errors: stepErrors, last_conviction: convictionSave, last_capture: capture, last_completion: completion, last_memory_sync: memory, last_forecast_sync: forecasts, last_daily_forecast_date: forecastsDone ? forecastDate : state.last_daily_forecast_date, last_forecast_completion: forecastOutcomes, last_cross_section_sync: crossSections };
+  } catch (error) {
+    state = { ...state, status: error.status === 404 ? 'database_setup_required' : 'degraded', last_run: new Date().toISOString(), last_error: error.message };
+  }
+  return state;
+}
+
+export function startConfluenceValidationScheduler() {
+  const enabled = String(process.env.CONFLUENCE_VALIDATION_ENABLED ?? process.env.LIVE_ALPHA_SHADOW_ENABLED ?? '').toLowerCase() === 'true';
+  if (!enabled || timer) { state.enabled = enabled; return state; }
+  state = { ...state, enabled: true, status: 'idle' };
+  const tick = () => runConfluenceValidationCycle().catch((error) => { state = { ...state, status: 'degraded', last_error: error.message }; });
+  timer = setInterval(tick, 5 * 60_000); timer.unref?.();
+  const firstDelay = setTimeout(tick, 45_000);
+  firstDelay.unref?.();
+  return state;
+}
+
+export function getConfluenceValidationStatus() { return { ...state, research_only: true, execution_enabled: false }; }

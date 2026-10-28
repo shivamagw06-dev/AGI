@@ -1,0 +1,67 @@
+{
+  "engine": "E10",
+  "version": "1.0.0",
+  "model_version": "e10-mv-subset-0.1.0",
+  "as_of": "2026-07-24",
+  "universe_id": "NIFTY500_LONG_ONLY_DEMO",
+  "symbol": null,
+  "score": {
+    "raw": 0.11,
+    "normalized_0_100": null,
+    "normalized_signed": null,
+    "unit": "other"
+  },
+  "confidence": {
+    "value": 0.58,
+    "components": {
+      "views_confidence": 0.68,
+      "e14_confidence_adjustment": 0.85
+    },
+    "method_version": "conf-1.0"
+  },
+  "reliability": {
+    "sample_size": 40,
+    "historical_accuracy": null,
+    "stability": null
+  },
+  "metadata": {
+    "e10_views_source": "e03",
+    "mode": "M0",
+    "expected_volatility": 0.11,
+    "gross_exposure": 0.95,
+    "net_exposure": 0.95,
+    "e14_size_mult": 0.75,
+    "weights": {
+      "RELIANCE": 0.04,
+      "TCS": 0.03
+    }
+  },
+  "evidence": {
+    "positive": [
+      {
+        "id": "e10_pos_views",
+        "claim": "Views sourced from E03 under M0 incumbent mode"
+      }
+    ],
+    "negative": [],
+    "contradictions": [],
+    "unknowns": [],
+    "risks": [
+      {
+        "id": "e10_risk_e14",
+        "claim": "E14 size multiplier applied to recommended weights"
+      }
+    ],
+    "missing_data": []
+  },
+  "explanation": {
+    "summary": "Illustrative long-only research portfolio using E03 views with E14 caps.",
+    "top_drivers": ["E03_views", "E14_caps"],
+    "falsifiers": ["e14_block_promotion", "optimizer_infeasible_unresolved"]
+  },
+  "warnings": ["research_only_not_advice"],
+  "stale_inputs": [],
+  "input_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+  "hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+  "timestamp_generated": "2026-07-24T19:00:00+05:30"
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-26",
+  "methodology": "Dated ownership observations. No trade execution, cash-flow inference or recommendation. Performance starts at the first completed session after public tracking registration; it is not the manager's return.",
+  "observations": [
+    {
+      "id": "swiggy-mf-fpi-2026q3-v1", "country": "IN", "symbol": "SWIGGY.NS", "benchmark": "^NSEI", "currency": "INR", "stock": "Swiggy", "period": "30 Sep 2026 vs 30 Jun 2026",
+      "title": "Domestic mutual funds and foreign investors diverged",
+      "fact": "Mutual-fund ownership rose from 22.77% to 29.00%; foreign institutional ownership fell from 13.96% to 8.86%.",
+      "interpretation": "Domestic ownership support strengthened while foreign ownership declined. This is not unanimous institutional agreement.",
+      "watch": "Operating performance, cash consumption and profitability. Disclosures do not establish investor motives or money moving from another stock.",
+      "verification": "Original exchange filings checked",
+      "sources": [
+        {"label": "June exchange filing", "url": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_1872026114258_SP.html"},
+        {"label": "September exchange filing", "url": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/544285_13102026113258_SP.html"}
+      ]
+    },
+    {
+      "id": "pnbhousing-mixed-2026q3-v1", "country": "IN", "symbol": "PNBHOUSING.NS", "benchmark": "^NSEI", "currency": "INR", "stock": "PNB Housing Finance", "period": "30 Sep 2026 vs 30 Jun 2026",
+      "title": "Mixed positioning across named investors",
+      "fact": "ICICI Prudential Focus Equity Fund: 2.85% to 3.19%; SBI Life: 2.52% to 2.69%; Franklin India Small Cap Fund: 2.33% to 1.37%; HDFC Multi Cap Fund: 2.38% to 2.32%.",
+      "interpretation": "Increases and reductions coexist. HDFC Mutual Fund and HDFC Life must be considered separately; newly disclosed insurance ownership does not prove a new purchase.",
+      "watch": "Loan growth, funding costs, margins and asset quality. These are AGI research priorities, not the investors' stated reasons.",
+      "verification": "Original company filings checked",
+      "sources": [
+        {"label": "Company filing archive", "url": "https://www.pnbhousing.com/investors/shareholding-pattern"},
+        {"label": "June filing", "url": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20June,%202026"},
+        {"label": "September filing", "url": "https://www.pnbhousing.com/documents/d/guest/Shareholding%20Pattern%20for%20the%20Quarter%20ended%2030th%20September,%202026"}
+      ]
+    },
+    {
+      "id": "appaloosa-tsm-2026q2-v1", "country": "US", "symbol": "TSM", "benchmark": "^GSPC", "currency": "USD", "stock": "TSM", "period": "30 Jun 2026 vs 31 Mar 2026",
+      "title": "Appaloosa reported more TSM shares",
+      "fact": "Reported sponsored ADS holdings increased from 1,327,500 to 1,650,000, approximately 24.3%.",
+      "interpretation": "The reported share count increased. This does not establish current October positioning or the manager's net exposure.",
+      "watch": "Earnings, valuation and subsequent filings. 13F omits short positions and many other assets.",
+      "verification": "Original SEC information tables checked",
+      "sources": [
+        {"label": "March SEC table", "url": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/xslForm13F_X02/Form13FInfoTable.xml"},
+        {"label": "June SEC table", "url": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/xslForm13F_X02/Form13FInfoTable.xml"}
+      ]
+    },
+    {
+      "id": "appaloosa-micron-2026q2-v1", "country": "US", "symbol": "MU", "benchmark": "^GSPC", "currency": "USD", "stock": "Micron", "period": "30 Jun 2026 vs 31 Mar 2026",
+      "title": "Appaloosa reported fewer Micron shares",
+      "fact": "Reported holdings declined from 1,665,000 to 975,000 shares, approximately 41.4%.",
+      "interpretation": "Reported share counts fell. Portfolio weight alone is insufficient to infer buying because market prices also change.",
+      "watch": "Subsequent disclosures and operating results. A historical reduction is not a current short recommendation.",
+      "verification": "Original SEC information tables checked",
+      "sources": [
+        {"label": "March SEC table", "url": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000002/xslForm13F_X02/Form13FInfoTable.xml"},
+        {"label": "June SEC table", "url": "https://www.sec.gov/Archives/edgar/data/1656456/000165645626000003/xslForm13F_X02/Form13FInfoTable.xml"}
+      ]
+    }
+  ]
+}

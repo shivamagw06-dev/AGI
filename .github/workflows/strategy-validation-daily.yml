@@ -1,0 +1,85 @@
+name: Daily strategy validation evidence
+
+# Captures what AGI actually knows after the market close. This workflow never
+# backdates legacy facts, promotes a strategy or places an order.
+
+on:
+  schedule:
+    # 13:15 UTC = 18:45 IST, weekdays. Runs after daily valuation collection.
+    - cron: '15 13 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report candidates without writing evidence'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: daily-strategy-validation-evidence
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Require engine credential
+        env:
+          ENGINE_TOKEN: ${{ secrets.INTELLIGENCE_ENGINE_TOKEN }}
+        run: |
+          if [ -z "$ENGINE_TOKEN" ]; then
+            echo "::error::INTELLIGENCE_ENGINE_TOKEN is not configured"
+            exit 1
+          fi
+
+      - name: Capture prospective evidence
+        env:
+          ENGINE_TOKEN: ${{ secrets.INTELLIGENCE_ENGINE_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          if [ "$DRY_RUN" = 'true' ]; then
+            BODY='{"dry_run":true,"actor":"daily_validation_cron"}'
+          else
+            BODY='{"confirm":"CAPTURE_PROSPECTIVE_EVIDENCE","actor":"daily_validation_cron"}'
+          fi
+          code="$(curl -sS --max-time 2400 -o capture.json -w '%{http_code}' \
+            -X POST "$ENGINE/strategy-lab/prospective/capture" \
+            -H 'Content-Type: application/json' \
+            -H "X-AGI-Intelligence-Token: $ENGINE_TOKEN" \
+            -d "$BODY")"
+          if [ "$code" != '200' ]; then
+            cat capture.json || true
+            echo "::error::prospective capture returned HTTP $code"
+            exit 1
+          fi
+
+      - name: Verify report is explicit and fail-closed
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          result = json.load(open('capture.json'))
+          if not result.get('ok'):
+              sys.exit('::error::capture did not report ok')
+          readiness = result.get('readiness') or {}
+          if readiness.get('capital_allocation_allowed') is not False:
+              sys.exit('::error::prospective evidence must not allocate capital')
+          strategies = readiness.get('strategies') or []
+          if len(strategies) != 14:
+              sys.exit(f'::error::expected 14 governed strategies, got {len(strategies)}')
+          print('mode:', result.get('mode'))
+          print('candidates:', result.get('candidates'))
+          print('universe:', result.get('universe'))
+          print('gates:', readiness.get('gates'))
+          print('report_hash:', readiness.get('report_hash'))
+          blocked = sum(row.get('data_gate') != 'PASSED' for row in strategies)
+          print(f'governed strategies: {len(strategies)}, data-blocked: {blocked}')
+          PY
+
+      - name: Publish daily evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategy-validation-evidence-${{ github.run_id }}
+          path: capture.json
+          retention-days: 90

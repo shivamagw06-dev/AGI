@@ -1,0 +1,37 @@
+{
+  "company": "AGI",
+  "sprint": "3.5",
+  "name": "Temporal Integrity & Replay Certification",
+  "tirc_version": "temporal-integrity-v1.0.0",
+  "status": "CERTIFIED",
+  "commit": "3766ae12",
+  "metrics": {
+    "future_leakage_count": 0,
+    "replay_accuracy_historical_pct": 100.0,
+    "iel_pass_pct": 99.9,
+    "cio25_pass_pct": 100.0
+  },
+  "compare_pr234": {
+    "pass_pct": {
+      "before": 98.44,
+      "after": 99.9
+    },
+    "future_leakage": {
+      "before": 15,
+      "after": 0
+    },
+    "replay_historical": {
+      "before": 73.21,
+      "after": 100.0
+    },
+    "intent": {
+      "before": 99.8,
+      "after": 99.8
+    },
+    "framework": {
+      "before": 97.76,
+      "after": 97.76
+    }
+  },
+  "fabricated": false
+}

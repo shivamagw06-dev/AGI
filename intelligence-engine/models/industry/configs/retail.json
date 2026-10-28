@@ -1,0 +1,19 @@
+{
+  "industry_id": "retail",
+  "name": "Retail",
+  "demand_drivers": ["consumption", "urbanisation", "discretionary_income"],
+  "supply_drivers": ["store_network", "supply_chain", "private_label"],
+  "capacity": "stores_and_omni_channel",
+  "pricing": "promotions_and_mix",
+  "margins": {"gross": "category_mix"},
+  "competition": "offline_online",
+  "regulation": ["fdi", "labour", "local"],
+  "capital_intensity": "medium",
+  "typical_risks": ["same_store_sales", "inventory", "competition", "rent"],
+  "important_kpis": ["sss_g", "gross_margin", "inventory_days", "store_adds"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "dcf_fcff", "relative_pe"],
+  "historical_cycles": ["covid_channel_shift"],
+  "industry_structure": "fragmented_with_consolidators",
+  "business_characteristics": ["working_capital", "brand_and_location"],
+  "capital_cycle": "store_expansion"
+}

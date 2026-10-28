@@ -1,0 +1,22 @@
+{
+  "case_id": "bhartiartl_fy2025_annual",
+  "company_id": "nse:BHARTIARTL",
+  "company_name": "Bharti Airtel",
+  "currency": "INR",
+  "document_hash": "2c75f9435b698b75d6b447243d6766541e34baf8abaceffa455ac4a14e3a6518",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Telecom",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "telecom",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "BHARTIARTL",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

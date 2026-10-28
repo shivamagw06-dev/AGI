@@ -1,0 +1,19 @@
+{
+  "industry_id": "cement",
+  "name": "Cement",
+  "demand_drivers": ["housing", "infra", "real_estate"],
+  "supply_drivers": ["capacity", "fuel", "logistics"],
+  "capacity": "mt_utilisation",
+  "pricing": "regional_pricing_power",
+  "margins": {"ebitda_per_ton": "cycle_and_region"},
+  "competition": "regional_oligopoly",
+  "regulation": ["environment", "mining"],
+  "capital_intensity": "high",
+  "typical_risks": ["fuel", "overcapacity", "regional_price_wars"],
+  "important_kpis": ["volumes", "realisations", "ebitda_per_ton", "utilisation"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "replacement_cost", "dcf_fcff"],
+  "historical_cycles": ["capacity_glut", "infra_upcycle"],
+  "industry_structure": "regional_oligopoly",
+  "business_characteristics": ["logistics_sensitive", "pricing_discipline_matters"],
+  "capital_cycle": "capacity_vs_demand_gap"
+}

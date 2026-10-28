@@ -1,0 +1,943 @@
+{
+  "REDINGTON": {
+    "src": "/company-logos/REDINGTON.svg",
+    "name": "Redington Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/redington-india.svg"
+  },
+  "SKYGOLD": {
+    "src": "/company-logos/SKYGOLD.svg",
+    "name": "Sky Gold and Diamonds Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/sky-gold-limited.svg"
+  },
+  "SOUTHBANK": {
+    "src": "/company-logos/SOUTHBANK.svg",
+    "name": "South Indian Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/south-indian-bank.svg"
+  },
+  "EMMVEE": {
+    "src": "/company-logos/EMMVEE.svg",
+    "name": "Emmvee Photovoltaic Power Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/emmvee-photovoltaic-power-limited.svg"
+  },
+  "MAHABANK": {
+    "src": "/company-logos/MAHABANK.svg",
+    "name": "Bank of Maharashtra",
+    "source": "https://s3-symbol-logo.tradingview.com/bank-of-maharashtra.svg"
+  },
+  "QUESS": {
+    "src": "/company-logos/QUESS.svg",
+    "name": "Quess Corp. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/quess.svg"
+  },
+  "LUMAXIND": {
+    "src": "/company-logos/LUMAXIND.svg",
+    "name": "Lumax Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/lumax-industries-ltd.svg"
+  },
+  "PGIL": {
+    "src": "/company-logos/PGIL.svg",
+    "name": "Pearl Global Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pearl-global-indus.svg"
+  },
+  "AKUMS": {
+    "src": "/company-logos/AKUMS.svg",
+    "name": "Akums Drugs and Pharmaceuticals Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/akums-drugs-and-pharma-l.svg"
+  },
+  "DCBBANK": {
+    "src": "/company-logos/DCBBANK.svg",
+    "name": "DCB Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/dcb-bank.svg"
+  },
+  "IIFL": {
+    "src": "/company-logos/IIFL.svg",
+    "name": "IIFL Finance Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/iifl.svg"
+  },
+  "FEDFINA": {
+    "src": "/company-logos/FEDFINA.svg",
+    "name": "Fedbank Financial Services Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/fedbank-financial-ser-l.svg"
+  },
+  "KARURVYSYA": {
+    "src": "/company-logos/KARURVYSYA.svg",
+    "name": "Karur Vysya Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/karur-vysya-bank.svg"
+  },
+  "UJJIVANSFB": {
+    "src": "/company-logos/UJJIVANSFB.svg",
+    "name": "Ujjivan Small Finance Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/ujjivan-small-financ-bank.svg"
+  },
+  "PNGJL": {
+    "src": "/company-logos/PNGJL.svg",
+    "name": "P N Gadgil Jewellers Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/p-n-gadgil-jewellers-ltd.svg"
+  },
+  "THANGAMAYL": {
+    "src": "/company-logos/THANGAMAYL.svg",
+    "name": "Thangamayil Jewellery Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/thangamayil-jewell.svg"
+  },
+  "ALIVUS": {
+    "src": "/company-logos/ALIVUS.svg",
+    "name": "Alivus Life Sciences Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/glenmark-life-science.svg"
+  },
+  "UNIONBANK": {
+    "src": "/company-logos/UNIONBANK.svg",
+    "name": "Union Bank of India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/union-bank-of-india.svg"
+  },
+  "RRKABEL": {
+    "src": "/company-logos/RRKABEL.svg",
+    "name": "RR Kabel Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/r-r-kabel-ltd.svg"
+  },
+  "EQUITASBNK": {
+    "src": "/company-logos/EQUITASBNK.svg",
+    "name": "Equitas Small Finance Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/equitas-bank.svg"
+  },
+  "SJS": {
+    "src": "/company-logos/SJS.svg",
+    "name": "S.J.S. Enterprises Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/sjs-enterprises.svg"
+  },
+  "ROLEXRINGS": {
+    "src": "/company-logos/ROLEXRINGS.svg",
+    "name": "Rolex Rings Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/rolex-rings-limited.svg"
+  },
+  "CUB": {
+    "src": "/company-logos/CUB.svg",
+    "name": "City Union Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/city-union-bank.svg"
+  },
+  "FINCABLES": {
+    "src": "/company-logos/FINCABLES.svg",
+    "name": "Finolex Cables Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/finolex-cables.svg"
+  },
+  "LLOYDSME": {
+    "src": "/company-logos/LLOYDSME.svg",
+    "name": "Lloyds Metals & Energy Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/lloyds-metals-and-energy-ltd.svg"
+  },
+  "BHARTIARTL": {
+    "src": "/company-logos/BHARTIARTL.svg",
+    "name": "Bharti Airtel Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/airtel.svg"
+  },
+  "AXISBANK": {
+    "src": "/company-logos/AXISBANK.svg",
+    "name": "Axis Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/axis-bank.svg"
+  },
+  "DIVISLAB": {
+    "src": "/company-logos/DIVISLAB.svg",
+    "name": "Divi's Laboratories Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/divis.svg"
+  },
+  "TITAN": {
+    "src": "/company-logos/TITAN.svg",
+    "name": "Titan Company Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/titan-company.svg"
+  },
+  "SUNPHARMA": {
+    "src": "/company-logos/SUNPHARMA.svg",
+    "name": "Sun Pharmaceutical Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/sun-pharmaceutical.svg"
+  },
+  "OFSS": {
+    "src": "/company-logos/OFSS.svg",
+    "name": "Oracle Financial Services Software Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/oracle.svg"
+  },
+  "TMPV": {
+    "src": "/company-logos/TMPV.svg",
+    "name": "Tata Motors Passenger Vehicles Ltd",
+    "source": "https://www.tatamotors.com/wp-content/themes/TataMotors/images/Tata-Motors-logo.svg"
+  },
+  "PFC": {
+    "src": "/company-logos/PFC.svg",
+    "name": "Power Finance Corporation Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/power-finance.svg"
+  },
+  "APOLLOHOSP": {
+    "src": "/company-logos/APOLLOHOSP.svg",
+    "name": "Apollo Hospitals Enterprise Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/apollo-hospitals.svg"
+  },
+  "NESTLEIND": {
+    "src": "/company-logos/NESTLEIND.svg",
+    "name": "Nestle India Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/nestle.svg"
+  },
+  "CANBK": {
+    "src": "/company-logos/CANBK.svg",
+    "name": "Canara Bank",
+    "source": "https://s3-symbol-logo.tradingview.com/canara-bank.svg"
+  },
+  "LUPIN": {
+    "src": "/company-logos/LUPIN.svg",
+    "name": "Lupin Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/lupin.svg"
+  },
+  "FEDERALBNK": {
+    "src": "/company-logos/FEDERALBNK.svg",
+    "name": "Federal Bank Ltd. (India)",
+    "source": "https://s3-symbol-logo.tradingview.com/fed-bank.svg"
+  },
+  "PNB": {
+    "src": "/company-logos/PNB.svg",
+    "name": "Punjab National Bank",
+    "source": "https://s3-symbol-logo.tradingview.com/punjab-natl-bank.svg"
+  },
+  "MARICO": {
+    "src": "/company-logos/MARICO.svg",
+    "name": "Marico Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/marico.svg"
+  },
+  "AUROPHARMA": {
+    "src": "/company-logos/AUROPHARMA.svg",
+    "name": "Aurobindo Pharma Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/aurobindo.svg"
+  },
+  "YESBANK": {
+    "src": "/company-logos/YESBANK.svg",
+    "name": "Yes Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/yes-bank.svg"
+  },
+  "HINDALCO": {
+    "src": "/company-logos/HINDALCO.svg",
+    "name": "Hindalco Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/hindalco.svg"
+  },
+  "COALINDIA": {
+    "src": "/company-logos/COALINDIA.svg",
+    "name": "Coal India Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/coal-india.svg"
+  },
+  "VEDL": {
+    "src": "/company-logos/VEDL.svg",
+    "name": "Vedanta Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/vedanta.svg"
+  },
+  "ONGC": {
+    "src": "/company-logos/ONGC.svg",
+    "name": "Oil & Natural Gas Corp. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/oil-and-natural-gas.svg"
+  },
+  "BANKBARODA": {
+    "src": "/company-logos/BANKBARODA.svg",
+    "name": "Bank of Baroda",
+    "source": "https://s3-symbol-logo.tradingview.com/bank-of-baroda.svg"
+  },
+  "HINDPETRO": {
+    "src": "/company-logos/HINDPETRO.svg",
+    "name": "Hindustan Petroleum Corporation Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/hindustan-petroleum.svg"
+  },
+  "RECLTD": {
+    "src": "/company-logos/RECLTD.svg",
+    "name": "REC Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/rec.svg"
+  },
+  "BPCL": {
+    "src": "/company-logos/BPCL.svg",
+    "name": "Bharat Petroleum Corporation Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bharat-petroleum.svg"
+  },
+  "GAIL": {
+    "src": "/company-logos/GAIL.svg",
+    "name": "GAIL (India) Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/gail.svg"
+  },
+  "IOC": {
+    "src": "/company-logos/IOC.svg",
+    "name": "Indian Oil Corp. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/indian-oil.svg"
+  },
+  "NMDC": {
+    "src": "/company-logos/NMDC.svg",
+    "name": "NMDC Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/nmdc.svg"
+  },
+  "OIL": {
+    "src": "/company-logos/OIL.svg",
+    "name": "Oil India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/oil-india.svg"
+  },
+  "INDIGO": {
+    "src": "/company-logos/INDIGO.svg",
+    "name": "InterGlobe Aviation Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/interglobe-aviatio.svg"
+  },
+  "CGPOWER": {
+    "src": "/company-logos/CGPOWER.svg",
+    "name": "CG Power & Industrial Solutions Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/cg-power-and-industrial-solutions.svg"
+  },
+  "TRENT": {
+    "src": "/company-logos/TRENT.svg",
+    "name": "Trent Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/trent.svg"
+  },
+  "BHARATFORG": {
+    "src": "/company-logos/BHARATFORG.svg",
+    "name": "Bharat Forge Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/bharat-forge.svg"
+  },
+  "AUBANK": {
+    "src": "/company-logos/AUBANK.svg",
+    "name": "AU Small Finance Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/au-small-finance-b.svg"
+  },
+  "BSE": {
+    "src": "/company-logos/BSE.svg",
+    "name": "BSE Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/bse.svg"
+  },
+  "INFY": {
+    "src": "/company-logos/INFY.svg",
+    "name": "Infosys Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/infosys.svg"
+  },
+  "TCS": {
+    "src": "/company-logos/TCS.svg",
+    "name": "Tata Consultancy Services Limited",
+    "source": "https://cdn.simpleicons.org/tcs",
+    "officialReference": "https://www.tcs.com/who-we-are/tcs-brand/tcs-logo"
+  },
+  "DIXON": {
+    "src": "/company-logos/DIXON.svg",
+    "name": "Dixon Technologies (India) Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/dixon-technologie.svg"
+  },
+  "GVT&D": {
+    "src": "/company-logos/GVT&D.svg",
+    "name": "GE Vernova T&D India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/ge-t-and-d-india-ltd.svg"
+  },
+  "TVSMOTOR": {
+    "src": "/company-logos/TVSMOTOR.svg",
+    "name": "TVS Motor Company Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/tvs.svg"
+  },
+  "TMCV": {
+    "src": "/company-logos/TMCV.svg",
+    "name": "Tata Motors Limited",
+    "source": "https://www.tatamotors.com/wp-content/themes/TataMotors/images/Tata-Motors-logo.svg"
+  },
+  "HINDUNILVR": {
+    "src": "/company-logos/HINDUNILVR.svg",
+    "name": "Hindustan Unilever Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/unilever.svg"
+  },
+  "SUZLON": {
+    "src": "/company-logos/SUZLON.svg",
+    "name": "Suzlon Energy Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/suzlon-energy.svg"
+  },
+  "HDFCAMC": {
+    "src": "/company-logos/HDFCAMC.svg",
+    "name": "HDFC Asset Management Co. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/hdfc.svg"
+  },
+  "BRITANNIA": {
+    "src": "/company-logos/BRITANNIA.svg",
+    "name": "Britannia Industries Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/britannia.svg"
+  },
+  "PAGEIND": {
+    "src": "/company-logos/PAGEIND.svg",
+    "name": "Page Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/page-industries.svg"
+  },
+  "COLPAL": {
+    "src": "/company-logos/COLPAL.svg",
+    "name": "Colgate-Palmolive (India) Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/colgate-palmolive.svg"
+  },
+  "MCX": {
+    "src": "/company-logos/MCX.svg",
+    "name": "Multi Commodity Exchange of India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/multi-commodity-exchange-of-india-limited.svg"
+  },
+  "PAYTM": {
+    "src": "/company-logos/PAYTM.svg",
+    "name": "One 97 Communications Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/one-97-communications.svg"
+  },
+  "IDEA": {
+    "src": "/company-logos/IDEA.svg",
+    "name": "Vodafone Idea Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/vodafone-idea.svg"
+  },
+  "ADANIENT": {
+    "src": "/company-logos/ADANIENT.png",
+    "name": "Adani Enterprises Limited",
+    "source": "https://www.adanienterprises.com/-/media/51BCCD0BCDD0451EBB3081919B8BE8A1.ashx"
+  },
+  "BHEL": {
+    "src": "/company-logos/BHEL.svg",
+    "name": "Bharat Heavy Electricals Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bharat-heavy-electricals.svg"
+  },
+  "POWERINDIA": {
+    "src": "/company-logos/POWERINDIA.svg",
+    "name": "Hitachi Energy India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/abb-power-products.svg"
+  },
+  "SOLARINDS": {
+    "src": "/company-logos/SOLARINDS.svg",
+    "name": "Solar Industries India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/solar-industries.svg"
+  },
+  "MOTHERSON": {
+    "src": "/company-logos/MOTHERSON.svg",
+    "name": "Samvardhana Motherson International Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/motherson.svg"
+  },
+  "INDUSINDBK": {
+    "src": "/company-logos/INDUSINDBK.svg",
+    "name": "IndusInd Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/indusind-bank.svg"
+  },
+  "NYKAA": {
+    "src": "/company-logos/NYKAA.svg",
+    "name": "FSN E-Commerce Ventures Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/fsn-e-commerce-ventures.svg"
+  },
+  "IDFCFIRSTB": {
+    "src": "/company-logos/IDFCFIRSTB.svg",
+    "name": "IDFC First Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/idfc-first-bank.svg"
+  },
+  "BOSCHLTD": {
+    "src": "/company-logos/BOSCHLTD.svg",
+    "name": "Bosch Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bosch.svg"
+  },
+  "HDFCBANK": {
+    "src": "/company-logos/HDFCBANK.svg",
+    "name": "HDFC Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/hdfc-bank.svg"
+  },
+  "ICICIBANK": {
+    "src": "/company-logos/ICICIBANK.svg",
+    "name": "ICICI Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/icici-bank.svg"
+  },
+  "RELIANCE": {
+    "src": "/company-logos/RELIANCE.svg",
+    "name": "Reliance Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/reliance-industrial-infrastructure.svg"
+  },
+  "KOTAKBANK": {
+    "src": "/company-logos/KOTAKBANK.svg",
+    "name": "Kotak Mahindra Bank Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/kotak-mahindra-ast.svg"
+  },
+  "ITC": {
+    "src": "/company-logos/ITC.svg",
+    "name": "ITC Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/itc.svg"
+  },
+  "NTPC": {
+    "src": "/company-logos/NTPC.svg",
+    "name": "NTPC Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/ntpc.svg"
+  },
+  "POWERGRID": {
+    "src": "/company-logos/POWERGRID.svg",
+    "name": "Power Grid Corporation of India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/power-grid.svg"
+  },
+  "SBILIFE": {
+    "src": "/company-logos/SBILIFE.svg",
+    "name": "SBI Life Insurance Co. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/sbi-life-insurance.svg"
+  },
+  "CIPLA": {
+    "src": "/company-logos/CIPLA.svg",
+    "name": "Cipla Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/cipla.svg"
+  },
+  "SWIGGY": {
+    "src": "/company-logos/SWIGGY.svg",
+    "name": "Swiggy Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/swiggy-ltd.svg"
+  },
+  "ADANIPOWER": {
+    "src": "/company-logos/ADANIPOWER.png",
+    "name": "Adani Power Limited",
+    "source": "https://www.adanipower.com/-/media/C7B41EE9FFC747C9BC03FEC2514B83E8.ashx"
+  },
+  "JIOFIN": {
+    "src": "/company-logos/JIOFIN.svg",
+    "name": "Jio Financial Services Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/jio-fin-services-ltd.svg"
+  },
+  "POLICYBZR": {
+    "src": "/company-logos/POLICYBZR.svg",
+    "name": "PB Fintech Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pb-fintech.svg"
+  },
+  "WAAREEENER": {
+    "src": "/company-logos/WAAREEENER.svg",
+    "name": "WAAREE Energies Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/waaree-energies-limited.svg"
+  },
+  "ENRIN": {
+    "src": "/company-logos/ENRIN.svg",
+    "name": "Siemens Energy India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/siemens-energy.svg"
+  },
+  "GMRAIRPORT": {
+    "src": "/company-logos/GMRAIRPORT.svg",
+    "name": "GMR Airports Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/gmr.svg"
+  },
+  "VMM": {
+    "src": "/company-logos/VMM.svg",
+    "name": "Vishal Mega Mart Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/vishal-mega-mart-limited.svg"
+  },
+  "JSWENERGY": {
+    "src": "/company-logos/JSWENERGY.svg",
+    "name": "JSW Energy Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/jsw-energy.svg"
+  },
+  "PRESTIGE": {
+    "src": "/company-logos/PRESTIGE.svg",
+    "name": "Prestige Estates Projects Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/prestige-estates-projects.svg"
+  },
+  "VOLTAS": {
+    "src": "/company-logos/VOLTAS.svg",
+    "name": "Voltas Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/voltas.svg"
+  },
+  "TIINDIA": {
+    "src": "/company-logos/TIINDIA.svg",
+    "name": "Tube Investments of India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/tube-investments-of-india.svg"
+  },
+  "AMBUJACEM": {
+    "src": "/company-logos/AMBUJACEM.svg",
+    "name": "Ambuja Cements Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/ambuja-cements.svg"
+  },
+  "PIIND": {
+    "src": "/company-logos/PIIND.svg",
+    "name": "PI Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pi-industries.svg"
+  },
+  "DRREDDY": {
+    "src": "/company-logos/DRREDDY.svg",
+    "name": "Dr. Reddy's Laboratories Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/dr-reddys.svg"
+  },
+  "WIPRO": {
+    "src": "/company-logos/WIPRO.svg",
+    "name": "Wipro Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/wipro.svg"
+  },
+  "JSWSTEEL": {
+    "src": "/company-logos/JSWSTEEL.svg",
+    "name": "JSW Steel Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/jsw.svg"
+  },
+  "ETERNAL": {
+    "src": "/company-logos/ETERNAL.svg",
+    "name": "Eternal Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/zomato.svg"
+  },
+  "GRASIM": {
+    "src": "/company-logos/GRASIM.svg",
+    "name": "Grasim Industries Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/grasim.svg"
+  },
+  "ICICIPRULI": {
+    "src": "/company-logos/ICICIPRULI.svg",
+    "name": "ICICI Prudential Life Insurance Co. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/icici-prudential-life-insurance.svg"
+  },
+  "MARUTI": {
+    "src": "/company-logos/MARUTI.svg",
+    "name": "Maruti Suzuki India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/maruti-suzuki-india.svg"
+  },
+  "MUTHOOTFIN": {
+    "src": "/company-logos/MUTHOOTFIN.svg",
+    "name": "Muthoot Finance Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/muthoot-finance.svg"
+  },
+  "ICICIGI": {
+    "src": "/company-logos/ICICIGI.svg",
+    "name": "ICICI Lombard General Insurance Co. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/icici-lombard-gen.svg"
+  },
+  "GODREJCP": {
+    "src": "/company-logos/GODREJCP.svg",
+    "name": "Godrej Consumer Products Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/godrej.svg"
+  },
+  "HAVELLS": {
+    "src": "/company-logos/HAVELLS.svg",
+    "name": "Havells India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/havells.svg"
+  },
+  "DABUR": {
+    "src": "/company-logos/DABUR.svg",
+    "name": "Dabur India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/dabur.svg"
+  },
+  "SHREECEM": {
+    "src": "/company-logos/SHREECEM.svg",
+    "name": "Shree Cement Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/shree-cement.svg"
+  },
+  "LODHA": {
+    "src": "/company-logos/LODHA.svg",
+    "name": "Lodha Developers Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/macrotech-developers.svg"
+  },
+  "NATIONALUM": {
+    "src": "/company-logos/NATIONALUM.svg",
+    "name": "National Aluminium Co. Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/national-aluminum.svg"
+  },
+  "INOXWIND": {
+    "src": "/company-logos/INOXWIND.svg",
+    "name": "Inox Wind Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/inox-wind.svg"
+  },
+  "AEGISVOPAK": {
+    "src": "/company-logos/AEGISVOPAK.svg",
+    "name": "Aegis Vopak Terminals Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/aegis-vopak-terminals-ltd.svg"
+  },
+  "SHAILY": {
+    "src": "/company-logos/SHAILY.svg",
+    "name": "Shaily Engineering Plastics Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/shaily-eng-plastics-ltd.svg"
+  },
+  "ACUTAAS": {
+    "src": "/company-logos/ACUTAAS.svg",
+    "name": "Acutaas Chemicals Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/ami-organics-ltd.svg"
+  },
+  "NETWEB": {
+    "src": "/company-logos/NETWEB.svg",
+    "name": "Netweb Technologies India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/netweb-tech-india-ltd.svg"
+  },
+  "NEULANDLAB": {
+    "src": "/company-logos/NEULANDLAB.svg",
+    "name": "Neuland Laboratories Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/neuland-laboritie.svg"
+  },
+  "PIRAMALFIN": {
+    "src": "/company-logos/PIRAMALFIN.svg",
+    "name": "Piramal Finance Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/piramal.svg"
+  },
+  "NIVABUPA": {
+    "src": "/company-logos/NIVABUPA.svg",
+    "name": "Niva Bupa Health Insurance Company Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/niva-bupa-health-ins-co-l.svg"
+  },
+  "VIKRAMSOLR": {
+    "src": "/company-logos/VIKRAMSOLR.svg",
+    "name": "Vikram Solar Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/vikram-solar-limited.svg"
+  },
+  "PGEL": {
+    "src": "/company-logos/PGEL.svg",
+    "name": "PG Electroplast Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pg-electroplast-ltd.svg"
+  },
+  "ETHOSLTD": {
+    "src": "/company-logos/ETHOSLTD.svg",
+    "name": "Ethos Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/ethos-ltd.svg"
+  },
+  "MANORAMA": {
+    "src": "/company-logos/MANORAMA.svg",
+    "name": "Manorama Industries Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/manorama-industries-limited.svg"
+  },
+  "TARIL": {
+    "src": "/company-logos/TARIL.svg",
+    "name": "Transformers and Rectifiers (India) Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/transformers-and-rectifiers-i.svg"
+  },
+  "AVL": {
+    "src": "/company-logos/AVL.svg",
+    "name": "Aditya Vision Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/aditya-vision-ltd.svg"
+  },
+  "THYROCARE": {
+    "src": "/company-logos/THYROCARE.svg",
+    "name": "Thyrocare Technologies Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/thyrocare.svg"
+  },
+  "IKS": {
+    "src": "/company-logos/IKS.svg",
+    "name": "Inventurus Knowledge Solutions Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/inventurus-knowledge-solutions.svg"
+  },
+  "WELCORP": {
+    "src": "/company-logos/WELCORP.svg",
+    "name": "Welspun Corp Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/welspun.svg"
+  },
+  "AEGISLOG": {
+    "src": "/company-logos/AEGISLOG.svg",
+    "name": "Aegis Logistics Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/aegis-logistics.svg"
+  },
+  "MTARTECH": {
+    "src": "/company-logos/MTARTECH.svg",
+    "name": "MTAR Technologies Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/mtar-technologies-ltd.svg"
+  },
+  "EMIL": {
+    "src": "/company-logos/EMIL.svg",
+    "name": "Electronics Mart India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/electronics-mart-india-limited.svg"
+  },
+  "SENORES": {
+    "src": "/company-logos/SENORES.svg",
+    "name": "Senores Pharmaceuticals Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/senores-pharmaceuticals-limite.svg"
+  },
+  "LAURUSLABS": {
+    "src": "/company-logos/LAURUSLABS.svg",
+    "name": "Laurus Labs Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/laurus-labs.svg"
+  },
+  "RATEGAIN": {
+    "src": "/company-logos/RATEGAIN.svg",
+    "name": "RateGain Travel Technologies Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/rategain-travel-techn-ltd.svg"
+  },
+  "BAJAJCON": {
+    "src": "/company-logos/BAJAJCON.svg",
+    "name": "Bajaj Consumer Care Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bajaj-consumer-care.svg"
+  },
+  "VARROC": {
+    "src": "/company-logos/VARROC.svg",
+    "name": "Varroc Engineering Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/varroc.svg"
+  },
+  "SHILPAMED": {
+    "src": "/company-logos/SHILPAMED.svg",
+    "name": "Shilpa Medicare Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/shilpa-medicare.svg"
+  },
+  "ICIL": {
+    "src": "/company-logos/ICIL.svg",
+    "name": "Indo Count Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/indo-count-industries.svg"
+  },
+  "LT": {
+    "src": "/company-logos/LT.svg",
+    "name": "Larsen & Toubro Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/larsen-and-toubro.svg"
+  },
+  "SBIN": {
+    "src": "/company-logos/SBIN.svg",
+    "name": "State Bank of India",
+    "source": "https://s3-symbol-logo.tradingview.com/state-bank.svg"
+  },
+  "BAJFINANCE": {
+    "src": "/company-logos/BAJFINANCE.svg",
+    "name": "Bajaj Finance Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bajaj-finance.svg"
+  },
+  "PNBHOUSING": {
+    "src": "/company-logos/PNBHOUSING.svg",
+    "name": "PNB Housing Finance Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pnb-housing-finance.svg"
+  },
+  "LENSKART": {
+    "src": "/company-logos/LENSKART.svg",
+    "name": "Lenskart Solutions Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/lenskart-solutions-limited.svg"
+  },
+  "PIDILITIND": {
+    "src": "/company-logos/PIDILITIND.svg",
+    "name": "Pidilite Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/pidilite.svg"
+  },
+  "TATACONSUM": {
+    "src": "/company-logos/TATACONSUM.png",
+    "name": "Tata Consumer Products Limited",
+    "source": "https://www.tataconsumer.com/themes/custom/tcpl/logo.png"
+  },
+  "EXIDEIND": {
+    "src": "/company-logos/EXIDEIND.svg",
+    "name": "Exide Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/exide.svg"
+  },
+  "TIPSMUSIC": {
+    "src": "/company-logos/TIPSMUSIC.svg",
+    "name": "Tips Music Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/tips-industries-ltd.svg"
+  },
+  "GLAXO": {
+    "src": "/company-logos/GLAXO.svg",
+    "name": "GlaxoSmithKline Pharmaceuticals Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/glaxosmithkline.svg"
+  },
+  "CAMS": {
+    "src": "/company-logos/CAMS.svg",
+    "name": "Computer Age Management Services Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/computer-age-management-services-ltd.svg"
+  },
+  "BEL": {
+    "src": "/company-logos/BEL.svg",
+    "name": "Bharat Electronics Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bharat-electronics.svg"
+  },
+  "TRAVELFOOD": {
+    "src": "/company-logos/TRAVELFOOD.svg",
+    "name": "Travel Food Services Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/travel-food-services-ltd.svg"
+  },
+  "ABBOTINDIA": {
+    "src": "/company-logos/ABBOTINDIA.svg",
+    "name": "Abbott India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/abbott.svg"
+  },
+  "CUMMINSIND": {
+    "src": "/company-logos/CUMMINSIND.svg",
+    "name": "Cummins India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/cummins.svg"
+  },
+  "HCLTECH": {
+    "src": "/company-logos/HCLTECH.svg",
+    "name": "HCL Technologies Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/hcl-technologies.svg"
+  },
+  "INOXINDIA": {
+    "src": "/company-logos/INOXINDIA.svg",
+    "name": "INOX India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/inox-india-ltd.svg"
+  },
+  "ELGIEQUIP": {
+    "src": "/company-logos/ELGIEQUIP.svg",
+    "name": "ELGI Equipments Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/elgi.svg"
+  },
+  "ANTHEM": {
+    "src": "/company-logos/ANTHEM.svg",
+    "name": "Anthem Biosciences Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/anthem-biosciences-ltd.svg"
+  },
+  "HEROMOTOCO": {
+    "src": "/company-logos/HEROMOTOCO.svg",
+    "name": "Hero Motocorp Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/hero-motocorp.svg"
+  },
+  "GICRE": {
+    "src": "/company-logos/GICRE.svg",
+    "name": "General Insurance Corporation of India",
+    "source": "https://s3-symbol-logo.tradingview.com/general-insurance.svg"
+  },
+  "GRINFRA": {
+    "src": "/company-logos/GRINFRA.svg",
+    "name": "G R Infraprojects Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/g-r-infraprojects.svg"
+  },
+  "NCC": {
+    "src": "/company-logos/NCC.svg",
+    "name": "NCC Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/ncc.svg"
+  },
+  "SAIL": {
+    "src": "/company-logos/SAIL.svg",
+    "name": "Steel Authority of India Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/steel-authority-of-india.svg"
+  },
+  "ZEEL": {
+    "src": "/company-logos/ZEEL.svg",
+    "name": "Zee Entertainment Enterprises Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/zee-entertain.svg"
+  },
+  "CHAMBLFERT": {
+    "src": "/company-logos/CHAMBLFERT.svg",
+    "name": "Chambal Fertilisers & Chemicals Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/chambal-fertilisers-and-chemical.svg"
+  },
+  "BANKINDIA": {
+    "src": "/company-logos/BANKINDIA.svg",
+    "name": "Bank of India",
+    "source": "https://s3-symbol-logo.tradingview.com/bank-of-india.svg"
+  },
+  "BIRLACORPN": {
+    "src": "/company-logos/BIRLACORPN.svg",
+    "name": "Birla Corporation Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/birla.svg"
+  },
+  "CESC": {
+    "src": "/company-logos/CESC.svg",
+    "name": "CESC Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/cesc.svg"
+  },
+  "JSFB": {
+    "src": "/company-logos/JSFB.svg",
+    "name": "Jana Small Finance Bank Ltd",
+    "source": "https://s3-symbol-logo.tradingview.com/jana-small-fin-bank-ltd.svg"
+  },
+  "CSBBANK": {
+    "src": "/company-logos/CSBBANK.svg",
+    "name": "CSB Bank Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/csb-bank.svg"
+  },
+  "TRIVENI": {
+    "src": "/company-logos/TRIVENI.svg",
+    "name": "Triveni Engineering and Industries Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/triveni-engineering-and-industries.svg"
+  },
+  "KEC": {
+    "src": "/company-logos/KEC.svg",
+    "name": "KEC International Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/kec-international.svg"
+  },
+  "LICI": {
+    "src": "/company-logos/LICI.svg",
+    "name": "Life Insurance Corp. of India",
+    "source": "https://s3-symbol-logo.tradingview.com/life-insurance-corporation-of-india.svg"
+  },
+  "SHARDACROP": {
+    "src": "/company-logos/SHARDACROP.svg",
+    "name": "Sharda Cropchem Ltd.",
+    "source": "https://s3-symbol-logo.tradingview.com/sharda-cropchem.svg"
+  },
+  "GOLDBEES": {
+    "src": "/company-logos/GOLDBEES.svg",
+    "name": "Nippon India ETF Gold BeES",
+    "source": "https://s3-symbol-logo.tradingview.com/nippon-life-india-asset.svg"
+  },
+  "BAJAJ-AUTO": {
+    "src": "/company-logos/BAJAJ-AUTO.svg",
+    "name": "Bajaj Auto Limited",
+    "source": "https://s3-symbol-logo.tradingview.com/bajaj-auto.svg"
+  },
+  "KIRLPNU": {
+    "src": "/company-logos/KIRLPNU.png",
+    "name": "Kirloskar Pneumatic Company Limited",
+    "source": "https://www.kirloskarpneumatic.com/"
+  },
+  "VAML": {
+    "src": "/company-logos/VAML.png",
+    "name": "Vedanta Aluminium Metal Limited",
+    "source": "https://vedantaaluminium.com/"
+  }
+}

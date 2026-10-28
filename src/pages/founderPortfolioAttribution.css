@@ -1,0 +1,13 @@
+.founder-attribution{max-width:1600px;margin:1rem auto 2rem;padding:1.25rem}
+.founder-attribution>.holdings-title{margin-bottom:1rem}
+.founder-attribution>.holdings-title>strong{color:#5f756e;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.attribution-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
+.attribution-grid article{background:#fbfdfc;border:1px solid #dbe6e2;padding:1rem}
+.attribution-grid article>div{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.attribution-grid article>div span{color:#6b7d77;font-size:.72rem;text-transform:uppercase}
+.attribution-grid article>b{display:block;font-family:"DM Serif Display",Georgia,serif;font-size:1.55rem;margin:.7rem 0}
+.attribution-grid dl{display:grid;gap:.3rem;margin:0}
+.attribution-grid dl div{display:flex;justify-content:space-between;font-size:.76rem}
+.attribution-grid dt{color:#73857f}.attribution-grid dd{margin:0;font-weight:700}
+@media(max-width:960px){.attribution-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.attribution-grid{grid-template-columns:1fr}}

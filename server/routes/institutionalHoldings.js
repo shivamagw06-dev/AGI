@@ -1,0 +1,616 @@
+import { Router } from 'express';
+import {
+  getInstitutionalAdmin,
+  getRepairStatus,
+  getInstitutionalFund,
+  getInstitutionalOverview,
+  getInstitutionalStock,
+  markInstitutionalAlert,
+  previewInstitutionalImport,
+  publishInstitutionalImport,
+  refreshInstitutionalFilings,
+  saveSecurityMapping,
+  updateInstitutionalManager,
+} from '../services/institutionalHoldingsService.js';
+import {
+  clearInstitutionalDecisionIntelligenceCache,
+  getInstitutionalDecisionIntelligence,
+} from '../services/institutionalDecisionIntelligenceService.js';
+import {
+  createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchAdmin,
+  getInstitutionalResearchLayer, getInstitutionalWorkspace, markPersonalizedAlert,
+  paged, readOrRunBacktest, refreshInstitutionalResearchLayer, reviewInstitutionalBrief,
+  runInstitutionalBacktest,
+} from '../services/institutionalResearchLayerService.js';
+import {
+  publicationQueue, publicationQueueCounts, reviewPublicationClaims,
+} from '../services/publicationReviewService.js';
+import multer from 'multer';
+import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import {
+  managerCheck, readPublication, storePublication, managerPublications, publicationMatch,
+} from '../services/publicationImportService.js';
+import { coverage, coverageSummary, answerable, FINDS } from '../services/annualReportAnswers.js';
+import { QUESTIONS } from '../services/annualReportQuestions.js';
+import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
+import { answersFromFacts, periodEndsFor } from '../services/annualReportFromFacts.js';
+import { joinPages, pagesFromPdf } from '../services/documentText.js';
+import { documentPeriods } from '../services/documentSections.js';
+import { loadFacts, saveFacts } from '../services/factStore.js';
+import { MAX_PDF_BYTES } from './portfolioImportGuards.js';
+import { assembleEvidence, evidenceFor, judge, FROM_ALL } from '../services/judgmentTier.js';
+import { evidenceSentencesFor } from '../services/questionRetrieval.js';
+import { sentences } from '../services/publicationIntelligence.js';
+import { completeJson, llmProviderStatus } from '../services/llmClient.js';
+import {
+  clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
+  getCombinedHoldings, screenStocks,
+} from '../services/institutionalScreenerService.js';
+import { clearSecuritySearchCache, searchSecurities, warmSecuritySearchIndex } from '../services/institutionalSecuritySearch.js';
+
+async function requireAdmin(req, res, next) {
+  try {
+    const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    const url = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+    const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+    if (!token || !url || !key) return res.status(401).json({ error: 'Unauthorized' });
+    const response = await fetch(`${url}/auth/v1/user`, { headers: { apikey: key, Authorization: `Bearer ${token}` } });
+    const user = await response.json();
+    const ids = [process.env.ADMIN_ID, process.env.VITE_ADMIN_ID, 'c56e4d07-273c-49c9-86a5-a4445e687ece'].filter(Boolean);
+    const emails = [...String(process.env.ADMIN_EMAILS || '').split(','), ...String(process.env.VITE_ADMIN_EMAILS || '').split(',')].map((value) => value.trim().toLowerCase()).filter(Boolean);
+    if (!response.ok || (!ids.includes(user.id) && !emails.includes(String(user.email || '').toLowerCase()))) return res.status(403).json({ error: 'Admin access required' });
+    req.adminUser = user;
+    return next();
+  } catch {
+    return res.status(401).json({ error: 'Authorization failed' });
+  }
+}
+
+async function requireUser(req, res, next) {
+  try {
+    const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    const url = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+    const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+    if (!token || !url || !key) return res.status(401).json({ error: 'Sign in to use your institutional workspace.' });
+    const response = await fetch(`${url}/auth/v1/user`, { headers: { apikey: key, Authorization: `Bearer ${token}` } });
+    const user = await response.json();
+    if (!response.ok || !user?.id) return res.status(401).json({ error: 'Your session has expired. Sign in again.' });
+    req.authUser = user;
+    return next();
+  } catch { return res.status(401).json({ error: 'Authorization failed' }); }
+}
+
+function sendError(res, error, status = 503) {
+  return res.status(status).json({ error: error?.message || 'Institutional Holdings request failed' });
+}
+
+const OVERVIEW_CACHE_TTL_MS = Math.max(
+  30_000,
+  Number(process.env.INSTITUTIONAL_OVERVIEW_CACHE_TTL_MS || 5 * 60_000),
+);
+
+let overviewCache = null;
+let overviewCacheExpiresAt = 0;
+let overviewRefreshPromise = null;
+
+async function refreshOverviewCache() {
+  if (overviewRefreshPromise) return overviewRefreshPromise;
+
+  overviewRefreshPromise = getInstitutionalOverview()
+    .then((data) => {
+      overviewCache = data;
+      overviewCacheExpiresAt = Date.now() + OVERVIEW_CACHE_TTL_MS;
+      return data;
+    })
+    .finally(() => {
+      overviewRefreshPromise = null;
+    });
+
+  return overviewRefreshPromise;
+}
+
+async function getCachedInstitutionalOverview() {
+  const isFresh = overviewCache && Date.now() < overviewCacheExpiresAt;
+  if (isFresh) return { data: overviewCache, cacheStatus: 'HIT' };
+
+  if (overviewCache) {
+    void refreshOverviewCache().catch((error) => {
+      console.warn('[institutional-holdings] Background overview refresh failed:', error?.message || error);
+    });
+    return { data: overviewCache, cacheStatus: 'STALE' };
+  }
+
+  return { data: await refreshOverviewCache(), cacheStatus: 'MISS' };
+}
+
+function rebuildOverviewCache() {
+  overviewCacheExpiresAt = 0;
+  clearInstitutionalDecisionIntelligenceCache();
+  void refreshOverviewCache().catch((error) => {
+    console.warn('[institutional-holdings] Overview cache rebuild failed:', error?.message || error);
+  });
+}
+
+export default function createInstitutionalHoldingsRouter() {
+  const router = Router();
+  rebuildOverviewCache();
+  // Built before the first query rather than during it.
+  warmSecuritySearchIndex();
+  // Public, and cheap: the index is built once every fifteen minutes and every
+  // query is answered from memory. Deliberately not admin-gated - it is the
+  // front door of the page, and it returns only issuer names and tickers that
+  // are already printed on the page below it.
+  router.get('/securities/search', async (req, res) => {
+    try {
+      const term = String(req.query.q || '').slice(0, 64);
+      const limit = Math.min(Math.max(Number(req.query.limit) || 8, 1), 20);
+      if (term.trim().length < 2) return res.json({ results: [] });
+      return res.json({ results: await searchSecurities(term, limit) });
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
+
+  router.get('/overview', async (_req, res) => {
+    try {
+      const { data, cacheStatus } = await getCachedInstitutionalOverview();
+
+      // The integrity gate is never served from cache.
+      //
+      // Everything else in this payload measures filings that changed hours
+      // ago, and five minutes of staleness costs nothing. The gate is a
+      // different kind of statement: it says whether the numbers beside it can
+      // be trusted right now. A cached one is wrong in both directions - it
+      // kept reporting "historical repair in progress" for minutes after a
+      // repair finished, and it would just as readily report a clean bill of
+      // health after a repair had failed.
+      //
+      // Two small queries, so recomputing per request is cheap. If it cannot be
+      // read, the cached value stands, which is the conservative direction:
+      // getRepairStatus itself fails closed.
+      let dataIntegrity = data?.data_integrity ?? null;
+      try {
+        dataIntegrity = await getRepairStatus();
+      } catch (gateError) {
+        console.warn('[institutional-holdings] live gate read failed:', gateError?.message || gateError);
+      }
+
+      res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
+      res.set('X-AGI-Overview-Cache', cacheStatus);
+      return res.json({ ...data, data_integrity: dataIntegrity });
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
+  router.get('/decision-intelligence', async (_req, res) => {
+    try {
+      const data = await getInstitutionalDecisionIntelligence();
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
+      return res.json(data);
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
+  // Admin-only, deliberately, on two grounds.
+  //
+  // These are not client-ready: the audit found adjusted-price coverage at 0%
+  // and 90.7% of holdings rows unresolved to a ticker, so anything these
+  // return today describes a tenth of the universe while looking complete.
+  //
+  // And each pages the whole holdings table. Measured against production they
+  // time out at 120s on 72,401 rows, which is exactly the anonymous full scan
+  // this release exists to prevent. They stay behind auth until they are both
+  // fast and backed by data worth showing.
+  router.get('/combined-holdings', requireAdmin, async (req, res) => {
+    try {
+      const ids = String(req.query.managers || '').split(',').map((v) => v.trim()).filter(Boolean);
+      return res.json(await getCombinedHoldings({
+        managerIds: ids.length ? ids : null, limit: req.query.limit,
+      }));
+    } catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/screener', requireAdmin, async (req, res) => {
+    try {
+      const q = req.query || {};
+      return res.json(await screenStocks({
+        min_holders: q.min_holders, max_holders: q.max_holders,
+        min_new_buyers: q.min_new_buyers, min_increased: q.min_increased,
+        has_exits: q.has_exits, ticker_resolved: q.ticker_resolved,
+        search: q.search, sort: q.sort, limit: q.limit,
+      }));
+    } catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/heat-map', requireAdmin, async (req, res) => {
+    try { return res.json(await getAccumulationHeatMap({ limit: req.query.limit })); }
+    catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/fund-performance', requireAdmin, async (_req, res) => {
+    try { return res.json(await evaluateFundPerformance({})); }
+    catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/research-layer', async (_req, res) => { try { return res.json(await getInstitutionalResearchLayer()); } catch (error) { return sendError(res, error); } });
+  router.post('/backtests', requireAdmin, async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+
+  // Read for signed-in clients. Serves the day's stored run and computes it
+  // only when there is none, because a backtest reads several hundred
+  // thousand price rows - not something to put behind a button that can be
+  // held down. The admin POST above still forces a fresh computation.
+  router.get('/backtests/:managerSlug', requireUser, async (req, res) => {
+    try {
+      return res.json(await readOrRunBacktest({
+        managerSlug: req.params.managerSlug,
+        topN: req.query.topN,
+        quarters: req.query.quarters,
+      }));
+    } catch (error) { return sendError(res, error, 400); }
+  });
+  router.get('/workspace', requireUser, async (req, res) => { try { return res.json(await getInstitutionalWorkspace(req.authUser.id)); } catch (error) { return sendError(res, error); } });
+  router.post('/workspace/groups', requireUser, async (req, res) => { try { return res.json(await createInstitutionalGroup(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/workspace/watchlists', requireUser, async (req, res) => { try { return res.json(await createInstitutionalWatchlist(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/workspace/alerts/:id', requireUser, async (req, res) => { try { return res.json(await markPersonalizedAlert(req.authUser.id, req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
+  router.get('/funds/:slug', async (req, res) => { try { const data = await getInstitutionalFund(req.params.slug); return data ? res.json(data) : res.status(404).json({ error: 'Tracked fund not found' }); } catch (error) { return sendError(res, error); } });
+  router.get('/stocks/:key', async (req, res) => { try { const data = await getInstitutionalStock(req.params.key); return data ? res.json(data) : res.status(404).json({ error: 'No tracked fund currently holds this security' }); } catch (error) { return sendError(res, error); } });
+  router.get('/admin', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalAdmin()); } catch (error) { return sendError(res, error); } });
+  router.post('/admin/imports/preview', requireAdmin, async (req, res) => { try { return res.json(await previewInstitutionalImport(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/imports/publish', requireAdmin, async (req, res) => { try { const data = await publishInstitutionalImport({ ...(req.body || {}), actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/refresh', requireAdmin, async (req, res) => { try { const data = await refreshInstitutionalFilings(req.body || {}); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
+  // Paste a manager's own publication and extract it. Same service the CLI
+  // script uses: two implementations of "what gets stored" is how one of them
+  // silently stops matching the other.
+  router.post('/admin/publications', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      if (!String(body.title || '').trim()) return sendError(res, new Error('a title is required'), 400);
+
+      const client = createSupabaseAdmin();
+      const [manager] = await paged(
+        () => client.from('institutional_managers').select('id,slug,display_name')
+          .eq('slug', String(body.manager_slug || '')),
+        { label: 'manager' },
+      );
+      if (!manager) return sendError(res, new Error(`no manager with slug "${body.manager_slug}"`), 400);
+
+      // A filer names itself. Norges Bank's annual report was once stored as
+      // 177 things Berkshire said because nothing connected the manager named
+      // by the caller to the document in front of it.
+      const named = managerCheck(text, manager.display_name);
+      if (!named.ok && !body.force_manager) {
+        return res.status(409).json({
+          error: named.message, mismatch: true, token: named.token, manager: manager.display_name,
+        });
+      }
+
+      // A dry run writes nothing, so a reviewer can see what a document
+      // yields before committing 650 rows to the queue.
+      if (!body.apply) {
+        const read = readPublication(text);
+        // Is this document already stored? A dry run said what a document
+        // yields and never whether it was new, so re-pasting a report looked
+        // exactly like pasting one for the first time - and Berkshire's
+        // annual report became two publications, the second holding none of
+        // the 199 decisions made against the first.
+        const match = publicationMatch(
+          await managerPublications({ client, paged, managerId: manager.id }),
+          { digest: read.digest, title: body.title },
+        );
+        return res.json({
+          applied: false,
+          manager: manager.display_name,
+          characters: read.characters,
+          digest: read.digest,
+          holdings: read.holdings.length,
+          claims: read.claims,
+          steps: read.steps,
+          themes: read.themes,
+          // The matched publication's own digest is dropped: it is a hash of
+          // the manager's copyrighted text and no caller needs it.
+          match: {
+            kind: match.kind,
+            publication: match.publication
+              ? (({ digest, ...rest }) => rest)(match.publication)
+              : null,
+          },
+        });
+      }
+
+      const stored = await storePublication({
+        client,
+        paged,
+        manager,
+        text,
+        title: body.title,
+        asOfDate: body.as_of_date || null,
+        sourceUrl: body.source_url || null,
+        prune: Boolean(body.prune),
+      });
+      return res.json({ applied: true, manager: manager.display_name, ...stored });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  // An annual report read against the hundred underwriting questions.
+  //
+  // Deliberately not tied to a manager. The publication pipeline answers "what
+  // did this fund say" and is keyed on institutional_managers, which is fifty
+  // 13F filers; these questions are about what an operating company is worth,
+  // and any company has an annual report. Nothing is stored - a reader pastes
+  // a report and reads the answers.
+  router.post('/admin/annual-report', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      const ticker = String(body.ticker || '').trim().toUpperCase();
+
+      // What the document itself states, with the sentence that says it.
+      const stated = coverageSummary(text, { questions: QUESTIONS });
+
+      // What the filed statements compute, when a company is named and its
+      // statements have been imported. Without a ticker the computed half
+      // stays as it is: fifty-one questions naming the line items they need.
+      let computed = { periods: null, answers: {}, ticker: ticker || null, reason: null };
+      if (ticker) {
+        const client = createSupabaseAdmin();
+        const periods = await paged(
+          () => client.from('company_financials').select('*')
+            .eq('ticker', ticker).order('period_end', { ascending: false }),
+          { label: 'company-financials' },
+        );
+        const read = periodsRead(periods);
+        computed = read
+          ? {
+            ticker,
+            periods: read,
+            answers: Object.fromEntries(computedAnswers(periods)),
+            reason: null,
+          }
+          : { ticker, periods: null, answers: {}, reason: `no annual statements stored for ${ticker}` };
+      }
+
+      return res.json({ characters: text.length, ...stated, computed });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  // The nine questions no sentence states and no formula yields.
+  //
+  // A separate call from reading the report, because it costs nine model
+  // requests and the other ninety-one answers are worth having in front of a
+  // reader before any of them are spent.
+  /**
+   * The same hundred questions, read from the document itself.
+   *
+   * A paste and a PDF are not equivalent inputs, which is why this is a second
+   * endpoint rather than a flag on the first. Reliance states operating cash
+   * flow twice under the same words - 79,059 crore standalone and 1,92,113
+   * consolidated - and the only thing separating them is the header on the
+   * page each sits on. Flattened into a paste that distinction is gone, along
+   * with the page number a reader needs to check a figure. So the file is
+   * read as pages and kept that way.
+   *
+   * Nothing is written unless asked. A reader clicking to read a report is not
+   * asking for a database write, and the figures recovered are returned either
+   * way so the decision can be made after seeing them.
+   */
+  const readReport = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: MAX_PDF_BYTES,
+      files: 1,
+      parts: 6,
+      fields: 5,
+      fieldSize: 256,
+      fieldNameSize: 64,
+      headerPairs: 32,
+    },
+  }).single('report');
+
+  router.post('/admin/annual-report/document', requireAdmin, (req, res) => {
+    readReport(req, res, async (uploadError) => {
+      try {
+        if (uploadError) {
+          return sendError(res, new Error(uploadError.code === 'LIMIT_FILE_SIZE'
+            ? `the file is larger than ${Math.round(MAX_PDF_BYTES / 1024 / 1024)}MB`
+            : 'the upload could not be read'), 400);
+        }
+        if (!req.file?.buffer?.length) return sendError(res, new Error('no file was uploaded'), 400);
+
+        const pages = await pagesFromPdf(req.file.buffer);
+        if (!pages.length) return sendError(res, new Error('no text could be read from this file'), 400);
+        const text = joinPages(pages);
+
+        const ticker = String(req.body?.ticker || '').trim().toUpperCase();
+        const company = String(req.body?.company || ticker || '').trim();
+        const document = String(req.body?.document || req.file.originalname || 'uploaded document').trim();
+        const store = String(req.body?.store || '') === 'true';
+        const prefer = req.body?.revenue_definition
+          ? { revenue: String(req.body.revenue_definition) } : {};
+
+        // What the document states in its own sentences, unchanged.
+        const stated = coverageSummary(text, { questions: QUESTIONS });
+
+        let computed = { answers: {}, periods: [], recovered: 0, written: null, reason: null };
+        if (company) {
+          const client = createSupabaseAdmin();
+          // Held facts first: a figure already extracted is not searched for
+          // again, however many questions want it.
+          const held = client
+            ? (await loadFacts(client, { company, accounting_scope: 'consolidated' })).facts
+            : [];
+          // The document states which years it reports. A first upload has
+          // nothing stored and nobody asked for a period, and without this it
+          // resolved nothing at all.
+          const reported = documentPeriods(pages);
+          const periodEnds = periodEndsFor({
+            held,
+            requested: [
+              ...String(req.body?.periods || '').split(',').map((one) => one.trim()),
+              String(req.body?.period_end || '').trim(),
+              ...reported.period_ends,
+            ],
+          });
+
+          const read = answersFromFacts({
+            periodEnds,
+            facts: held, pages, document: text, company, reportedInDocument: document,
+            purpose: 'any_disclosed', prefer,
+            currency: String(req.body?.currency || 'INR'),
+            unit: Number(req.body?.unit) || 10000000,
+            month_end: reported.month_end || undefined,
+          });
+
+          let written = null;
+          if (store && client && read.recovered.length) {
+            const result = await saveFacts(client, read.recovered);
+            written = { written: result.written, refused: result.refused.length,
+              error: result.error ? result.error.message : null };
+          }
+          computed = {
+            company,
+            answers: Object.fromEntries(read.answers),
+            periods: read.periods.map((period) => period.period_end),
+            recovered: read.recovered.length,
+            written,
+            reason: periodEnds.length ? null
+              : `no period could be resolved: ${reported.reason || 'none was given and none is stored'}`,
+          };
+        }
+
+        return res.json({
+          pages: pages.length,
+          characters: text.length,
+          filename: req.file.originalname || null,
+          ...stated,
+          computed,
+        });
+      } catch (error) { return sendError(res, error, 400); }
+    });
+  });
+
+  router.post('/admin/annual-report/judgements', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      const provider = llmProviderStatus();
+      if (!provider.preferred) {
+        return sendError(res, new Error('no model provider is configured on this server'), 503);
+      }
+      const ticker = String(body.ticker || '').trim().toUpperCase();
+
+      const stated = coverage(text, { questions: QUESTIONS });
+      let computed = new Map();
+      if (ticker) {
+        const client = createSupabaseAdmin();
+        const periods = await paged(
+          () => client.from('company_financials').select('*')
+            .eq('ticker', ticker).order('period_end', { ascending: false }),
+          { label: 'company-financials' },
+        );
+        computed = computedAnswers(periods);
+      }
+
+      // Ninety-nine before a hundred. Question 100 reasons over the answers to
+      // the others, so it is asked last and its evidence includes them.
+      //
+      // `auto` widens this from the nine judgement questions to every question
+      // still unanswered - the ones no pattern reaches and the ones whose line
+      // items are not loaded. It cannot make a document say what it does not
+      // say: a question the report is silent on comes back refused, which is
+      // the correct answer and not a failure to reach a hundred.
+      const unanswered = (question) => {
+        if (question.kind === 'judgment') return true;
+        if (question.kind === 'computed') {
+          const found = computed.get(question.n);
+          return !found || found.reason !== null;
+        }
+        const row = stated.find((entry) => entry.n === question.n);
+        return !row || row.status !== 'answered';
+      };
+      const order = QUESTIONS.filter((question) => (body.auto ? unanswered(question)
+        : question.kind === 'judgment'))
+        .sort((a, b) => (a.n === FROM_ALL ? 1 : 0) - (b.n === FROM_ALL ? 1 : 0));
+
+      // Sentences are read once and reused, rather than per question.
+      const pool = body.auto ? sentences(text).filter((entry) => answerable(entry.text)) : [];
+
+      const judgements = [];
+      for (const question of order) {
+        // A judgement question reasons over answers. Any other question in
+        // auto mode has no answers to reason over, so it is given the
+        // sentences its subject retrieves - and the tier still checks every
+        // figure and may refuse.
+        const evidence = question.kind === 'judgment'
+          ? assembleEvidence(question.n, { stated, computed })
+          : evidenceFor({ claims: evidenceSentencesFor(question, pool, { finds: FINDS })
+            .map((entry) => ({ slot: `Q${question.n}`, source_excerpt: entry.text })) });
+        const result = await judge({
+          question,
+          evidence,
+          complete: ({ system, user }) => completeJson({ system, user, temperature: 0.1 }),
+        });
+        judgements.push({
+          n: question.n,
+          ask: question.ask,
+          evidence_count: evidence.length,
+          // The evidence is returned with the judgement. A conclusion a
+          // reviewer cannot check against what produced it is not reviewable.
+          evidence,
+          ...(result.ok ? { judgement: result.judgement, refused: null }
+            : { judgement: null, refused: result.reason }),
+        });
+      }
+
+      return res.json({ provider: provider.preferred, ticker: ticker || null, judgements });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  // The queue a person works to decide what a document said. Admin only: the
+  // rows include claims nobody has read, which is the opposite of what the
+  // public research-layer endpoint returns.
+  router.get('/admin/publication-claims', requireAdmin, async (req, res) => {
+    try {
+      const client = createSupabaseAdmin();
+      const [queue, counts, managers] = await Promise.all([
+        publicationQueue(client, {
+          status: req.query.status || 'pending',
+          slot: req.query.slot || null,
+          managerSlug: req.query.manager || null,
+          limit: req.query.limit,
+          offset: req.query.offset,
+        }),
+        publicationQueueCounts(client),
+        // For the upload form's manager list. A slug typed by hand is a
+        // mismatch waiting to happen, and one already happened.
+        paged(() => client.from('institutional_managers').select('slug,display_name')
+          .order('display_name'), { label: 'managers' }),
+      ]);
+      return res.json({ ...queue, counts, managers });
+    } catch (error) { return sendError(res, error); }
+  });
+
+  // Decisions are sent as the ids the reviewer was shown. There is
+  // deliberately no "apply to everything matching this filter": that is one
+  // keystroke from publishing a hundred sentences nobody read.
+  router.patch('/admin/publication-claims', requireAdmin, async (req, res) => {
+    try {
+      const client = createSupabaseAdmin();
+      const body = req.body || {};
+      return res.json(await reviewPublicationClaims(client, {
+        ids: body.ids, status: body.status,
+      }));
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  router.get('/admin/research-layer', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalResearchAdmin()); } catch (error) { return sendError(res, error); } });
+  router.post('/admin/research-layer/refresh', requireAdmin, async (req, res) => { try { return res.json(await refreshInstitutionalResearchLayer(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/research-layer/briefs/:id', requireAdmin, async (req, res) => { try { return res.json(await reviewInstitutionalBrief(req.params.id, { ...(req.body || {}), reviewer: req.adminUser?.email || 'admin' })); } catch (error) { return sendError(res, error, 400); } });
+  return router;
+}

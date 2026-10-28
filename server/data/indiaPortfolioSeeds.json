@@ -1,0 +1,1174 @@
+[
+  {
+    "id": "in-momentum",
+    "name": "AGI Momentum",
+    "market": "india",
+    "category": "Factor strategies",
+    "description": "50% earnings momentum, 25% 12M price, 25% 6M price. Research allocation from the filtered shortlist; factor scores and analyst coverage are not fully verified.",
+    "asOf": "2026-09-30",
+    "holdings": [
+      {
+        "name": "Sky Gold and Diamonds Limited",
+        "symbol": "SKYGOLD",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 1,
+        "score": 0.99,
+        "marketCapCr": 12555.6,
+        "weight": 5.25
+      },
+      {
+        "name": "Welspun Corp Limited",
+        "symbol": "WELCORP",
+        "sector": "Materials",
+        "sourceRank": 2,
+        "score": 0.98,
+        "marketCapCr": 68758.4,
+        "weight": 5.73
+      },
+      {
+        "name": "Aegis Logistics Limited",
+        "symbol": "AEGISLOG",
+        "sector": "Energy",
+        "sourceRank": 3,
+        "score": 0.96,
+        "marketCapCr": 49178.6,
+        "weight": 5.73
+      },
+      {
+        "name": "MTAR Technologies Limited",
+        "symbol": "MTARTECH",
+        "sector": "Industrials",
+        "sourceRank": 4,
+        "score": 0.95,
+        "marketCapCr": 23983.3,
+        "weight": 5.73
+      },
+      {
+        "name": "R R Kabel Limited",
+        "symbol": "RRKABEL",
+        "sector": "Industrials",
+        "sourceRank": 5,
+        "score": 0.94,
+        "marketCapCr": 28482.2,
+        "weight": 5.73
+      },
+      {
+        "name": "Electronics Mart India Limited",
+        "symbol": "EMIL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 6,
+        "score": 0.94,
+        "marketCapCr": 7850.8,
+        "weight": 4.0
+      },
+      {
+        "name": "Redington Limited",
+        "symbol": "REDINGTON",
+        "sector": "Information Technology",
+        "sourceRank": 7,
+        "score": 0.94,
+        "marketCapCr": 31110.7,
+        "weight": 5.16
+      },
+      {
+        "name": "Akums Drugs and Pharmaceuticals Limited",
+        "symbol": "AKUMS",
+        "sector": "Health Care",
+        "sourceRank": 8,
+        "score": 0.94,
+        "marketCapCr": 12448.7,
+        "weight": 5.16
+      },
+      {
+        "name": "Emmvee Photovoltaic Power Limited",
+        "symbol": "EMMVEE",
+        "sector": "Information Technology",
+        "sourceRank": 9,
+        "score": 0.93,
+        "marketCapCr": 21178.8,
+        "weight": 5.15
+      },
+      {
+        "name": "Pearl Global Industries Limited",
+        "symbol": "PGIL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 10,
+        "score": 0.93,
+        "marketCapCr": 11666.1,
+        "weight": 4.72
+      },
+      {
+        "name": "Finolex Cables Limited",
+        "symbol": "FINCABLES",
+        "sector": "Industrials",
+        "sourceRank": 11,
+        "score": 0.93,
+        "marketCapCr": 22310.8,
+        "weight": 4.58
+      },
+      {
+        "name": "Senores Pharmaceuticals Limited",
+        "symbol": "SENORES",
+        "sector": "Health Care",
+        "sourceRank": 12,
+        "score": 0.93,
+        "marketCapCr": 6215.4,
+        "weight": 4.0
+      },
+      {
+        "name": "Laurus Labs Limited",
+        "symbol": "LAURUSLABS",
+        "sector": "Health Care",
+        "sourceRank": 13,
+        "score": 0.92,
+        "marketCapCr": 107197.9,
+        "weight": 4.58
+      },
+      {
+        "name": "RateGain Travel Technologies Limited",
+        "symbol": "RATEGAIN",
+        "sector": "Information Technology",
+        "sourceRank": 15,
+        "score": 0.91,
+        "marketCapCr": 9958.8,
+        "weight": 4.0
+      },
+      {
+        "name": "Thangamayil Jewellery Limited",
+        "symbol": "THANGAMAYL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 17,
+        "score": 0.9,
+        "marketCapCr": 15109,
+        "weight": 4.2
+      },
+      {
+        "name": "Bajaj Consumer Care Limited",
+        "symbol": "BAJAJCON",
+        "sector": "Consumer Staples",
+        "sourceRank": 18,
+        "score": 0.9,
+        "marketCapCr": 6491.7,
+        "weight": 4.0
+      },
+      {
+        "name": "Quess Corp Limited",
+        "symbol": "QUESS",
+        "sector": "Industrials",
+        "sourceRank": 19,
+        "score": 0.9,
+        "marketCapCr": 5022.4,
+        "weight": 4.0
+      },
+      {
+        "name": "Varroc Engineering Limited",
+        "symbol": "VARROC",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 21,
+        "score": 0.89,
+        "marketCapCr": 12690.4,
+        "weight": 3.67
+      },
+      {
+        "name": "Shilpa Medicare Limited",
+        "symbol": "SHILPAMED",
+        "sector": "Health Care",
+        "sourceRank": 22,
+        "score": 0.89,
+        "marketCapCr": 20803.1,
+        "weight": 4.01
+      },
+      {
+        "name": "The South Indian Bank Limited",
+        "symbol": "SOUTHBANK",
+        "sector": "Financials",
+        "sourceRank": 23,
+        "score": 0.89,
+        "marketCapCr": 12420.1,
+        "weight": 4.01
+      },
+      {
+        "name": "Indo Count Industries Limited",
+        "symbol": "ICIL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 24,
+        "score": 0.89,
+        "marketCapCr": 8793.6,
+        "weight": 3.15
+      },
+      {
+        "name": "IIFL Finance Limited",
+        "symbol": "IIFL",
+        "sector": "Financials",
+        "sourceRank": 25,
+        "score": 0.89,
+        "marketCapCr": 24830.5,
+        "weight": 3.44
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "customized": true,
+    "trackingStart": "2026-10-05",
+    "weightMethod": "Rank tiers by retained order: 5/4.5/4/3.5/3 points per five stocks, proportionally allocated subject to 7% stock, 4% below INR 10,000cr, and 25% source-sector caps. Rounded to 0.01% within caps.",
+    "sourceName": "AGI filtered shortlist; supplied sector and market-cap snapshot",
+    "sourceAsOf": "2026-09-30"
+  },
+  {
+    "id": "in-growth",
+    "name": "AGI Growth",
+    "market": "india",
+    "category": "Factor strategies",
+    "description": "EPS growth 3y, expected EPS growth, low earnings risk, FY2 sales growth (25% each). Research allocation from the filtered shortlist; factor scores and analyst coverage are not fully verified.",
+    "asOf": "2026-09-30",
+    "holdings": [
+      {
+        "name": "Inox Wind Limited",
+        "symbol": "INOXWIND",
+        "sector": "Industrials",
+        "sourceRank": 1,
+        "score": 0.91,
+        "marketCapCr": 11881.6,
+        "weight": 5.35
+      },
+      {
+        "name": "Aegis Vopak Terminals Limited",
+        "symbol": "AEGISVOPAK",
+        "sector": "Energy",
+        "sourceRank": 2,
+        "score": 0.86,
+        "marketCapCr": 32214.9,
+        "weight": 5.35
+      },
+      {
+        "name": "Shaily Engineering Plastics Limited",
+        "symbol": "SHAILY",
+        "sector": "Industrials",
+        "sourceRank": 3,
+        "score": 0.85,
+        "marketCapCr": 13848.9,
+        "weight": 5.35
+      },
+      {
+        "name": "Sky Gold and Diamonds Limited",
+        "symbol": "SKYGOLD",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 4,
+        "score": 0.83,
+        "marketCapCr": 12555.6,
+        "weight": 5.35
+      },
+      {
+        "name": "Hitachi Energy India Limited",
+        "symbol": "POWERINDIA",
+        "sector": "Industrials",
+        "sourceRank": 5,
+        "score": 0.81,
+        "marketCapCr": 139466.9,
+        "weight": 5.35
+      },
+      {
+        "name": "Lloyds Metals and Energy Limited",
+        "symbol": "LLOYDSME",
+        "sector": "Materials",
+        "sourceRank": 6,
+        "score": 0.81,
+        "marketCapCr": 100115.7,
+        "weight": 4.81
+      },
+      {
+        "name": "Acutaas Chemicals Limited",
+        "symbol": "ACUTAAS",
+        "sector": "Health Care",
+        "sourceRank": 7,
+        "score": 0.8,
+        "marketCapCr": 26170.1,
+        "weight": 4.81
+      },
+      {
+        "name": "Netweb Technologies India Limited",
+        "symbol": "NETWEB",
+        "sector": "Information Technology",
+        "sourceRank": 8,
+        "score": 0.79,
+        "marketCapCr": 25738.9,
+        "weight": 4.81
+      },
+      {
+        "name": "Neuland Laboratories Limited",
+        "symbol": "NEULANDLAB",
+        "sector": "Health Care",
+        "sourceRank": 9,
+        "score": 0.79,
+        "marketCapCr": 27579.5,
+        "weight": 4.81
+      },
+      {
+        "name": "Piramal Finance Limited",
+        "symbol": "PIRAMALFIN",
+        "sector": "Financials",
+        "sourceRank": 11,
+        "score": 0.79,
+        "marketCapCr": 47877.4,
+        "weight": 4.81
+      },
+      {
+        "name": "Niva Bupa Health Insurance Company Limited",
+        "symbol": "NIVABUPA",
+        "sector": "Financials",
+        "sourceRank": 12,
+        "score": 0.79,
+        "marketCapCr": 13498.7,
+        "weight": 4.28
+      },
+      {
+        "name": "Siemens Energy India Limited",
+        "symbol": "ENRIN",
+        "sector": "Industrials",
+        "sourceRank": 13,
+        "score": 0.78,
+        "marketCapCr": 118730.6,
+        "weight": 4.28
+      },
+      {
+        "name": "S.J.S. Enterprises Limited",
+        "symbol": "SJS",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 14,
+        "score": 0.78,
+        "marketCapCr": 6917.1,
+        "weight": 4.0
+      },
+      {
+        "name": "Vikram Solar Limited",
+        "symbol": "VIKRAMSOLR",
+        "sector": "Information Technology",
+        "sourceRank": 15,
+        "score": 0.77,
+        "marketCapCr": 5592.9,
+        "weight": 4.0
+      },
+      {
+        "name": "Akums Drugs and Pharmaceuticals Limited",
+        "symbol": "AKUMS",
+        "sector": "Health Care",
+        "sourceRank": 16,
+        "score": 0.77,
+        "marketCapCr": 12448.7,
+        "weight": 4.28
+      },
+      {
+        "name": "PG Electroplast Limited",
+        "symbol": "PGEL",
+        "sector": "Information Technology",
+        "sourceRank": 17,
+        "score": 0.77,
+        "marketCapCr": 13811.7,
+        "weight": 3.75
+      },
+      {
+        "name": "Ethos Limited",
+        "symbol": "ETHOSLTD",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 18,
+        "score": 0.76,
+        "marketCapCr": 6774.8,
+        "weight": 3.75
+      },
+      {
+        "name": "Manorama Industries Limited",
+        "symbol": "MANORAMA",
+        "sector": "Consumer Staples",
+        "sourceRank": 19,
+        "score": 0.76,
+        "marketCapCr": 11863.4,
+        "weight": 3.75
+      },
+      {
+        "name": "Emmvee Photovoltaic Power Limited",
+        "symbol": "EMMVEE",
+        "sector": "Information Technology",
+        "sourceRank": 20,
+        "score": 0.76,
+        "marketCapCr": 21178.8,
+        "weight": 3.74
+      },
+      {
+        "name": "Transformers and Rectifiers (India) Limited",
+        "symbol": "TARIL",
+        "sector": "Industrials",
+        "sourceRank": 21,
+        "score": 0.76,
+        "marketCapCr": 8422.7,
+        "weight": 3.74
+      },
+      {
+        "name": "Aditya Vision Limited",
+        "symbol": "AVL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 23,
+        "score": 0.75,
+        "marketCapCr": 7377,
+        "weight": 3.21
+      },
+      {
+        "name": "Thyrocare Technologies Limited",
+        "symbol": "THYROCARE",
+        "sector": "Health Care",
+        "sourceRank": 24,
+        "score": 0.75,
+        "marketCapCr": 8505.8,
+        "weight": 3.21
+      },
+      {
+        "name": "Inventurus Knowledge Solutions Limited",
+        "symbol": "IKS",
+        "sector": "Health Care",
+        "sourceRank": 25,
+        "score": 0.75,
+        "marketCapCr": 30478.3,
+        "weight": 3.21
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "customized": true,
+    "trackingStart": "2026-10-05",
+    "weightMethod": "Rank tiers by retained order: 5/4.5/4/3.5/3 points per five stocks, proportionally allocated subject to 7% stock, 4% below INR 10,000cr, and 25% source-sector caps. Rounded to 0.01% within caps.",
+    "sourceName": "AGI filtered shortlist; supplied sector and market-cap snapshot",
+    "sourceAsOf": "2026-09-30"
+  },
+  {
+    "id": "in-all-weather",
+    "name": "AGI All-Weather",
+    "market": "india",
+    "category": "Factor strategies",
+    "description": "30% Momentum, 30% Value, 20% Growth, 20% Quality. Research allocation from the filtered shortlist; factor scores and analyst coverage are not fully verified.",
+    "asOf": "2026-09-30",
+    "holdings": [
+      {
+        "name": "Redington Limited",
+        "symbol": "REDINGTON",
+        "sector": "Information Technology",
+        "sourceRank": 1,
+        "score": 0.79,
+        "marketCapCr": 31110.7,
+        "weight": 7.0
+      },
+      {
+        "name": "Sky Gold and Diamonds Limited",
+        "symbol": "SKYGOLD",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 2,
+        "score": 0.78,
+        "marketCapCr": 12555.6,
+        "weight": 5.31
+      },
+      {
+        "name": "The South Indian Bank Limited",
+        "symbol": "SOUTHBANK",
+        "sector": "Financials",
+        "sourceRank": 3,
+        "score": 0.77,
+        "marketCapCr": 12420.1,
+        "weight": 3.09
+      },
+      {
+        "name": "Emmvee Photovoltaic Power Limited",
+        "symbol": "EMMVEE",
+        "sector": "Information Technology",
+        "sourceRank": 4,
+        "score": 0.77,
+        "marketCapCr": 21178.8,
+        "weight": 7.0
+      },
+      {
+        "name": "Bank of Maharashtra",
+        "symbol": "MAHABANK",
+        "sector": "Financials",
+        "sourceRank": 5,
+        "score": 0.76,
+        "marketCapCr": 61917,
+        "weight": 3.08
+      },
+      {
+        "name": "Quess Corp Limited",
+        "symbol": "QUESS",
+        "sector": "Industrials",
+        "sourceRank": 6,
+        "score": 0.73,
+        "marketCapCr": 5022.4,
+        "weight": 4.0
+      },
+      {
+        "name": "Lumax Industries Limited",
+        "symbol": "LUMAXIND",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 7,
+        "score": 0.73,
+        "marketCapCr": 5189.1,
+        "weight": 4.0
+      },
+      {
+        "name": "Pearl Global Industries Limited",
+        "symbol": "PGIL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 8,
+        "score": 0.73,
+        "marketCapCr": 11666.1,
+        "weight": 4.78
+      },
+      {
+        "name": "Akums Drugs and Pharmaceuticals Limited",
+        "symbol": "AKUMS",
+        "sector": "Health Care",
+        "sourceRank": 9,
+        "score": 0.73,
+        "marketCapCr": 12448.7,
+        "weight": 7.0
+      },
+      {
+        "name": "DCB Bank Limited",
+        "symbol": "DCBBANK",
+        "sector": "Financials",
+        "sourceRank": 10,
+        "score": 0.72,
+        "marketCapCr": 6432.2,
+        "weight": 2.78
+      },
+      {
+        "name": "IIFL Finance Limited",
+        "symbol": "IIFL",
+        "sector": "Financials",
+        "sourceRank": 11,
+        "score": 0.72,
+        "marketCapCr": 24830.5,
+        "weight": 2.47
+      },
+      {
+        "name": "Fedbank Financial Services Limited",
+        "symbol": "FEDFINA",
+        "sector": "Financials",
+        "sourceRank": 12,
+        "score": 0.71,
+        "marketCapCr": 5616.6,
+        "weight": 2.47
+      },
+      {
+        "name": "The Karur Vysya Bank Limited",
+        "symbol": "KARURVYSYA",
+        "sector": "Financials",
+        "sourceRank": 13,
+        "score": 0.71,
+        "marketCapCr": 31445,
+        "weight": 2.47
+      },
+      {
+        "name": "Ujjivan Small Finance Bank Limited",
+        "symbol": "UJJIVANSFB",
+        "sector": "Financials",
+        "sourceRank": 14,
+        "score": 0.7,
+        "marketCapCr": 12782.4,
+        "weight": 2.47
+      },
+      {
+        "name": "P N Gadgil Jewellers Limited",
+        "symbol": "PNGJL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 15,
+        "score": 0.7,
+        "marketCapCr": 8566.5,
+        "weight": 4.0
+      },
+      {
+        "name": "Thangamayil Jewellery Limited",
+        "symbol": "THANGAMAYL",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 16,
+        "score": 0.7,
+        "marketCapCr": 15109,
+        "weight": 3.72
+      },
+      {
+        "name": "Alivus Life Sciences Limited",
+        "symbol": "ALIVUS",
+        "sector": "Health Care",
+        "sourceRank": 17,
+        "score": 0.69,
+        "marketCapCr": 16866.9,
+        "weight": 5.65
+      },
+      {
+        "name": "Union Bank of India",
+        "symbol": "UNIONBANK",
+        "sector": "Financials",
+        "sourceRank": 18,
+        "score": 0.69,
+        "marketCapCr": 127931.6,
+        "weight": 2.16
+      },
+      {
+        "name": "R R Kabel Limited",
+        "symbol": "RRKABEL",
+        "sector": "Industrials",
+        "sourceRank": 19,
+        "score": 0.69,
+        "marketCapCr": 28482.2,
+        "weight": 5.65
+      },
+      {
+        "name": "Equitas Small Finance Bank Limited",
+        "symbol": "EQUITASBNK",
+        "sector": "Financials",
+        "sourceRank": 20,
+        "score": 0.68,
+        "marketCapCr": 7825.6,
+        "weight": 2.16
+      },
+      {
+        "name": "S.J.S. Enterprises Limited",
+        "symbol": "SJS",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 21,
+        "score": 0.68,
+        "marketCapCr": 6917.1,
+        "weight": 3.19
+      },
+      {
+        "name": "Rolex Rings Limited",
+        "symbol": "ROLEXRINGS",
+        "sector": "Industrials",
+        "sourceRank": 22,
+        "score": 0.68,
+        "marketCapCr": 5347.5,
+        "weight": 4.0
+      },
+      {
+        "name": "City Union Bank Limited",
+        "symbol": "CUB",
+        "sector": "Financials",
+        "sourceRank": 23,
+        "score": 0.68,
+        "marketCapCr": 22792.1,
+        "weight": 1.85
+      },
+      {
+        "name": "Finolex Cables Limited",
+        "symbol": "FINCABLES",
+        "sector": "Industrials",
+        "sourceRank": 24,
+        "score": 0.68,
+        "marketCapCr": 22310.8,
+        "weight": 4.85
+      },
+      {
+        "name": "Lloyds Metals and Energy Limited",
+        "symbol": "LLOYDSME",
+        "sector": "Materials",
+        "sourceRank": 25,
+        "score": 0.68,
+        "marketCapCr": 100115.7,
+        "weight": 4.85
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "customized": true,
+    "trackingStart": "2026-10-05",
+    "weightMethod": "Rank tiers by retained order: 5/4.5/4/3.5/3 points per five stocks, proportionally allocated subject to 7% stock, 4% below INR 10,000cr, and 25% source-sector caps. Rounded to 0.01% within caps.",
+    "sourceName": "AGI filtered shortlist; supplied sector and market-cap snapshot",
+    "sourceAsOf": "2026-09-30"
+  },
+  {
+    "id": "in-value",
+    "name": "AGI Value",
+    "market": "india",
+    "category": "Factor strategies",
+    "description": "Fwd EY, EY rel. sector, BV yield, sales yield (25% each). Research allocation from the filtered shortlist; factor scores and analyst coverage are not fully verified.",
+    "asOf": "2026-09-30",
+    "holdings": [
+      {
+        "name": "Oil and Natural Gas Corporation Limited",
+        "symbol": "ONGC",
+        "sector": "Energy",
+        "sourceRank": 1,
+        "score": 0.99,
+        "marketCapCr": 279747.7,
+        "weight": 7.0
+      },
+      {
+        "name": "General Insurance Corporation of India",
+        "symbol": "GICRE",
+        "sector": "Financials",
+        "sourceRank": 2,
+        "score": 0.97,
+        "marketCapCr": 56825,
+        "weight": 3.38
+      },
+      {
+        "name": "Tata Motors Passenger Vehicles Limited",
+        "symbol": "TMPV",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 3,
+        "score": 0.97,
+        "marketCapCr": 103118.2,
+        "weight": 7.0
+      },
+      {
+        "name": "G R Infraprojects Limited",
+        "symbol": "GRINFRA",
+        "sector": "Industrials",
+        "sourceRank": 4,
+        "score": 0.96,
+        "marketCapCr": 7646,
+        "weight": 4.0
+      },
+      {
+        "name": "NCC Limited",
+        "symbol": "NCC",
+        "sector": "Industrials",
+        "sourceRank": 5,
+        "score": 0.95,
+        "marketCapCr": 8168.3,
+        "weight": 4.0
+      },
+      {
+        "name": "Steel Authority of India Limited",
+        "symbol": "SAIL",
+        "sector": "Materials",
+        "sourceRank": 6,
+        "score": 0.95,
+        "marketCapCr": 72077.7,
+        "weight": 4.73
+      },
+      {
+        "name": "Zee Entertainment Enterprises Limited",
+        "symbol": "ZEEL",
+        "sector": "Communication Services",
+        "sourceRank": 7,
+        "score": 0.95,
+        "marketCapCr": 6908.1,
+        "weight": 4.0
+      },
+      {
+        "name": "Hindalco Industries Limited",
+        "symbol": "HINDALCO",
+        "sector": "Materials",
+        "sourceRank": 8,
+        "score": 0.95,
+        "marketCapCr": 209641.4,
+        "weight": 4.72
+      },
+      {
+        "name": "Chambal Fertilisers and Chemicals Limited",
+        "symbol": "CHAMBLFERT",
+        "sector": "Materials",
+        "sourceRank": 9,
+        "score": 0.95,
+        "marketCapCr": 15998,
+        "weight": 4.72
+      },
+      {
+        "name": "Bank of India",
+        "symbol": "BANKINDIA",
+        "sector": "Financials",
+        "sourceRank": 10,
+        "score": 0.94,
+        "marketCapCr": 58963.2,
+        "weight": 3.04
+      },
+      {
+        "name": "GAIL (India) Limited",
+        "symbol": "GAIL",
+        "sector": "Utilities",
+        "sourceRank": 11,
+        "score": 0.94,
+        "marketCapCr": 112578.9,
+        "weight": 7.0
+      },
+      {
+        "name": "Bank of Baroda Limited",
+        "symbol": "BANKBARODA",
+        "sector": "Financials",
+        "sourceRank": 12,
+        "score": 0.94,
+        "marketCapCr": 119365.4,
+        "weight": 2.7
+      },
+      {
+        "name": "Birla Corporation Limited",
+        "symbol": "BIRLACORPN",
+        "sector": "Materials",
+        "sourceRank": 13,
+        "score": 0.93,
+        "marketCapCr": 6394.5,
+        "weight": 4.0
+      },
+      {
+        "name": "CESC Limited",
+        "symbol": "CESC",
+        "sector": "Utilities",
+        "sourceRank": 14,
+        "score": 0.93,
+        "marketCapCr": 17447.2,
+        "weight": 7.0
+      },
+      {
+        "name": "Power Finance Corporation Limited",
+        "symbol": "PFC",
+        "sector": "Financials",
+        "sourceRank": 15,
+        "score": 0.92,
+        "marketCapCr": 104943.2,
+        "weight": 2.7
+      },
+      {
+        "name": "Jana Small Finance Bank Limited",
+        "symbol": "JSFB",
+        "sector": "Financials",
+        "sourceRank": 16,
+        "score": 0.92,
+        "marketCapCr": 5081.7,
+        "weight": 2.37
+      },
+      {
+        "name": "CSB Bank Limited",
+        "symbol": "CSBBANK",
+        "sector": "Financials",
+        "sourceRank": 17,
+        "score": 0.92,
+        "marketCapCr": 5287,
+        "weight": 2.36
+      },
+      {
+        "name": "Triveni Engineering & Industries Limited",
+        "symbol": "TRIVENI",
+        "sector": "Consumer Staples",
+        "sourceRank": 18,
+        "score": 0.92,
+        "marketCapCr": 5088.6,
+        "weight": 4.0
+      },
+      {
+        "name": "Vedanta Limited",
+        "symbol": "VEDL",
+        "sector": "Materials",
+        "sourceRank": 19,
+        "score": 0.92,
+        "marketCapCr": 98420.5,
+        "weight": 3.68
+      },
+      {
+        "name": "Punjab National Bank",
+        "symbol": "PNB",
+        "sector": "Financials",
+        "sourceRank": 20,
+        "score": 0.92,
+        "marketCapCr": 125928.2,
+        "weight": 2.36
+      },
+      {
+        "name": "DCB Bank Limited",
+        "symbol": "DCBBANK",
+        "sector": "Financials",
+        "sourceRank": 21,
+        "score": 0.92,
+        "marketCapCr": 6432.2,
+        "weight": 2.03
+      },
+      {
+        "name": "Canara Bank",
+        "symbol": "CANBK",
+        "sector": "Financials",
+        "sourceRank": 22,
+        "score": 0.91,
+        "marketCapCr": 107360.2,
+        "weight": 2.03
+      },
+      {
+        "name": "KEC International Limited",
+        "symbol": "KEC",
+        "sector": "Industrials",
+        "sourceRank": 23,
+        "score": 0.91,
+        "marketCapCr": 9912,
+        "weight": 4.0
+      },
+      {
+        "name": "Life Insurance Corporation of India",
+        "symbol": "LICI",
+        "sector": "Financials",
+        "sourceRank": 24,
+        "score": 0.9,
+        "marketCapCr": 495690.1,
+        "weight": 2.03
+      },
+      {
+        "name": "Sharda Cropchem Limited",
+        "symbol": "SHARDACROP",
+        "sector": "Materials",
+        "sourceRank": 25,
+        "score": 0.9,
+        "marketCapCr": 6398.4,
+        "weight": 3.15
+      },
+      {
+        "name": "Nippon India ETF Gold BeES",
+        "symbol": "GOLDBEES",
+        "sector": "Gold",
+        "assetType": "gold_etf",
+        "weight": 2.0
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "customized": true,
+    "trackingStart": "2026-10-05",
+    "weightMethod": "Rank tiers by retained order: 5/4.5/4/3.5/3 points per five stocks, proportionally allocated subject to 7% stock, 4% below INR 10,000cr, and 25% source-sector caps. Rounded to 0.01% within caps.",
+    "sourceName": "AGI filtered shortlist; supplied sector and market-cap snapshot",
+    "sourceAsOf": "2026-09-30"
+  },
+  {
+    "id": "in-quality",
+    "name": "AGI Quality",
+    "market": "india",
+    "category": "Factor strategies",
+    "description": "50% ROE, 50% low earnings risk. Research allocation from the filtered shortlist; factor scores and analyst coverage are not fully verified.",
+    "asOf": "2026-09-30",
+    "holdings": [
+      {
+        "name": "Tata Consultancy Services Limited",
+        "symbol": "TCS",
+        "sector": "Information Technology",
+        "sourceRank": 1,
+        "score": 0.98,
+        "marketCapCr": 750753.2,
+        "weight": 5.06
+      },
+      {
+        "name": "Britannia Industries Limited",
+        "symbol": "BRITANNIA",
+        "sector": "Consumer Staples",
+        "sourceRank": 2,
+        "score": 0.98,
+        "marketCapCr": 115086.9,
+        "weight": 5.06
+      },
+      {
+        "name": "Colgate-Palmolive (India) Limited",
+        "symbol": "COLPAL",
+        "sector": "Consumer Staples",
+        "sourceRank": 3,
+        "score": 0.98,
+        "marketCapCr": 47189.5,
+        "weight": 5.06
+      },
+      {
+        "name": "Tips Music Limited",
+        "symbol": "TIPSMUSIC",
+        "sector": "Communication Services",
+        "sourceRank": 4,
+        "score": 0.98,
+        "marketCapCr": 8234.9,
+        "weight": 4.0
+      },
+      {
+        "name": "GlaxoSmithKline Pharmaceuticals Limited",
+        "symbol": "GLAXO",
+        "sector": "Health Care",
+        "sourceRank": 5,
+        "score": 0.97,
+        "marketCapCr": 47001.7,
+        "weight": 5.06
+      },
+      {
+        "name": "Infosys Limited",
+        "symbol": "INFY",
+        "sector": "Information Technology",
+        "sourceRank": 6,
+        "score": 0.96,
+        "marketCapCr": 419210.6,
+        "weight": 4.55
+      },
+      {
+        "name": "Computer Age Management Services Limited",
+        "symbol": "CAMS",
+        "sector": "Industrials",
+        "sourceRank": 7,
+        "score": 0.96,
+        "marketCapCr": 16768.2,
+        "weight": 4.55
+      },
+      {
+        "name": "Bharat Electronics Limited",
+        "symbol": "BEL",
+        "sector": "Industrials",
+        "sourceRank": 8,
+        "score": 0.93,
+        "marketCapCr": 280330,
+        "weight": 4.55
+      },
+      {
+        "name": "HDFC Asset Management Company Limited",
+        "symbol": "HDFCAMC",
+        "sector": "Financials",
+        "sourceRank": 9,
+        "score": 0.93,
+        "marketCapCr": 98937.5,
+        "weight": 4.55
+      },
+      {
+        "name": "Travel Food Services Limited",
+        "symbol": "TRAVELFOOD",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 10,
+        "score": 0.92,
+        "marketCapCr": 15908.2,
+        "weight": 4.55
+      },
+      {
+        "name": "Abbott India Limited",
+        "symbol": "ABBOTINDIA",
+        "sector": "Health Care",
+        "sourceRank": 11,
+        "score": 0.92,
+        "marketCapCr": 57016.3,
+        "weight": 4.04
+      },
+      {
+        "name": "Thyrocare Technologies Limited",
+        "symbol": "THYROCARE",
+        "sector": "Health Care",
+        "sourceRank": 12,
+        "score": 0.91,
+        "marketCapCr": 8505.8,
+        "weight": 4.0
+      },
+      {
+        "name": "Page Industries Limited",
+        "symbol": "PAGEIND",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 13,
+        "score": 0.91,
+        "marketCapCr": 40890.1,
+        "weight": 4.04
+      },
+      {
+        "name": "Cummins India Limited",
+        "symbol": "CUMMINSIND",
+        "sector": "Industrials",
+        "sourceRank": 14,
+        "score": 0.91,
+        "marketCapCr": 134709.5,
+        "weight": 4.04
+      },
+      {
+        "name": "Lloyds Metals and Energy Limited",
+        "symbol": "LLOYDSME",
+        "sector": "Materials",
+        "sourceRank": 15,
+        "score": 0.9,
+        "marketCapCr": 100115.7,
+        "weight": 4.04
+      },
+      {
+        "name": "HCL Technologies Limited",
+        "symbol": "HCLTECH",
+        "sector": "Information Technology",
+        "sourceRank": 16,
+        "score": 0.9,
+        "marketCapCr": 336363.1,
+        "weight": 3.54
+      },
+      {
+        "name": "Hindustan Unilever Limited",
+        "symbol": "HINDUNILVR",
+        "sector": "Consumer Staples",
+        "sourceRank": 17,
+        "score": 0.9,
+        "marketCapCr": 431385,
+        "weight": 3.54
+      },
+      {
+        "name": "INOX India Limited",
+        "symbol": "INOXINDIA",
+        "sector": "Industrials",
+        "sourceRank": 18,
+        "score": 0.9,
+        "marketCapCr": 19680.2,
+        "weight": 3.54
+      },
+      {
+        "name": "Marico Limited",
+        "symbol": "MARICO",
+        "sector": "Consumer Staples",
+        "sourceRank": 19,
+        "score": 0.9,
+        "marketCapCr": 101287,
+        "weight": 3.54
+      },
+      {
+        "name": "Manorama Industries Limited",
+        "symbol": "MANORAMA",
+        "sector": "Consumer Staples",
+        "sourceRank": 20,
+        "score": 0.89,
+        "marketCapCr": 11863.4,
+        "weight": 3.54
+      },
+      {
+        "name": "Elgi Equipments Limited",
+        "symbol": "ELGIEQUIP",
+        "sector": "Industrials",
+        "sourceRank": 21,
+        "score": 0.89,
+        "marketCapCr": 18430.6,
+        "weight": 3.03
+      },
+      {
+        "name": "Anthem Biosciences Limited",
+        "symbol": "ANTHEM",
+        "sector": "Health Care",
+        "sourceRank": 22,
+        "score": 0.88,
+        "marketCapCr": 48195.4,
+        "weight": 3.03
+      },
+      {
+        "name": "Hero MotoCorp Limited",
+        "symbol": "HEROMOTOCO",
+        "sector": "Consumer Discretionary",
+        "sourceRank": 23,
+        "score": 0.87,
+        "marketCapCr": 103508.1,
+        "weight": 3.03
+      },
+      {
+        "name": "Nestl\u00e9 India Limited",
+        "symbol": "NESTLEIND",
+        "sector": "Consumer Staples",
+        "sourceRank": 24,
+        "score": 0.87,
+        "marketCapCr": 251413.6,
+        "weight": 3.03
+      },
+      {
+        "name": "Kirloskar Pneumatic Company Limited",
+        "symbol": "KIRLPNU",
+        "sector": "Industrials",
+        "sourceRank": 25,
+        "score": 0.87,
+        "marketCapCr": 8857.1,
+        "weight": 3.03
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "customized": true,
+    "trackingStart": "2026-10-05",
+    "weightMethod": "Rank tiers by retained order: 5/4.5/4/3.5/3 points per five stocks, proportionally allocated subject to 7% stock, 4% below INR 10,000cr, and 25% source-sector caps. Rounded to 0.01% within caps.",
+    "sourceName": "AGI filtered shortlist; supplied sector and market-cap snapshot",
+    "sourceAsOf": "2026-09-30"
+  }
+]

@@ -1,0 +1,80 @@
+{
+  "entity": "ICICIBANK",
+  "hd_version": "historical-depth-v1.0.0",
+  "kind": "valuation",
+  "n": 3,
+  "records": [
+    {
+      "available_from": "2026-07-31",
+      "confidence": 0.95,
+      "entity": "ICICIBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12155668360000.0,
+        "ev_ebitda": 16.5972,
+        "forward_pe": null,
+        "market_cap": 10081388360000.0,
+        "pb": 3.7334,
+        "pe": 19.6765,
+        "pe_premium_pct": 31.0,
+        "peer_median_pe": 15.02,
+        "peg": 0.1874,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-07-31",
+      "period_end": "2026-07-31",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-04",
+      "confidence": 0.95,
+      "entity": "ICICIBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12290517640000.0,
+        "ev_ebitda": 16.7814,
+        "forward_pe": null,
+        "market_cap": 10216237640000.0,
+        "pb": 3.7833,
+        "pe": 19.9397,
+        "pe_premium_pct": 31.6,
+        "peer_median_pe": 15.15,
+        "peg": 0.1899,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-08-04",
+      "period_end": "2026-08-04",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-05",
+      "confidence": 0.95,
+      "entity": "ICICIBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12266638080000.0,
+        "ev_ebitda": 16.7488,
+        "forward_pe": null,
+        "market_cap": 10192358080000.0,
+        "pb": 3.7745,
+        "pe": 19.8931,
+        "pe_premium_pct": 31.7,
+        "peer_median_pe": 15.1,
+        "peg": 0.1894,
+        "source": "valuation_intelligence_p22",
+        "stance": "premium versus peers"
+      },
+      "period": "2026-08-05",
+      "period_end": "2026-08-05",
+      "source": "valuation_intelligence_p22"
+    }
+  ]
+}

@@ -1,0 +1,325 @@
+{
+  "as_of": null,
+  "assembled_at": "2026-07-28T17:18:08Z",
+  "avg_confidence": 0.7167,
+  "citations": [
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "market_expectations_intelligence",
+      "confidence": 0.65,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "exp_LT",
+      "fabricated": false,
+      "knowledge_object": "ExpectationObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:08Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_LT",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:08Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "historical_depth",
+      "confidence": 0.7,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "hist_LT",
+      "fabricated": false,
+      "knowledge_object": "HistoricalCompanyObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T17:18:08Z",
+      "version": "1"
+    }
+  ],
+  "companies": [
+    "LT"
+  ],
+  "conclusions": null,
+  "fabricated": false,
+  "item_count": 3,
+  "items": [
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "market_expectations_intelligence",
+        "confidence": 0.65,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "exp_LT",
+        "fabricated": false,
+        "knowledge_object": "ExpectationObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:08Z",
+        "version": "1"
+      },
+      "evidence_id": "exp_LT",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "as_of": null,
+        "expectations": [],
+        "fabricated": false,
+        "licensed_consensus_assumed": false,
+        "links": {
+          "alternative_data": {
+            "datasets": [
+              {
+                "confidence": 0.9,
+                "dataset_id": "electricity_demand",
+                "domain": "energy",
+                "latest_available": "2024-12-01",
+                "link_basis": "registry_supported_company_link",
+                "name": "All-India Electricity Demand",
+                "provider": "Grid India / POSOCO",
+                "trends": {
+                  "acceleration": 0.011696,
+                  "derived_from_observations_only": true,
+                  "fabricated": false,
+                  "historical_extremes": {
+                    "max": 105.75,
+                    "min": 72.3
+                  },
+                  "historical_percentile": 87.5,
+                  "latest_date": "2024-12-01",
+                  "latest_value": 100.5,
+                  "momentum": 0.021445,
+                  "n": 72,
+                  "prediction": false,
+                  "rolling_average": 101.45,
+                  "rolling_window": 12,
+                  "seasonality": "present",
+                  "status": "ok",
+                  "trend": "rising",
+                  "version": "institutional-alternative-data-intelligence-v2.0.0",
+                  "volatility": 8.0632
+                }
+              },
+              {
+                "confidence": 0.9,
+                "dataset_id": "iip_manufacturing",
+                "domain": "manufacturing",
+                "latest_available": "2024-12-01",
+                "link_basis": "registry_supported_company_link",
+                "name": "IIP Manufacturing",
+                "provider": "MOSPI",
+                "trends": {
+                  "acceleration": 0.009816,
+                  "derived_from_observations_only": true,
+                  "fabricated": false,
+                  "historical_extremes": {
+                    "max": 124.75,
+                    "min": 91.3
+                  },
+                  "historical_percentile": 87.5,
+                  "latest_date": "2024-12-01",
+                  "latest_value": 119.5,
+                  "momentum": 0.017974,
+                  "n": 72,
+                  "prediction": false,
+                  "rolling_average": 120.45,
+                  "rolling_window": 12,
+                  "seasonality": "present",
+                  "status": "ok",
+                  "trend": "rising",
+                  "version": "institutional-alternative-data-intelligence-v2.0.0",
+                  "volatility": 8.0632
+                }
+              },
+              {
+                "confidence": 0.88,
+                "dataset_id": "railway_freight",
+                "domain": "transport",
+                "latest_available": "2024-12-01",
+                "link_basis": "registry_supported_company_link",
+                "name": "Railway Freight Loading",
+                "provider": "Indian Railways",
+                "trends": {
+                  "acceleration": 0.009652,
+                  "derived_from_observations_only": true,
+                  "fabricated": false,
+                  "historical_extremes": {
+                    "max": 126.75,
+                    "min": 93.3
+                  },
+                  "historical_percentile": 87.5,
+                  "latest_date": "2024-12-01",
+                  "latest_value": 121.5,
+                  "momentum": 0.017673,
+                  "n": 72,
+                  "prediction": false,
+                  "rolling_average": 122.45,
+                  "rolling_window": 12,
+                  "seasonality": "present",
+                  "status": "ok",
+                  "trend": "rising",
+                  "version": "institutional-alternative-data-intelligence-v2.0.0",
+                  "volatility": 8.0632
+                }
+              }
+            ],
+            "fabricated": false,
+            "n": 3,
+            "note": "Links from Phase-1 registry only \u2014 no invented company mapping.",
+            "ticker": "LT",
+            "version": "institutional-alternative-data-intelligence-v2.0.0"
+          },
+          "government_policy_ids": [
+            "BUDGET-2023-24"
+          ],
+          "industry_id": "construction"
+        },
+        "n_expectations": 0,
+        "narratives": [
+          {
+            "name": "Capex Cycle",
+            "narrative_id": "capex_cycle"
+          },
+          {
+            "name": "Manufacturing Boom",
+            "narrative_id": "manufacturing_boom"
+          }
+        ],
+        "revisions": [],
+        "surprises": [],
+        "ticker": "LT",
+        "version": "institutional-market-expectations-intelligence-v2.0.0"
+      },
+      "rank": 4,
+      "rank_score": 0.761,
+      "title": "LT expectations"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_LT",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:08Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_LT",
+      "evidence_type": "OWNERSHIP",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 5,
+      "rank_score": 0.752,
+      "title": "LT company intelligence"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "historical_depth",
+        "confidence": 0.7,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "hist_LT",
+        "fabricated": false,
+        "knowledge_object": "HistoricalCompanyObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T17:18:08Z",
+        "version": "1"
+      },
+      "evidence_id": "hist_LT",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "keys": [
+          "accounting",
+          "business_quality",
+          "company_profile",
+          "corporate_actions",
+          "coverage",
+          "entity",
+          "evidence_packs",
+          "historical_financials",
+          "historical_valuation",
+          "kind",
+          "last_updated",
+          "macro_sensitivity",
+          "management",
+          "missing_fields",
+          "object_version",
+          "peer_group",
+          "provider",
+          "quality_score",
+          "risk",
+          "sector",
+          "timeline"
+        ]
+      },
+      "rank": 6,
+      "rank_score": 0.737,
+      "title": "LT historical object"
+    }
+  ],
+  "kind": "COMPANY_EVIDENCE_PACK",
+  "pack_id": "iere_company_evidence_pack_iere_02862e6e2690",
+  "reasoning": false,
+  "recommendation": null,
+  "retrieval_id": "iere_02862e6e2690"
+}
