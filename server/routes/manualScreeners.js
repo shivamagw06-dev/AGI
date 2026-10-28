@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import {
   latestLowPeSnapshot,
-  parseLowPeTables,
+  reviewLowPeTables,
+  lowPePublicationRows,
   publishLowPeSnapshot,
   validateAsOf,
 } from '../services/manualLowPeScreener.js';
@@ -38,8 +39,8 @@ export default function createManualScreenersRouter() {
   router.post('/low-pe/preview', requireStrategyLabAdmin, (req, res) => {
     try {
       const asOf = validateAsOf(req.body?.asOf);
-      const rows = parseLowPeTables(req.body?.tables);
-      return res.json({ asOf, rowCount: rows.length, rows });
+      const review = reviewLowPeTables(req.body?.tables);
+      return res.json({ asOf, rowCount: review.rows.length, ...review });
     } catch (error) {
       return res.status(400).json({ error: error.message });
     }
@@ -48,7 +49,7 @@ export default function createManualScreenersRouter() {
   router.post('/low-pe/publish', requireStrategyLabAdmin, async (req, res) => {
     try {
       const asOf = validateAsOf(req.body?.asOf);
-      const rows = parseLowPeTables(req.body?.tables);
+      const rows = lowPePublicationRows(req.body?.tables, req.body?.excludeNonQualifying);
       const snapshot = await publishLowPeSnapshot({ asOf, rows, actorId: req.strategyLabActor.id });
       return res.json({ snapshot });
     } catch (error) {

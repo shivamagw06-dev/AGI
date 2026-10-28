@@ -1,0 +1,18 @@
+name: Manual screener import guards
+on:
+  pull_request:
+    paths: ['server/routes/manualScreeners.js', 'server/services/manual*', 'src/lib/pastedTable*', 'src/pages/admin/*ScreenerPaste*', '.github/workflows/manual-screeners.yml']
+  workflow_dispatch:
+jobs:
+  import-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.1'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --prefix server --ignore-scripts --no-audit --no-fund
+      - run: node --test server/services/manualLowPeScreener.test.js src/lib/pastedTable.test.js
