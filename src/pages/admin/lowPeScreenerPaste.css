@@ -27,4 +27,9 @@
 .low-pe-admin__scroll table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
 .low-pe-admin__scroll th, .low-pe-admin__scroll td { border-bottom: 1px solid #e7ecee; padding: 10px 12px; font-size: 13px; }
 .low-pe-admin__scroll th { position: sticky; top: 0; background: #ecf2f4; color: #526a79; }
+.low-pe-admin__exceptions { border: 1px solid #dfbb7a; background: #fffaf0; padding: 18px; margin: 18px 0 24px; }
+.low-pe-admin__exceptions h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.low-pe-admin__exceptions p { margin: 8px 0 14px; }
+.low-pe-admin__exceptions label { display: flex; gap: 10px; align-items: flex-start; margin-top: 16px; line-height: 1.6; }
+.low-pe-admin__exceptions input { margin-top: 5px; flex: 0 0 auto; }
 @media (max-width: 650px) { .low-pe-admin__head, .low-pe-admin__meta { align-items: flex-start; flex-direction: column; } }
