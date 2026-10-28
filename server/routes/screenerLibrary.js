@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { createScreenerLibraryStore, libraryDefinition, libraryImport, inputError } from '../services/screenerLibrary.js';
 import { createPlusService, plusAdmin, membershipActive } from '../services/agiPlus.js';
+import { buildScreenerIntelligence } from '../../src/lib/screenerIntelligence.js';
 export default function createScreenerLibraryRouter({ store = createScreenerLibraryStore(), billing = createPlusService() } = {}) {
   const router = Router();
   router.use((_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); });
   let cached = null, expires = 0, inflight;
-  const invalidate = () => { cached = null; expires = 0; };
+  let research=null, researchExpires=0, researchInflight;
+  const invalidate = () => { cached = null; expires = 0; research=null; researchExpires=0; };
   const fail = (res, error) => res.status(error.status || (error.code === '23505' ? 409 : 503)).json({ error: error.status ? error.message : error.code === '23505' ? 'That screener URL already exists. Choose another name.' : 'Screener service unavailable. Please retry; your saved snapshots are unchanged.' });
   const auth = admin => async (req, res, next) => {
     const token = String(req.get('authorization') || '').match(/^Bearer\s+(.+)$/i)?.[1];
@@ -45,6 +47,21 @@ export default function createScreenerLibraryRouter({ store = createScreenerLibr
   router.get('/:slug/history', auth(false), async (req, res) => {
     try { if (!await store.definition(req.params.slug)) throw inputError('Screener not found.', 404); return res.json({ snapshots: await store.history(req.params.slug) }); }
     catch (error) { return fail(res, error); }
+  });
+  router.get('/:slug/intelligence', auth(false), async (req,res) => {
+    try {
+      const id=req.query.snapshot;
+      if(id!==undefined && !/^[1-9]\d{0,15}$/.test(String(id)))throw inputError('Invalid snapshot.');
+      const detail=await store.researchDetail(req.params.slug,id);
+      if(!detail)throw inputError('Published screener not found.',404);
+      if(!research || researchExpires<Date.now()) {
+        if(!researchInflight)researchInflight=store.researchUniverse().then(data=>{research=data;researchExpires=Date.now()+60000;return data;}).finally(()=>{researchInflight=null;});
+        await researchInflight;
+      }
+      const latest=research.find(s=>s.slug===req.params.slug);
+      const historical=req.query.historical==='1'||(latest && String(latest.id)!==String(detail.snapshot.id));
+      return res.json(buildScreenerIntelligence({slug:req.params.slug,...detail,universe:research,historical}));
+    } catch(error) {return fail(res,error);}
   });
   router.get('/:slug', auth(false), async (req, res) => {
     try {

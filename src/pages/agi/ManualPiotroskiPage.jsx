@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { API_ORIGIN } from '@/config';
 import ManualScreenerTabs from './ManualScreenerTabs';
+import ScreenerIntelligence from '@/components/screeners/ScreenerIntelligence';
 import './manualLowPe.css';
 
 const decimal = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
@@ -23,15 +24,18 @@ export default function ManualPiotroskiPage() {
 
   useEffect(() => {
     let active = true;
-    fetch(`${API_ORIGIN || ''}/api/manual-screeners/piotroski`, { cache: 'no-store' })
+    const refresh = () => { if (document.hidden) return; fetch(`${API_ORIGIN || ''}/api/manual-screeners/piotroski`, { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load the screener.');
-        if (active) setSnapshot(data.snapshot);
+        if (active) { setSnapshot(data.snapshot); setError(''); }
       })
       .catch((cause) => { if (active) setError(cause.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => { if (active) setLoading(false); }); };
+    refresh();
+    const timer = setInterval(refresh, 300000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { active = false; clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, []);
 
   const sectors = useMemo(() => [...new Set((snapshot?.rows || []).map((row) => row.sector))].sort(), [snapshot]);
@@ -53,6 +57,7 @@ export default function ManualPiotroskiPage() {
     <ManualScreenerTabs />
     <div className="manual-low-pe__intro"><div><span className="manual-low-pe__kicker">AGI / INDIA / FINANCIAL STRENGTH</span><h1>High Piotroski Score</h1><p>Companies with a supplied Piotroski Score of 8 or 9 out of 9.</p></div><div className="manual-low-pe__stat"><span>TABLE AS OF</span><strong>{dateLabel(snapshot?.as_of)}</strong><small>{snapshot ? `${integer.format(snapshot.row_count)} stocks` : 'Awaiting data'}</small></div></div>
     <div className="manual-low-pe__explain"><strong>A dated screen, not a rating from AGI.</strong> Scores, prices and market caps come from the last administrator-published workbook. The workbook does not include each company’s underlying financial statement date. A high score alone is not a recommendation to buy.</div>
+    {snapshot && <ScreenerIntelligence slug="piotroski" snapshotId={snapshot.id} />}
     {loading && <p className="manual-low-pe__state">Loading stocks…</p>}
     {error && <p className="manual-low-pe__state" role="alert">{error}</p>}
     {!loading && !error && !snapshot && <p className="manual-low-pe__state">No Piotroski table has been published yet.</p>}

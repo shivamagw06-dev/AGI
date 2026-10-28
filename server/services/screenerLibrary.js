@@ -40,6 +40,32 @@ export function createScreenerLibraryStore(client = createSupabaseAdmin()) {
       return [...legacy, ...custom.map(s => ({ ...s, kind: 'imported' }))];
     },
     definition,
+    async researchUniverse() {
+      const definitions = await result(db().from('screener_library_catalogue').select('slug,display_name,snapshot_id').eq('archived', false));
+      const ids = definitions.map(s => s.snapshot_id).filter(Boolean);
+      const [custom, legacy] = await Promise.all([
+        ids.length ? result(db().from('screener_library_snapshots').select('id,screener_slug,as_of,created_at,columns,rows,identity_column,definition,source_url').in('id', ids)) : [],
+        Promise.all(LEGACY_SCREENERS.map(async s => {
+          const latest = await result(db().from(s.table).select('id,as_of,created_at,rows').order('id', { ascending: false }).limit(1).maybeSingle());
+          return latest ? { ...latest, slug:s.slug, display_name:s.display_name } : null;
+        })),
+      ]);
+      return [...custom.map(s => ({ ...s, slug:s.screener_slug, display_name:s.definition?.display_name || definitions.find(d=>d.slug===s.screener_slug)?.display_name })), ...legacy.filter(Boolean)];
+    },
+    async researchDetail(slug, id) {
+      const legacy = LEGACY_SCREENERS.find(s=>s.slug===slug);
+      if (!legacy && !await definition(slug)) return null;
+      const table = legacy?.table || 'screener_library_snapshots';
+      const columns = legacy ? 'id,as_of,created_at,rows' : 'id,as_of,created_at,columns,rows,identity_column,definition,source_url';
+      let query = db().from(table).select(columns);
+      if (!legacy) query=query.eq('screener_slug',slug);
+      query=id?query.eq('id',id):query.order('id',{ascending:false});
+      const snapshot=await result(query.limit(1).maybeSingle());
+      if(!snapshot)return null;
+      let prior=db().from(table).select(columns).lt('id',snapshot.id).order('id',{ascending:false}).limit(1);
+      if(!legacy)prior=prior.eq('screener_slug',slug);
+      return {snapshot,previous:await result(prior.maybeSingle())};
+    },
     async create(body, actorId) { return result(db().from('screener_library').insert({ ...body, created_by: actorId }).select('slug,display_name,category,description,rule_notes,default_source_url').single()); },
     async update(slug, body) { return result(db().from('screener_library').update({ ...body, updated_at: new Date().toISOString() }).eq('slug', slug).eq('archived', false).select('slug,display_name,category,description,rule_notes,default_source_url').single()); },
     async history(slug) { return result(db().from('screener_library_snapshots').select('id,as_of,created_at,row_count,source_url').eq('screener_slug', slug).order('id', { ascending: false }).limit(100)); },

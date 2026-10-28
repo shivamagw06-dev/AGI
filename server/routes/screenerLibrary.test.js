@@ -13,13 +13,15 @@ test('validates definitions and source URLs; the import uses the actual table, n
   assert.throws(()=>libraryImport({...body,asOf:'2026-02-30'}),/valid data date/);
 });
 test('result APIs require a verified paid member; only an admin can create, preview or publish', async () => {
-  let grants = false, published, created, calls = 0;
+  let grants = false, published, created, calls = 0, researchCalls=0;
   const store = {
     catalogue: async()=>[{slug:'custom',display_name:'Custom',row_count:null}],
     definition: async slug=>slug==='custom'?{slug}:null,
     detail: async()=>{calls++;return {screen:{slug:'custom'},snapshot:{rows:[['private']]}};}, history:async()=>[],
     create:async(data,actor)=>{created={data,actor};return data;}, update:async()=>({}),
     publish:async(slug,data,actor)=>{published={slug,data,actor};return{id:1,row_count:data.rowCount,as_of:data.asOf};},
+    researchDetail:async(slug,id)=>slug==='custom'?{snapshot:{id:id||2,as_of:'2026-10-28',columns:['Stock Name','Stock Code'],rows:[['Example','EXAMPLE']]},previous:null}:null,
+    researchUniverse:async()=>{researchCalls++;return[{slug:'custom',id:2,as_of:'2026-10-28',columns:['Stock Name','Stock Code'],rows:[['Example','EXAMPLE']]}];},
   };
   const billing = { user:async token=>{if(token==='invalid')throw Error();return token==='admin'?admin:user;}, config:async()=>({enabled:true}), membership:async()=>grants?{starts_at:'2026-01-01',expires_at:'2099-01-01'}:null };
   const app=express();app.use(express.json());app.use('/library',createRouter({store,billing}));
@@ -31,7 +33,13 @@ test('result APIs require a verified paid member; only an admin can create, prev
     assert.equal((await request('/custom')).status,401);
     assert.equal((await request('/custom','invalid')).status,401);
     assert.equal((await request('/custom','member')).status,402);assert.equal(calls,0);
+    assert.equal((await request('/custom/intelligence')).status,401);
+    assert.equal((await request('/custom/intelligence','member')).status,402);assert.equal(researchCalls,0);
     grants=true;assert.equal((await request('/custom','member')).status,200);
+    const intelligence=await (await request('/custom/intelligence','member')).json();assert.equal(intelligence.available,true);assert.equal(intelligence.snapshotId,2);assert.equal(intelligence.rows,undefined);
+    const historical=await (await request('/custom/intelligence?snapshot=1','member')).json();assert.match(historical.overlapNote,/saved-history/);assert.equal(researchCalls,1);
+    assert.equal((await request('/custom/intelligence?snapshot=invalid','member')).status,400);
+    assert.equal((await request('/missing/intelligence','member')).status,404);
     assert.equal((await request('/custom/preview','member','POST',body)).status,403);
     assert.equal((await request('/custom/publish','member','POST',{...body,reviewed:true})).status,403);
     assert.equal((await request('/admin/catalogue','member')).status,403);
