@@ -53,3 +53,17 @@ test('result APIs require a verified paid member; only an admin can create, prev
     assert.equal(created.actor,admin.id);assert.equal(created.data.created_by,undefined);
   } finally {await new Promise(resolve=>server.close(resolve));}
 });
+
+test('catalogue joins column metadata by snapshot ID without loading or exposing stock rows', async () => {
+  const { createScreenerLibraryStore } = await import('../services/screenerLibrary.js');
+  const calls = [];
+  const client = { from(table) {
+    const query = { select(fields) { calls.push({ table, fields }); return query; }, eq() { return query; }, order() { return query; }, limit() { return query; }, maybeSingle() { return query; }, in(key, ids) { assert.deepEqual(ids, [7]); return query; }, then(resolve) {
+      resolve({ data: table === 'screener_library_catalogue' ? [{ slug:'example', snapshot_id:7 }] : table === 'screener_library_snapshots' ? [{ id:7, columns:['Stock Name','ROE'] }] : null, error:null });
+    } };
+    return query;
+  } };
+  const catalogue = await createScreenerLibraryStore(client).catalogue();
+  assert.deepEqual(catalogue.find(s => s.slug === 'example').columns, ['Stock Name','ROE']);
+  assert.equal(calls.some(c => c.fields.includes('rows')), false);
+});

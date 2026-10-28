@@ -37,7 +37,10 @@ export function createScreenerLibraryStore(client = createSupabaseAdmin()) {
           return { ...metadata, kind: 'legacy', as_of: latest?.as_of || null, row_count: latest?.row_count ?? null, published_at: latest?.created_at || null };
         })),
       ]);
-      return [...legacy, ...custom.map(s => ({ ...s, kind: 'imported' }))];
+      const ids = custom.map(s => s.snapshot_id).filter(Boolean);
+      const metadata = ids.length ? await result(db().from('screener_library_snapshots').select('id,columns').in('id', ids)) : [];
+      const columns = new Map(metadata.map(s => [String(s.id), s.columns]));
+      return [...legacy, ...custom.map(s => ({ ...s, columns: columns.get(String(s.snapshot_id)) || [], kind: 'imported' }))];
     },
     definition,
     async researchUniverse() {
