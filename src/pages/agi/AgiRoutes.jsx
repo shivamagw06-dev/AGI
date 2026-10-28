@@ -12,6 +12,8 @@ import ResearchWorkspacePage from './ResearchWorkspacePage';
 import WatchlistsWorkspacePage from './WatchlistsWorkspacePage';
 import ComingSoonPage from './ComingSoonPage';
 import ManualLowPePage from './ManualLowPePage';
+import ScreenerLibrary from './ScreenerLibrary';
+import ImportedScreener from './ImportedScreener';
 import ManualPromoterPage from './ManualPromoterPage';
 import ManualPiotroskiPage from './ManualPiotroskiPage';
 import ManualMomentumPage from './ManualMomentumPage';
@@ -31,7 +33,9 @@ export default function AgiRoutes() {
         <Route path="markets" element={<MarketsWorkspacePage />} />
         <Route path="research" element={<ResearchWorkspacePage />} />
         <Route path="watchlists" element={<WatchlistsWorkspacePage />} />
-        <Route path="screeners" element={<ManualLowPePage />} />
+        <Route path="screeners" element={<ScreenerLibrary />} />
+        <Route path="screeners/low-pe" element={<ManualLowPePage />} />
+        <Route path="screeners/library/:slug" element={<ImportedScreener />} />
         <Route path="screeners/promoter-holdings" element={<ManualPromoterPage />} />
         <Route path="screeners/piotroski" element={<ManualPiotroskiPage />} />
         <Route path="screeners/momentum" element={<ManualMomentumPage />} />

@@ -1,7 +1,7 @@
 name: Manual screener import guards
 on:
   pull_request:
-    paths: ['server/routes/manualScreeners.js', 'server/services/manual*', 'src/lib/pastedTable*', 'src/pages/admin/*ScreenerPaste*', '.github/workflows/manual-screeners.yml']
+    paths: ['server/routes/manualScreeners.js', 'server/services/manual*', 'src/lib/pastedTable*', 'src/lib/screener*', 'server/routes/screenerLibrary*', 'server/services/screenerLibrary*', 'src/pages/admin/ScreenerImporter.jsx', 'supabase/migrations/*screener_library*', 'src/pages/admin/*ScreenerPaste*', '.github/workflows/manual-screeners.yml']
   workflow_dispatch:
 jobs:
   import-guards:
@@ -15,4 +15,4 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci --prefix server --ignore-scripts --no-audit --no-fund
-      - run: node --test server/services/manualLowPeScreener.test.js src/lib/pastedTable.test.js
+      - run: node --test server/services/manualLowPeScreener.test.js src/lib/pastedTable.test.js src/lib/screenerTable.test.js server/routes/screenerLibrary.test.js

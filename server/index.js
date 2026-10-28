@@ -1,4 +1,5 @@
 import createPlusRouter from './routes/agiPlus.js';
+import createScreenerLibraryRouter from './routes/screenerLibrary.js';
 import { startDailyGmp } from './services/ipoGmp.js';
 import {startPortfolioLedgerScheduler} from './services/portfolioRebalanceLedger.js';
 import { startUSHistoryScheduler } from './services/usaPortfolioHistory.js';
@@ -171,6 +172,7 @@ const nifty500ResearchLimiter = rateLimit({
 const researchLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
 app.use('/api', apiLimiter);
 app.use('/api/plus', createPlusRouter());
+app.use('/api/screener-library', createScreenerLibraryRouter());
 app.use('/research', researchLimiter);
 app.use('/api/institutional-holdings', createInstitutionalHoldingsRouter());
 app.use('/api/index-rebalance', createIndexRebalanceRouter());
