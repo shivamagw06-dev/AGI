@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import createPrivateCapitalRouter from './privateCapitalResearch.js';
 import { getPeFirm, getPeOverview, getPeOpportunities, getPeInvestors, getPeInvestor, getPeIntelligence, listPeFirms } from '../services/peIntelligenceService.js';
 import { approvePrivateMarketsImport, getPrivateMarketsAdminOverview, previewPrivateMarketsImport, resolvePrivateMarketsEntity } from '../services/privateMarketsAdminService.js';
 import { approveInsiderImport, getInsiderActivity, getInsiderAdminOverview, previewInsiderImport } from '../services/insiderTradingService.js';
@@ -6,6 +7,7 @@ import { getInsiderActivityFromWarehouse } from '../services/insiderWarehouse.js
 
 export default function createPeIntelligenceRouter() {
   const router = Router();
+  router.use('/research', createPrivateCapitalRouter());
   const requireAdmin=async(req,res,next)=>{try{const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');const url=String(process.env.SUPABASE_URL||'').replace(/\/$/,''),key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'');if(!token||!url||!key)return res.status(401).json({error:'Unauthorized'});const check=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+token}});const user=await check.json();const ids=[process.env.ADMIN_ID,process.env.VITE_ADMIN_ID,'c56e4d07-273c-49c9-86a5-a4445e687ece'].filter(Boolean),emails=[...(process.env.ADMIN_EMAILS||'').split(','),...(process.env.VITE_ADMIN_EMAILS||'').split(',')].map(x=>x.trim().toLowerCase()).filter(Boolean);if(!check.ok||(!ids.includes(user.id)&&!emails.includes(String(user.email||'').toLowerCase())))return res.status(403).json({error:'Admin access required'});req.adminUser=user;next()}catch(error){res.status(401).json({error:'Authorization failed'})}};
 
   router.get('/overview', async (req, res) => {
