@@ -54,7 +54,10 @@ def search(
     q_emb = embed_text(q, dim=dim) if q else []
 
     # Document-level candidate filter
-    docs = list(documents.values())
+    # Only the current immutable version may participate in retrieval.  Older
+    # versions remain in the store for audit/lineage, but must never compete
+    # with the latest CMS article when grounding an answer.
+    docs = [d for d in documents.values() if d.superseded_by is None]
     if ticker:
         t = ticker.upper()
         docs = [d for d in docs if t in {x.upper() for x in d.investment.tickers}]
@@ -114,7 +117,13 @@ def similar_documents(
         emb = [v / n for v in acc]
     hits = _score_chunks(
         documents,
-        [c for c in chunks if c.document_id != document_id],
+        [
+            c
+            for c in chunks
+            if c.document_id != document_id
+            and (doc := documents.get(c.document_id)) is not None
+            and doc.superseded_by is None
+        ],
         set(tokenize(src.document.title + " " + (src.knowledge.summary or ""))),
         emb,
         keyword=0.25,
